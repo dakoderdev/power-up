@@ -2,17 +2,16 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { itemsVenta, ventas } from "@/lib/db/schema";
 import {
-  aCentavos,
   enteroPositivo,
   idPositivo,
   importePositivo,
 } from "@/lib/esquemas-comunes";
+import { aCentavos } from "@/lib/moneda";
 
-const MENSAJE_CUENTA = "Cuenta corriente solo se admite con cliente registrado.";
+const MENSAJE_CUENTA =
+  "Cuenta corriente solo se admite con cliente registrado.";
 
 const baseVenta = createInsertSchema(ventas);
-
-const baseItem = createInsertSchema(itemsVenta);
 
 export const esquemaItemEntrada = z.object({
   productoId: idPositivo,
@@ -26,7 +25,8 @@ export const esquemaVentaEntrada = baseVenta
     items: z.array(esquemaItemEntrada).min(1, "Agregá al menos un producto."),
   })
   .refine(
-    (venta) => venta.formaPago !== "cuenta_corriente" || venta.clienteId !== null,
+    (venta) =>
+      venta.formaPago !== "cuenta_corriente" || venta.clienteId !== null,
     { message: MENSAJE_CUENTA, path: ["formaPago"] },
   );
 
@@ -44,7 +44,8 @@ export const esquemaVentaRegistro = createInsertSchema(ventas, {
     },
   )
   .refine(
-    (venta) => venta.formaPago !== "cuenta_corriente" || venta.clienteId != null,
+    (venta) =>
+      venta.formaPago !== "cuenta_corriente" || venta.clienteId != null,
     { message: MENSAJE_CUENTA, path: ["formaPago"] },
   );
 
