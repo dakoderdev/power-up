@@ -8,6 +8,7 @@ const pixel = Geist_Pixel({
   weight: "variable",
   axes: ["ELSH"],
   adjustFontFallback: false,
+  fallback: ["ui-monospace", "monospace"],
 });
 
 const geistSans = Geist({

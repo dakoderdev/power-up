@@ -11,6 +11,33 @@
   font-variation-settings: "ELSH" 80;
 }
 
+@utility esqueleto {
+  background-color: var(--color-neutral-950);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-neutral-950) 25%,
+    var(--color-neutral-900) 50%,
+    var(--color-neutral-950) 75%
+  );
+  background-size: 200% 100%;
+  border: 1px solid var(--color-neutral-900);
+  animation: brillo 1.6s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes brillo {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
 html {
   color-scheme: dark;
 }

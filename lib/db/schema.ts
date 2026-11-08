@@ -37,6 +37,7 @@ export const productos = pgTable(
     precio: dinero("precio").notNull(),
     stock: integer("stock").notNull().default(0),
     activo: boolean("activo").notNull().default(true),
+    imagenUrl: text("imagen_url"),
     creadoEn: timestamp("creado_en").notNull().defaultNow(),
   },
   (t) => [
