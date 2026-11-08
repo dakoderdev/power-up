@@ -143,6 +143,10 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 
 - [abierto] ST-15: largo mínimo y máximo del motivo de un movimiento manual (por qué se ajusta el stock, p. ej. "rotura" o "conteo de inventario").
 - [abierto] US-20: si cada usuario puede cambiar su propia contraseña (a revisar al final, opcional).
+- [abierto] US-22: cómo recibe su contraseña inicial un usuario nuevo: la fija el administrador, la genera el sistema al azar y se muestra una sola vez, o llega un enlace de invitación por correo.
+- [abierto] US-23: si el usuario debe cambiar la contraseña inicial en su primer ingreso (requiere un campo nuevo en usuario y una migración).
+- [abierto] US-24: si el administrador elige el rol (administrador u operador) al crear un usuario, o solo crea operadores y los administradores salen del seed.
+- [abierto] US-25: si se suma un servicio de correo para invitaciones y avisos (puede tener costo; el proyecto se publica en planes gratuitos).
 
 ## Descartado
 
@@ -167,3 +171,4 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-07: el origen de un movimiento de stock es manual o venta; el stock inicial se registra como entrada manual, y las ventas solo generan salidas.
 - 2026-11-07: reglas de integridad también en la base (checks e índices únicos) además del servidor: motivo manual obligatorio, documento numérico, subtotal = precio × cantidad, un movimiento de deuda por venta.
 - 2026-11-07: sin Neon Auth (login con Better Auth); sin plataforma/categoría en productos ni fecha duplicada en movimientos de cuenta, porque la spec no los pide.
+- 2026-11-08: el sistema usa siempre modo oscuro, sin versión clara ni selector de tema: una sola paleta (negro, escala neutral y verde de marca) mantiene la identidad y simplifica el diseño.
