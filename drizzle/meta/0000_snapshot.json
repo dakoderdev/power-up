@@ -1,11 +1,11 @@
 {
-  "id": "e9f6193e-b0fd-4b25-8b83-a33848a6e286",
+  "id": "decf96f9-903c-49fa-b3cc-0ea2a9403ebb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.account_movements": {
-      "name": "account_movements",
+    "public.clientes": {
+      "name": "clientes",
       "schema": "",
       "columns": {
         "id": {
@@ -14,164 +14,20 @@
           "primaryKey": true,
           "notNull": true
         },
-        "customer_id": {
-          "name": "customer_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "tipo_cuenta",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "amount": {
-          "name": "amount",
-          "type": "numeric(12, 2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sale_id": {
-          "name": "sale_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "date": {
-          "name": "date",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "account_mov_sale_unique": {
-          "name": "account_mov_sale_unique",
-          "columns": [
-            {
-              "expression": "sale_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"account_movements\".\"sale_id\" IS NOT NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "account_mov_customer_idx": {
-          "name": "account_mov_customer_idx",
-          "columns": [
-            {
-              "expression": "customer_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "account_movements_customer_id_customers_id_fk": {
-          "name": "account_movements_customer_id_customers_id_fk",
-          "tableFrom": "account_movements",
-          "tableTo": "customers",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "account_movements_sale_id_sales_id_fk": {
-          "name": "account_movements_sale_id_sales_id_fk",
-          "tableFrom": "account_movements",
-          "tableTo": "sales",
-          "columnsFrom": [
-            "sale_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "account_movements_user_id_user_id_fk": {
-          "name": "account_movements_user_id_user_id_fk",
-          "tableFrom": "account_movements",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "account_mov_amount_positive": {
-          "name": "account_mov_amount_positive",
-          "value": "\"account_movements\".\"amount\" > 0"
-        },
-        "account_mov_sale_link": {
-          "name": "account_mov_sale_link",
-          "value": "(\"account_movements\".\"type\" = 'sale') = (\"account_movements\".\"sale_id\" IS NOT NULL)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.customers": {
-      "name": "customers",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
+        "nombre": {
+          "name": "nombre",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "document": {
-          "name": "document",
+        "documento": {
+          "name": "documento",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "phone": {
-          "name": "phone",
+        "telefono": {
+          "name": "telefono",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -182,8 +38,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "created_at": {
-          "name": "created_at",
+        "creado_en": {
+          "name": "creado_en",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -191,11 +47,11 @@
         }
       },
       "indexes": {
-        "customers_name_idx": {
-          "name": "customers_name_idx",
+        "clientes_nombre_idx": {
+          "name": "clientes_nombre_idx",
           "columns": [
             {
-              "expression": "name",
+              "expression": "nombre",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -210,33 +66,33 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "customers_document_unique": {
-          "name": "customers_document_unique",
+        "clientes_documento_unique": {
+          "name": "clientes_documento_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "document"
+            "documento"
           ]
         }
       },
       "policies": {},
       "checkConstraints": {
-        "customers_contact_required": {
-          "name": "customers_contact_required",
-          "value": "\"customers\".\"phone\" IS NOT NULL OR \"customers\".\"email\" IS NOT NULL"
+        "clientes_contacto_requerido": {
+          "name": "clientes_contacto_requerido",
+          "value": "\"clientes\".\"telefono\" IS NOT NULL OR \"clientes\".\"email\" IS NOT NULL"
         },
-        "customers_name_not_empty": {
-          "name": "customers_name_not_empty",
-          "value": "length(trim(\"customers\".\"name\")) > 0"
+        "clientes_nombre_no_vacio": {
+          "name": "clientes_nombre_no_vacio",
+          "value": "length(trim(\"clientes\".\"nombre\")) > 0"
         },
-        "customers_document_numeric": {
-          "name": "customers_document_numeric",
-          "value": "\"customers\".\"document\" ~ '^[0-9]+$'"
+        "clientes_documento_numerico": {
+          "name": "clientes_documento_numerico",
+          "value": "\"clientes\".\"documento\" ~ '^[0-9]+$'"
         }
       },
       "isRLSEnabled": false
     },
-    "public.products": {
-      "name": "products",
+    "public.items_venta": {
+      "name": "items_venta",
       "schema": "",
       "columns": {
         "id": {
@@ -245,137 +101,38 @@
           "primaryKey": true,
           "notNull": true
         },
-        "code": {
-          "name": "code",
-          "type": "varchar(30)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(120)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "price": {
-          "name": "price",
-          "type": "numeric(12, 2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "stock": {
-          "name": "stock",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "active": {
-          "name": "active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "products_name_idx": {
-          "name": "products_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "products_code_unique": {
-          "name": "products_code_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "products_price_positive": {
-          "name": "products_price_positive",
-          "value": "\"products\".\"price\" > 0"
-        },
-        "products_stock_nonneg": {
-          "name": "products_stock_nonneg",
-          "value": "\"products\".\"stock\" >= 0"
-        },
-        "products_code_not_empty": {
-          "name": "products_code_not_empty",
-          "value": "length(trim(\"products\".\"code\")) > 0"
-        },
-        "products_name_not_empty": {
-          "name": "products_name_not_empty",
-          "value": "length(trim(\"products\".\"name\")) > 0"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.sale_items": {
-      "name": "sale_items",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "sale_id": {
-          "name": "sale_id",
+        "venta_id": {
+          "name": "venta_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "product_id": {
-          "name": "product_id",
+        "producto_id": {
+          "name": "producto_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "code": {
-          "name": "code",
+        "codigo": {
+          "name": "codigo",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "descripcion": {
+          "name": "descripcion",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "quantity": {
-          "name": "quantity",
+        "cantidad": {
+          "name": "cantidad",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "unit_price": {
-          "name": "unit_price",
+        "precio_unitario": {
+          "name": "precio_unitario",
           "type": "numeric(12, 2)",
           "primaryKey": false,
           "notNull": true
@@ -388,11 +145,11 @@
         }
       },
       "indexes": {
-        "sale_items_sale_idx": {
-          "name": "sale_items_sale_idx",
+        "items_venta_venta_idx": {
+          "name": "items_venta_venta_idx",
           "columns": [
             {
-              "expression": "sale_id",
+              "expression": "venta_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -405,12 +162,12 @@
         }
       },
       "foreignKeys": {
-        "sale_items_sale_id_sales_id_fk": {
-          "name": "sale_items_sale_id_sales_id_fk",
-          "tableFrom": "sale_items",
-          "tableTo": "sales",
+        "items_venta_venta_id_ventas_id_fk": {
+          "name": "items_venta_venta_id_ventas_id_fk",
+          "tableFrom": "items_venta",
+          "tableTo": "ventas",
           "columnsFrom": [
-            "sale_id"
+            "venta_id"
           ],
           "columnsTo": [
             "id"
@@ -418,12 +175,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "sale_items_product_id_products_id_fk": {
-          "name": "sale_items_product_id_products_id_fk",
-          "tableFrom": "sale_items",
-          "tableTo": "products",
+        "items_venta_producto_id_productos_id_fk": {
+          "name": "items_venta_producto_id_productos_id_fk",
+          "tableFrom": "items_venta",
+          "tableTo": "productos",
           "columnsFrom": [
-            "product_id"
+            "producto_id"
           ],
           "columnsTo": [
             "id"
@@ -436,23 +193,23 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "sale_items_qty_positive": {
-          "name": "sale_items_qty_positive",
-          "value": "\"sale_items\".\"quantity\" > 0"
+        "items_venta_cantidad_positiva": {
+          "name": "items_venta_cantidad_positiva",
+          "value": "\"items_venta\".\"cantidad\" > 0"
         },
-        "sale_items_price_positive": {
-          "name": "sale_items_price_positive",
-          "value": "\"sale_items\".\"unit_price\" > 0"
+        "items_venta_precio_positivo": {
+          "name": "items_venta_precio_positivo",
+          "value": "\"items_venta\".\"precio_unitario\" > 0"
         },
-        "sale_items_subtotal_matches": {
-          "name": "sale_items_subtotal_matches",
-          "value": "\"sale_items\".\"subtotal\" = \"sale_items\".\"unit_price\" * \"sale_items\".\"quantity\""
+        "items_venta_subtotal_coincide": {
+          "name": "items_venta_subtotal_coincide",
+          "value": "\"items_venta\".\"subtotal\" = \"items_venta\".\"precio_unitario\" * \"items_venta\".\"cantidad\""
         }
       },
       "isRLSEnabled": false
     },
-    "public.sales": {
-      "name": "sales",
+    "public.movimientos_cuenta": {
+      "name": "movimientos_cuenta",
       "schema": "",
       "columns": {
         "id": {
@@ -461,14 +218,400 @@
           "primaryKey": true,
           "notNull": true
         },
-        "number": {
-          "name": "number",
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_cuenta",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "importe": {
+          "name": "importe",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "venta_id": {
+          "name": "venta_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacion": {
+          "name": "observacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mov_cuenta_venta_unica": {
+          "name": "mov_cuenta_venta_unica",
+          "columns": [
+            {
+              "expression": "venta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"movimientos_cuenta\".\"venta_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "mov_cuenta_cliente_idx": {
+          "name": "mov_cuenta_cliente_idx",
+          "columns": [
+            {
+              "expression": "cliente_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "movimientos_cuenta_cliente_id_clientes_id_fk": {
+          "name": "movimientos_cuenta_cliente_id_clientes_id_fk",
+          "tableFrom": "movimientos_cuenta",
+          "tableTo": "clientes",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_cuenta_venta_id_ventas_id_fk": {
+          "name": "movimientos_cuenta_venta_id_ventas_id_fk",
+          "tableFrom": "movimientos_cuenta",
+          "tableTo": "ventas",
+          "columnsFrom": [
+            "venta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_cuenta_usuario_id_user_id_fk": {
+          "name": "movimientos_cuenta_usuario_id_user_id_fk",
+          "tableFrom": "movimientos_cuenta",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "mov_cuenta_importe_positivo": {
+          "name": "mov_cuenta_importe_positivo",
+          "value": "\"movimientos_cuenta\".\"importe\" > 0"
+        },
+        "mov_cuenta_venta_vinculada": {
+          "name": "mov_cuenta_venta_vinculada",
+          "value": "(\"movimientos_cuenta\".\"tipo\" = 'venta') = (\"movimientos_cuenta\".\"venta_id\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.movimientos_stock": {
+      "name": "movimientos_stock",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "producto_id": {
+          "name": "producto_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_stock",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origen": {
+          "name": "origen",
+          "type": "origen_stock",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cantidad": {
+          "name": "cantidad",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "venta_id": {
+          "name": "venta_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "mov_stock_producto_idx": {
+          "name": "mov_stock_producto_idx",
+          "columns": [
+            {
+              "expression": "producto_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "movimientos_stock_producto_id_productos_id_fk": {
+          "name": "movimientos_stock_producto_id_productos_id_fk",
+          "tableFrom": "movimientos_stock",
+          "tableTo": "productos",
+          "columnsFrom": [
+            "producto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_stock_venta_id_ventas_id_fk": {
+          "name": "movimientos_stock_venta_id_ventas_id_fk",
+          "tableFrom": "movimientos_stock",
+          "tableTo": "ventas",
+          "columnsFrom": [
+            "venta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_stock_usuario_id_user_id_fk": {
+          "name": "movimientos_stock_usuario_id_user_id_fk",
+          "tableFrom": "movimientos_stock",
+          "tableTo": "user",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "mov_stock_cantidad_positiva": {
+          "name": "mov_stock_cantidad_positiva",
+          "value": "\"movimientos_stock\".\"cantidad\" > 0"
+        },
+        "mov_stock_manual_con_motivo": {
+          "name": "mov_stock_manual_con_motivo",
+          "value": "\"movimientos_stock\".\"origen\" <> 'manual' OR length(trim(coalesce(\"movimientos_stock\".\"motivo\", ''))) > 0"
+        },
+        "mov_stock_venta_vinculada": {
+          "name": "mov_stock_venta_vinculada",
+          "value": "(\"movimientos_stock\".\"origen\" = 'venta') = (\"movimientos_stock\".\"venta_id\" IS NOT NULL)"
+        },
+        "mov_stock_venta_es_salida": {
+          "name": "mov_stock_venta_es_salida",
+          "value": "\"movimientos_stock\".\"origen\" <> 'venta' OR \"movimientos_stock\".\"tipo\" = 'salida'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.productos": {
+      "name": "productos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "precio": {
+          "name": "precio",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stock": {
+          "name": "stock",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "activo": {
+          "name": "activo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "productos_nombre_idx": {
+          "name": "productos_nombre_idx",
+          "columns": [
+            {
+              "expression": "nombre",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "productos_codigo_unique": {
+          "name": "productos_codigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codigo"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "productos_precio_positivo": {
+          "name": "productos_precio_positivo",
+          "value": "\"productos\".\"precio\" > 0"
+        },
+        "productos_stock_no_negativo": {
+          "name": "productos_stock_no_negativo",
+          "value": "\"productos\".\"stock\" >= 0"
+        },
+        "productos_codigo_no_vacio": {
+          "name": "productos_codigo_no_vacio",
+          "value": "length(trim(\"productos\".\"codigo\")) > 0"
+        },
+        "productos_nombre_no_vacio": {
+          "name": "productos_nombre_no_vacio",
+          "value": "length(trim(\"productos\".\"nombre\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ventas": {
+      "name": "ventas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "sales_number_seq",
+            "name": "ventas_numero_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -478,33 +621,33 @@
             "cycle": false
           }
         },
-        "created_at": {
-          "name": "created_at",
+        "creado_en": {
+          "name": "creado_en",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "customer_id": {
-          "name": "customer_id",
+        "cliente_id": {
+          "name": "cliente_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "customer_name": {
-          "name": "customer_name",
+        "cliente_nombre": {
+          "name": "cliente_nombre",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "customer_document": {
-          "name": "customer_document",
+        "cliente_documento": {
+          "name": "cliente_documento",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "payment_method": {
-          "name": "payment_method",
+        "forma_pago": {
+          "name": "forma_pago",
           "type": "forma_pago",
           "typeSchema": "public",
           "primaryKey": false,
@@ -516,19 +659,19 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_id": {
-          "name": "user_id",
+        "usuario_id": {
+          "name": "usuario_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {
-        "sales_created_at_idx": {
-          "name": "sales_created_at_idx",
+        "ventas_creado_en_idx": {
+          "name": "ventas_creado_en_idx",
           "columns": [
             {
-              "expression": "created_at",
+              "expression": "creado_en",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -539,11 +682,11 @@
           "method": "btree",
           "with": {}
         },
-        "sales_customer_idx": {
-          "name": "sales_customer_idx",
+        "ventas_cliente_idx": {
+          "name": "ventas_cliente_idx",
           "columns": [
             {
-              "expression": "customer_id",
+              "expression": "cliente_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -556,12 +699,12 @@
         }
       },
       "foreignKeys": {
-        "sales_customer_id_customers_id_fk": {
-          "name": "sales_customer_id_customers_id_fk",
-          "tableFrom": "sales",
-          "tableTo": "customers",
+        "ventas_cliente_id_clientes_id_fk": {
+          "name": "ventas_cliente_id_clientes_id_fk",
+          "tableFrom": "ventas",
+          "tableTo": "clientes",
           "columnsFrom": [
-            "customer_id"
+            "cliente_id"
           ],
           "columnsTo": [
             "id"
@@ -569,12 +712,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "sales_user_id_user_id_fk": {
-          "name": "sales_user_id_user_id_fk",
-          "tableFrom": "sales",
+        "ventas_usuario_id_user_id_fk": {
+          "name": "ventas_usuario_id_user_id_fk",
+          "tableFrom": "ventas",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
+            "usuario_id"
           ],
           "columnsTo": [
             "id"
@@ -585,170 +728,27 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "sales_number_unique": {
-          "name": "sales_number_unique",
+        "ventas_numero_unique": {
+          "name": "ventas_numero_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "number"
+            "numero"
           ]
         }
       },
       "policies": {},
       "checkConstraints": {
-        "sales_total_positive": {
-          "name": "sales_total_positive",
-          "value": "\"sales\".\"total\" > 0"
+        "ventas_total_positivo": {
+          "name": "ventas_total_positivo",
+          "value": "\"ventas\".\"total\" > 0"
         },
-        "sales_consumer_without_document": {
-          "name": "sales_consumer_without_document",
-          "value": "\"sales\".\"customer_id\" IS NOT NULL OR \"sales\".\"customer_document\" IS NULL"
+        "ventas_final_sin_documento": {
+          "name": "ventas_final_sin_documento",
+          "value": "\"ventas\".\"cliente_id\" IS NOT NULL OR \"ventas\".\"cliente_documento\" IS NULL"
         },
-        "sales_credit_needs_customer": {
-          "name": "sales_credit_needs_customer",
-          "value": "\"sales\".\"payment_method\" <> 'credit' OR \"sales\".\"customer_id\" IS NOT NULL"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.stock_movements": {
-      "name": "stock_movements",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "product_id": {
-          "name": "product_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "tipo_stock",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "origin": {
-          "name": "origin",
-          "type": "origen_stock",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "quantity": {
-          "name": "quantity",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sale_id": {
-          "name": "sale_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "stock_mov_product_idx": {
-          "name": "stock_mov_product_idx",
-          "columns": [
-            {
-              "expression": "product_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "stock_movements_product_id_products_id_fk": {
-          "name": "stock_movements_product_id_products_id_fk",
-          "tableFrom": "stock_movements",
-          "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "stock_movements_sale_id_sales_id_fk": {
-          "name": "stock_movements_sale_id_sales_id_fk",
-          "tableFrom": "stock_movements",
-          "tableTo": "sales",
-          "columnsFrom": [
-            "sale_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "stock_movements_user_id_user_id_fk": {
-          "name": "stock_movements_user_id_user_id_fk",
-          "tableFrom": "stock_movements",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "stock_mov_qty_positive": {
-          "name": "stock_mov_qty_positive",
-          "value": "\"stock_movements\".\"quantity\" > 0"
-        },
-        "stock_mov_manual_needs_reason": {
-          "name": "stock_mov_manual_needs_reason",
-          "value": "\"stock_movements\".\"origin\" <> 'manual' OR length(trim(coalesce(\"stock_movements\".\"reason\", ''))) > 0"
-        },
-        "stock_mov_sale_link": {
-          "name": "stock_mov_sale_link",
-          "value": "(\"stock_movements\".\"origin\" = 'sale') = (\"stock_movements\".\"sale_id\" IS NOT NULL)"
-        },
-        "stock_mov_sale_is_out": {
-          "name": "stock_mov_sale_is_out",
-          "value": "\"stock_movements\".\"origin\" <> 'sale' OR \"stock_movements\".\"type\" = 'out'"
+        "ventas_cuenta_requiere_cliente": {
+          "name": "ventas_cuenta_requiere_cliente",
+          "value": "\"ventas\".\"forma_pago\" <> 'cuenta_corriente' OR \"ventas\".\"cliente_id\" IS NOT NULL"
         }
       },
       "isRLSEnabled": false
@@ -858,9 +858,9 @@
       "name": "forma_pago",
       "schema": "public",
       "values": [
-        "cash",
-        "card",
-        "credit"
+        "contado",
+        "tarjeta",
+        "cuenta_corriente"
       ]
     },
     "public.origen_stock": {
@@ -868,23 +868,23 @@
       "schema": "public",
       "values": [
         "manual",
-        "sale"
+        "venta"
       ]
     },
     "public.tipo_cuenta": {
       "name": "tipo_cuenta",
       "schema": "public",
       "values": [
-        "sale",
-        "payment"
+        "venta",
+        "pago"
       ]
     },
     "public.tipo_stock": {
       "name": "tipo_stock",
       "schema": "public",
       "values": [
-        "in",
-        "out"
+        "entrada",
+        "salida"
       ]
     }
   },
