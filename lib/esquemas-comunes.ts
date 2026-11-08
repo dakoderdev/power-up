@@ -1,11 +1,7 @@
 import { z } from "zod";
+import { aCentavos } from "@/lib/moneda";
 
 const FORMATO_IMPORTE = /^\d{1,10}(\.\d{1,2})?$/;
-
-export function aCentavos(importe: string) {
-  const [enteros, decimales = ""] = importe.split(".");
-  return Number(enteros + decimales.padEnd(2, "0"));
-}
 
 export const importePositivo = z
   .string()

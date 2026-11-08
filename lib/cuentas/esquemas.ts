@@ -1,7 +1,12 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { movimientosCuenta } from "@/lib/db/schema";
-import { aCentavos, idPositivo, importePositivo } from "@/lib/esquemas-comunes";
+import {
+  idPositivo,
+  importePositivo,
+  textoOpcional,
+} from "@/lib/esquemas-comunes";
+import { aCentavos } from "@/lib/moneda";
 
 const base = createInsertSchema(movimientosCuenta, {
   importe: () => importePositivo,
@@ -11,11 +16,7 @@ export const esquemaPago = base
   .pick({ clienteId: true, importe: true, observacion: true })
   .extend({
     clienteId: idPositivo,
-    observacion: z
-      .string()
-      .trim()
-      .transform((valor) => (valor === "" ? null : valor))
-      .nullish(),
+    observacion: textoOpcional,
   });
 
 export function crearEsquemaPago({ saldo }: { saldo: string }) {
@@ -44,7 +45,8 @@ export function crearEsquemaPago({ saldo }: { saldo: string }) {
 export const esquemaMovimientoCuenta = base
   .omit({ id: true, fecha: true })
   .refine(
-    (movimiento) => (movimiento.tipo === "venta") === (movimiento.ventaId != null),
+    (movimiento) =>
+      (movimiento.tipo === "venta") === (movimiento.ventaId != null),
     {
       message: "Solo los movimientos por venta llevan venta asociada.",
       path: ["ventaId"],
