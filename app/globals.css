@@ -16,7 +16,7 @@ html {
 }
 
 body {
-  background: var(--color-neutral-950);
+  background: var(--color-black);
   color: var(--color-neutral-100);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

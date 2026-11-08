@@ -7,6 +7,7 @@ const pixel = Geist_Pixel({
   subsets: ["latin"],
   weight: "variable",
   axes: ["ELSH"],
+  adjustFontFallback: false,
 });
 
 const geistSans = Geist({

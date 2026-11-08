@@ -2,15 +2,13 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
+import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
 import { iniciarSesion } from "./actions";
 
 const FORMATO_CORREO = /^\S+@\S+\.\S{2,}$/;
 const BLOQUES_CAMPO = 10;
 const BLOQUES_TOTAL = BLOQUES_CAMPO * 2;
 const LARGO_CLAVE = 8;
-
-const CLASE_CAMPO =
-  "h-11 w-full border bg-neutral-900 px-3 text-[0.9375rem] text-white transition-colors placeholder:text-neutral-500 hover:border-neutral-600 focus:border-neutral-400 focus:outline-none";
 
 type Errores = {
   correo?: string;
@@ -181,7 +179,7 @@ export function FormularioLogin() {
         <button
           type="submit"
           disabled={pendiente}
-          className="h-11 w-full bg-verde font-sans text-base font-medium text-black transition-colors hover:bg-verde/85 active:bg-verde/70 disabled:cursor-wait disabled:opacity-60"
+          className={`${claseBoton({ variante: "primario", enFormulario: true })} w-full`}
         >
           {pendiente ? "Ingresando…" : "Ingresar"}
         </button>
