@@ -1,0 +1,166 @@
+# Sistema de ventas y gestión comercial
+
+Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por módulo. Los campos de las tablas viven en `lib/db/schema.ts`.
+
+## Ventas y comprobantes
+
+### Armado de la venta
+
+- VE-01: una venta tiene un cliente: consumidor final o un cliente registrado.
+- VE-02: una venta tiene al menos un producto.
+- VE-03: solo se pueden agregar productos activos del catálogo.
+- VE-04: la cantidad de cada producto es un entero positivo.
+- VE-05: mientras se arma la venta se pueden agregar y quitar productos y cambiar cantidades.
+- VE-06: el subtotal de cada línea es precio unitario × cantidad.
+- VE-07: el total es la suma de los subtotales.
+- VE-08: subtotales y total se actualizan al cambiar el detalle.
+- VE-09: la forma de pago es una sola por venta: contado, tarjeta o cuenta corriente.
+- VE-10: se puede dar de alta un cliente durante la venta sin perder lo ya cargado.
+- VE-11: el cliente recién creado queda seleccionado en la venta.
+- VE-12: el pago con tarjeta es simulado; no se piden ni guardan datos de tarjeta.
+
+### Confirmación
+
+- VE-13: antes de confirmar, el servidor verifica stock suficiente de todos los productos.
+- VE-14: si falta stock, se informa qué productos fallan y se permite corregir la venta.
+- VE-15: cuenta corriente solo se admite con cliente registrado, validado en el servidor.
+- VE-16: el servidor toma precio y descripción del producto al confirmar, no los del cliente.
+- VE-17: confirmar graba comprobante, detalle, movimientos de stock y deuda en una sola transacción.
+- VE-18: si algo falla, no queda comprobante, descuento de stock ni deuda.
+- VE-19: cada producto vendido genera un movimiento de salida con origen venta.
+- VE-20: contado y tarjeta no generan deuda.
+- VE-21: cuenta corriente suma el total al saldo del cliente.
+- VE-22: dos confirmaciones simultáneas no pueden dejar el stock negativo.
+
+### Comprobante
+
+- VE-23: el comprobante tiene número único.
+- VE-24: el comprobante guarda fecha, cliente, detalle, total y forma de pago.
+- VE-25: el comprobante guarda copia de código, descripción, cantidad, precio unitario y subtotal de cada línea.
+- VE-26: el comprobante guarda copia del nombre y documento del cliente al momento de la venta.
+- VE-27: un comprobante no se recalcula ni cambia si luego cambian producto o cliente.
+- VE-28: un producto pasado a inactivo sigue visible en sus comprobantes viejos.
+- VE-29: una venta confirmada no se edita ni se anula.
+- VE-32: el número de comprobante es un correlativo entero simple.
+- VE-33: la fecha del comprobante la asigna el servidor al confirmar.
+- VE-34: del consumidor final solo se guarda la etiqueta "Consumidor final", sin documento ni otros datos.
+
+### Consulta
+
+- VE-30: hay un listado de ventas, de la más reciente a la más antigua.
+- VE-31: cada comprobante tiene una vista de detalle.
+
+## Productos
+
+- PR-01: se puede dar de alta, consultar y modificar un producto.
+- PR-02: un producto tiene código, nombre, precio de venta, stock actual y estado activo/inactivo.
+- PR-03: el código es único.
+- PR-04: el precio es mayor que cero.
+- PR-05: se busca por nombre o código.
+- PR-06: la baja es lógica (pasar a inactivo); no se borra físicamente.
+- PR-07: un producto inactivo no se puede agregar a ventas nuevas, validado en el servidor.
+- PR-08: un producto inactivo sigue apareciendo en los comprobantes anteriores.
+- PR-09: cambiar precio o nombre no modifica comprobantes existentes.
+- PR-10: el nombre tiene hasta 120 caracteres y el código hasta 30.
+- PR-11: un producto inactivo se puede reactivar editando su estado.
+
+## Stock
+
+- ST-01: el stock se maneja en unidades enteras.
+- ST-02: el stock nunca queda negativo.
+- ST-03: todo cambio de stock es un movimiento.
+- ST-04: un movimiento tiene tipo (entrada o salida), cantidad, motivo y origen (manual o venta).
+- ST-05: la cantidad de un movimiento es un entero positivo.
+- ST-06: el motivo de un movimiento manual es obligatorio.
+- ST-07: una salida manual mayor que el stock actual se rechaza en el servidor.
+- ST-08: un stock inicial mayor que cero al crear el producto se registra como entrada.
+- ST-09: un stock inicial de cero no genera movimiento.
+- ST-10: el stock actual coincide con la suma de entradas menos salidas.
+- ST-11: se consultan los movimientos de stock.
+- ST-12: el listado distingue ajustes manuales de movimientos por venta.
+- ST-13: un movimiento registrado no se edita ni se elimina.
+- ST-14: el stock no se edita directamente: solo cambia por movimientos.
+- ST-16: se permiten ajustes manuales sobre productos inactivos.
+
+## Clientes
+
+- CL-01: se puede dar de alta, consultar y modificar un cliente.
+- CL-02: un cliente tiene nombre y apellido o razón social, documento o identificación y un dato de contacto.
+- CL-03: nombre y documento son obligatorios.
+- CL-04: hay al menos un dato de contacto.
+- CL-05: se busca por nombre o documento.
+- CL-06: los clientes no se eliminan.
+- CL-07: modificar un cliente no altera los comprobantes existentes.
+- CL-08: el alta durante una venta usa las mismas reglas que el alta normal.
+- CL-09: el documento del cliente es único.
+- CL-10: el documento no puede estar vacío y es numérico; no se valida el formato de DNI ni CUIT.
+
+## Cuentas corrientes y pagos
+
+- CC-01: cada cliente registrado tiene una cuenta corriente.
+- CC-02: el consumidor final no tiene cuenta corriente.
+- CC-03: el saldo es la suma de ventas en cuenta corriente menos la suma de pagos.
+- CC-04: se consulta el saldo adeudado.
+- CC-05: se listan las ventas en cuenta corriente del cliente.
+- CC-06: se consulta el historial de movimientos (ventas y pagos) en orden cronológico.
+- CC-07: las ventas de contado o tarjeta no figuran como deuda.
+- CC-08: el listado de clientes muestra el saldo de cada uno.
+- PA-01: un pago tiene fecha, importe y observación opcional.
+- PA-02: el importe es mayor que cero.
+- PA-03: un pago no puede superar el saldo adeudado, validado en el servidor.
+- PA-04: un cliente con saldo cero no admite pagos.
+- PA-05: el pago reduce el saldo global del cliente, sin asignarse a una venta concreta.
+- PA-06: un pago registrado no se edita ni se anula.
+- PA-07: dos pagos simultáneos no pueden dejar el saldo negativo.
+- PA-08: la fecha del pago la asigna el servidor al registrarlo.
+
+## Usuarios y acceso
+
+Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
+
+- US-01: toda pantalla y server action requiere sesión iniciada.
+- US-02: sin sesión se redirige al inicio de sesión.
+- US-03: se puede cerrar la sesión.
+- US-04: un usuario inactivo no inicia sesión.
+- US-05: desactivar un usuario cierra sus sesiones abiertas.
+- US-06: las contraseñas se guardan hasheadas, nunca en texto plano.
+- US-07: hay dos roles: administrador y operador.
+- US-08: ambos roles operan ventas, productos, clientes, stock y pagos.
+- US-09: la administración de usuarios es solo del administrador.
+- US-10: rol y estado activo se verifican en el servidor en cada server action que lo requiera.
+- US-11: el menú no muestra la sección de usuarios a un operador.
+- US-12: el administrador consulta, crea, edita y activa o desactiva usuarios.
+- US-13: un usuario tiene nombre, correo o nombre de acceso, contraseña, rol y estado activo.
+- US-14: el correo o nombre de acceso es único.
+- US-15: los usuarios no se borran físicamente.
+- US-16: el sistema no puede quedar sin ningún administrador activo.
+- US-17: el primer administrador se crea con el seed o un script de inicialización.
+- US-18: las credenciales de evaluación se documentan en el README.
+- US-19: el administrador puede cambiar la contraseña de otro usuario.
+- US-21: la contraseña tiene al menos 8 caracteres.
+
+## Abierto
+
+- [abierto] ST-15: largo mínimo y máximo del motivo de un movimiento manual (por qué se ajusta el stock, p. ej. "rotura" o "conteo de inventario").
+- [abierto] US-20: si cada usuario puede cambiar su propia contraseña (a revisar al final, opcional).
+
+## Descartado
+
+- ARCA y comprobantes fiscales (2026-11-07: el comprobante es interno según el enunciado).
+- Descuentos, impuestos, cuotas, intereses, pagos combinados, devoluciones (2026-11-07: fuera del alcance del enunciado).
+- Asignación de pagos a facturas concretas (2026-11-07: los pagos reducen el saldo global).
+- Borrado físico de productos y usuarios (2026-11-07: el enunciado exige baja lógica).
+- Multiempresa, multidepósito, multimoneda, cantidades decimales (2026-11-07: una empresa, un depósito, pesos, unidades enteras).
+- Roles y permisos configurables, gráficos, filtros de ventas e impresión (2026-11-07: opcionales, solo con lo obligatorio terminado).
+- Auth propia (2026-11-07: la maneja Better Auth).
+
+## Decisiones
+
+- 2026-11-07: el precio lo fija el servidor al confirmar para evitar manipulación desde el cliente.
+- 2026-11-07: el stock no se edita a mano; todo cambio pasa por un movimiento para mantener el historial auditable.
+- 2026-11-07: el saldo se deriva de ventas y pagos en lugar de guardarse como campo, para que no se desincronice.
+- 2026-11-07: comprobante con correlativo simple y fecha asignada por el servidor, igual que los pagos, para que nadie pueda falsear fechas.
+- 2026-11-07: documento de cliente único y solo numérico, para evitar duplicados sin atar el sistema a un formato fiscal.
+- 2026-11-07: el administrador puede cambiar contraseñas ajenas para recuperar accesos; mínimo de 8 caracteres.
+- 2026-11-07: los productos inactivos se pueden reactivar y ajustar, para poder corregir existencias.
+- 2026-11-07: el rol se verifica en el servidor; ocultar el menú es solo comodidad de UI.

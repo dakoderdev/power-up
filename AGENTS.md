@@ -3,6 +3,7 @@
 Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Postgres (Neon), Better Auth, Zod + drizzle-zod, deploy en Vercel. El resto de las librerías de UI se decide más adelante. Moneda única: pesos argentinos.
 
 ## Reglas
+
 - Toda validación importante (stock, precios, permisos, saldo, cuenta corriente solo para clientes registrados) se hace en el servidor, aunque también exista en el cliente.
 - Confirmar una venta es una sola transacción de Drizzle (`db.transaction`): comprobante, detalle, movimientos de stock y deuda se graban juntos o no se graba nada.
 - No hagas `git commit` ni `git push`; dejá los cambios en el working tree. Excepción: ayuda pedida para resolver un conflicto de merge.
@@ -15,9 +16,11 @@ Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cu
 - Al empezar una tarea que edita archivos existentes, corré git fetch y git status -sb. Si la rama está atrasada respecto del remoto, avisame y esperá a que haga pull antes de editar.
 
 ## No construir
+
 Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se piden ni guardan números de tarjeta), impuestos, descuentos, cuotas, intereses, pagos combinados, devoluciones, anulación o edición de ventas y pagos confirmados, asignación de pagos a facturas concretas, multiempresa, multidepósito, multimoneda, borrado físico de productos, usuarios o clientes. Gráficos, impresión, filtros y roles configurables solo cuando lo obligatorio esté terminado.
 
 ## Dominio en corto
+
 - Comprobante con número único; guarda una copia de descripción, precio, cliente y datos del momento: nunca se recalcula desde el producto o cliente actual.
 - Stock en unidades enteras, nunca negativo. Cada cambio de stock es un movimiento (entrada/salida, cantidad positiva, motivo, origen: manual o venta). El stock inicial mayor que cero se registra como entrada.
 - Producto: código único, precio positivo, activo/inactivo. Un inactivo no entra en ventas nuevas pero sigue en los comprobantes viejos.
@@ -25,6 +28,7 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 - Usuario inactivo no inicia sesión. La administración de usuarios es solo del administrador, verificado en el servidor. Contraseñas hasheadas.
 
 ## Estilo
+
 - Envolvé la lógica en funciones.
 - Llaves siempre en if/else/for/while, aunque sea una línea.
 - `const` antes que `let`; ternario en vez de reasignar.
@@ -39,6 +43,7 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 - Antes de terminar, Prettier sobre los archivos tocados (`npx prettier --write <archivos>`). No uses `npm run format`: también formatea componentes de librerías y las migraciones de `drizzle/`.
 
 ## Dónde vive cada cosa
+
 - Separación en capas: UI en `app/` y `components/`; lógica de aplicación (casos de uso como `confirmarVenta`, `registrarPago`, `ajustarStock`) en `lib/<modulo>/`; acceso a datos con Drizzle solo desde esa capa, nunca desde componentes. Esquema en `lib/db/schema.ts`, cliente en `lib/db/index.ts`, seed en `lib/db/seed.ts`.
 - Antes de crear una constante, etiqueta o helper, buscá en `lib/` si ya existe (formato de moneda y fechas, etiquetas de forma de pago y de tipo de movimiento, colores de badges).
 - Una regla de dominio (precio positivo, cantidades enteras, largo de motivo, saldo máximo de pago) se escribe una vez en `lib/` (esquema compartido) y la usan el formulario y la server action.
@@ -46,10 +51,11 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 - Un componente de más de ~300 líneas o con pasos inline (p. ej. el armado de venta con alta de cliente) se separa en componentes.
 
 ## Specs: quién gana ante un conflicto
-`specs/<modulo>.md` es la fuente de verdad de las reglas de negocio. Usala para desempatar: si lo que te pido, lo que encontraste en el código o una "buena práctica" contradicen la spec, no elijas vos. Frená, mostrame el choque y esperá. Si decido cambiar la regla, actualizá la spec en el mismo cambio que el código.
+
+`specs/sistema.md` es la fuente de verdad de las reglas de negocio. Es un único archivo para todo el sistema, con una sección por módulo (ventas, productos, stock, clientes, cuentas corrientes, usuarios) y, al final, las secciones Abierto, Descartado y Decisiones. No crees un archivo de spec por módulo ni otros archivos en `specs/`: agregá o editá secciones de ese archivo. Usala para desempatar: si lo que te pido, lo que encontraste en el código o una "buena práctica" contradicen la spec, no elijas vos. Frená, mostrame el choque y esperá. Si decido cambiar la regla, actualizá la spec en el mismo cambio que el código.
 
 - Cada hecho vive en un solo lugar: reglas en la spec, datos en `lib/db/schema.ts`, estilo en este archivo. No los copies entre sí.
-- Requisitos con ID, uno por línea y testeables (`V-03: un pago no puede superar el saldo.`). Los tests citan el ID.
+- Requisitos con ID, uno por línea (atomicos) y testeables (`V-03: un pago no puede superar el saldo.`). Los tests citan el ID.
 - `[abierto]` = duda sin resolver: frená y preguntá, no adivines.
 - **Descartado** y **Decisiones** (una línea fechada con el porqué) evitan reabrir lo ya resuelto.
 
