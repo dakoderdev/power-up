@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Power Up
 
-## Getting Started
+Sistema de ventas y gestión comercial: ventas con comprobante, productos y stock, clientes, cuentas corrientes y pagos, y usuarios con roles. Moneda única: pesos argentinos.
 
-First, run the development server:
+Stack: Next.js, Tailwind, Drizzle ORM sobre Postgres (Neon), Better Auth, Zod con drizzle-zod, deploy en Vercel.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El diseño visual está en [`DESIGN.md`](DESIGN.md).
+
+## Credenciales de evaluación
+
+| Rol           | Correo              | Contraseña     |
+| ------------- | ------------------- | -------------- |
+| Administrador | `admin@ejemplo.com` | `PowerUp2026!` |
+
+Son credenciales de demostración de un proyecto de evaluación. No se usan en ningún entorno real.
+
+Hoy el seed solo crea el administrador. El usuario operador de prueba está pendiente de la definición de las reglas abiertas US-22 a US-24 de la spec.
+
+## Requisitos
+
+- Node.js 20 o superior
+- Una base Postgres (Neon, plan gratuito)
+
+## Puesta en marcha
+
+1. Instalar dependencias:
+
+   ```bash
+   npm install
+   ```
+
+2. Crear `.env.local` a partir de `.env.example` y completar las variables (ver tabla abajo).
+
+3. Aplicar las migraciones:
+
+   ```bash
+   npm run db:migrate
+   ```
+
+4. Cargar el administrador y los datos de demostración:
+
+   ```bash
+   npm run db:seed
+   ```
+
+5. Levantar el sistema:
+
+   ```bash
+   npm run dev
+   ```
+
+   Abrir [http://localhost:3000](http://localhost:3000) e iniciar sesión con las credenciales de evaluación.
+
+## Variables de entorno
+
+Las credenciales y claves van solo en variables de entorno (`.env.local` o `.env`, ignorados por git). Nunca en el código.
+
+| Variable                | Descripción                                                      |
+| ----------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`          | Cadena de conexión a Postgres                                    |
+| `DATABASE_URL_UNPOOLED` | Conexión directa a Postgres, sin pooler                          |
+| `AUTH_SECRET`           | Secreto de Better Auth para firmar sesiones                      |
+| `BETTER_AUTH_URL`       | URL base del sistema (`http://localhost:3000` en desarrollo)     |
+| `SEED_ADMIN_EMAIL`      | Correo del administrador que crea el seed                        |
+| `SEED_ADMIN_PASSWORD`   | Contraseña del administrador (mínimo 8 caracteres)               |
+| `SEED_ADMIN_NAME`       | Nombre del administrador (opcional, por defecto `Administrador`) |
+
+Para que el seed cree el usuario de evaluación, usar estos valores:
+
+```
+SEED_ADMIN_EMAIL=admin@ejemplo.com
+SEED_ADMIN_PASSWORD=PowerUp2026!
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Seed
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`npm run db:seed` hace lo siguiente:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
+- Crea 12 productos de demostración, con su movimiento de stock inicial.
+- Crea 4 clientes, 6 ventas (contado, tarjeta y cuenta corriente) y un pago parcial de prueba.
+- Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
 
-## Learn More
+## Roles
 
-To learn more about Next.js, take a look at the following resources:
+| Rol           | Valor interno | Alcance                                                                 |
+| ------------- | ------------- | ----------------------------------------------------------------------- |
+| Administrador | `admin`       | Opera ventas, productos, clientes, stock y pagos, y administra usuarios |
+| Operador      | `operator`    | Opera ventas, productos, clientes, stock y pagos                        |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+El rol y el estado activo se verifican en el servidor. Un usuario inactivo no puede iniciar sesión.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Comando               | Qué hace                                    |
+| --------------------- | ------------------------------------------- |
+| `npm run dev`         | Servidor de desarrollo                      |
+| `npm run build`       | Build de producción                         |
+| `npm run start`       | Sirve el build de producción                |
+| `npm run lint`        | ESLint                                      |
+| `npm run db:generate` | Genera una migración desde el esquema       |
+| `npm run db:migrate`  | Aplica las migraciones                      |
+| `npm run db:seed`     | Carga administrador y datos de demostración |
