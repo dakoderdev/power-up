@@ -164,3 +164,6 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-07: el administrador puede cambiar contraseñas ajenas para recuperar accesos; mínimo de 8 caracteres.
 - 2026-11-07: los productos inactivos se pueden reactivar y ajustar, para poder corregir existencias.
 - 2026-11-07: el rol se verifica en el servidor; ocultar el menú es solo comodidad de UI.
+- 2026-11-07: el origen de un movimiento de stock es manual o venta; el stock inicial se registra como entrada manual, y las ventas solo generan salidas.
+- 2026-11-07: reglas de integridad también en la base (checks e índices únicos) además del servidor: motivo manual obligatorio, documento numérico, subtotal = precio × cantidad, un movimiento de deuda por venta.
+- 2026-11-07: sin Neon Auth (login con Better Auth); sin plataforma/categoría en productos ni fecha duplicada en movimientos de cuenta, porque la spec no los pide.

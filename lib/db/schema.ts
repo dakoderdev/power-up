@@ -5,7 +5,9 @@ import {
   serial,
   integer,
   text,
+  varchar,
   boolean,
+  uniqueIndex,
   numeric,
   timestamp,
   index,
@@ -17,11 +19,7 @@ export * from "./auth-schema";
 
 export const formaPagoEnum = pgEnum("forma_pago", ["cash", "card", "credit"]);
 export const tipoStockEnum = pgEnum("tipo_stock", ["in", "out"]);
-export const origenStockEnum = pgEnum("origen_stock", [
-  "initial",
-  "adjustment",
-  "sale",
-]);
+export const origenStockEnum = pgEnum("origen_stock", ["manual", "sale"]);
 export const tipoCuentaEnum = pgEnum("tipo_cuenta", ["sale", "payment"]);
 
 const dinero = (nombre: string) => numeric(nombre, { precision: 12, scale: 2 });
@@ -30,10 +28,8 @@ export const products = pgTable(
   "products",
   {
     id: serial("id").primaryKey(),
-    code: text("code").notNull().unique(),
-    name: text("name").notNull(),
-    platform: text("platform").notNull(),
-    category: text("category").notNull(),
+    code: varchar("code", { length: 30 }).notNull().unique(),
+    name: varchar("name", { length: 120 }).notNull(),
     price: dinero("price").notNull(),
     stock: integer("stock").notNull().default(0),
     active: boolean("active").notNull().default(true),
@@ -42,6 +38,8 @@ export const products = pgTable(
   (t) => [
     check("products_price_positive", sql`${t.price} > 0`),
     check("products_stock_nonneg", sql`${t.stock} >= 0`),
+    check("products_code_not_empty", sql`length(trim(${t.code})) > 0`),
+    check("products_name_not_empty", sql`length(trim(${t.name})) > 0`),
     index("products_name_idx").on(t.name),
   ],
 );
@@ -61,6 +59,8 @@ export const customers = pgTable(
       "customers_contact_required",
       sql`${t.phone} IS NOT NULL OR ${t.email} IS NOT NULL`,
     ),
+    check("customers_name_not_empty", sql`length(trim(${t.name})) > 0`),
+    check("customers_document_numeric", sql`${t.document} ~ '^[0-9]+$'`),
     index("customers_name_idx").on(t.name),
   ],
 );
@@ -83,6 +83,10 @@ export const sales = pgTable(
   (t) => [
     check("sales_total_positive", sql`${t.total} > 0`),
     check(
+      "sales_consumer_without_document",
+      sql`${t.customerId} IS NOT NULL OR ${t.customerDocument} IS NULL`,
+    ),
+    check(
       "sales_credit_needs_customer",
       sql`${t.paymentMethod} <> 'credit' OR ${t.customerId} IS NOT NULL`,
     ),
@@ -101,6 +105,7 @@ export const saleItems = pgTable(
     productId: integer("product_id")
       .notNull()
       .references(() => products.id),
+    code: text("code").notNull(),
     description: text("description").notNull(),
     quantity: integer("quantity").notNull(),
     unitPrice: dinero("unit_price").notNull(),
@@ -108,6 +113,11 @@ export const saleItems = pgTable(
   },
   (t) => [
     check("sale_items_qty_positive", sql`${t.quantity} > 0`),
+    check("sale_items_price_positive", sql`${t.unitPrice} > 0`),
+    check(
+      "sale_items_subtotal_matches",
+      sql`${t.subtotal} = ${t.unitPrice} * ${t.quantity}`,
+    ),
     index("sale_items_sale_idx").on(t.saleId),
   ],
 );
@@ -131,6 +141,18 @@ export const stockMovements = pgTable(
   },
   (t) => [
     check("stock_mov_qty_positive", sql`${t.quantity} > 0`),
+    check(
+      "stock_mov_manual_needs_reason",
+      sql`${t.origin} <> 'manual' OR length(trim(coalesce(${t.reason}, ''))) > 0`,
+    ),
+    check(
+      "stock_mov_sale_link",
+      sql`(${t.origin} = 'sale') = (${t.saleId} IS NOT NULL)`,
+    ),
+    check(
+      "stock_mov_sale_is_out",
+      sql`${t.origin} <> 'sale' OR ${t.type} = 'out'`,
+    ),
     index("stock_mov_product_idx").on(t.productId),
   ],
 );
@@ -150,10 +172,16 @@ export const accountMovements = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     check("account_mov_amount_positive", sql`${t.amount} > 0`),
+    check(
+      "account_mov_sale_link",
+      sql`(${t.type} = 'sale') = (${t.saleId} IS NOT NULL)`,
+    ),
+    uniqueIndex("account_mov_sale_unique")
+      .on(t.saleId)
+      .where(sql`${t.saleId} IS NOT NULL`),
     index("account_mov_customer_idx").on(t.customerId),
   ],
 );

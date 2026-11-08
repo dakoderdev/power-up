@@ -40,3 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 !.env.example
+.neon
+
+# neon / agentes
+.mcp.json
+.claude/
+skills-lock.json
