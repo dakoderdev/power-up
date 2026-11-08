@@ -53,7 +53,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 ## Productos
 
 - PR-01: se puede dar de alta, consultar y modificar un producto.
-- PR-02: un producto tiene código, nombre, precio de venta, stock actual y estado activo/inactivo.
+- PR-02: un producto tiene código, nombre, precio de venta, stock actual y estado activo/inactivo, y puede tener imagen (PR-12).
 - PR-03: el código es único.
 - PR-04: el precio es mayor que cero.
 - PR-05: se busca por nombre o código.
@@ -63,6 +63,10 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - PR-09: cambiar precio o nombre no modifica comprobantes existentes.
 - PR-10: el nombre tiene hasta 120 caracteres y el código hasta 30.
 - PR-11: un producto inactivo se puede reactivar editando su estado.
+- PR-12: un producto puede tener una imagen, indicada como dirección https; es opcional.
+- PR-13: un producto sin imagen muestra un bloque de color en su lugar.
+- PR-14: la imagen se muestra en el listado de productos, al elegir productos para una venta y en los listados de Inicio (ventas de hoy y productos con stock bajo).
+- PR-15: la imagen no forma parte del comprobante; los listados de ventas la toman del producto actual, sin copia.
 
 ## Stock
 
@@ -81,6 +85,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - ST-13: un movimiento registrado no se edita ni se elimina.
 - ST-14: el stock no se edita directamente: solo cambia por movimientos.
 - ST-16: se permiten ajustes manuales sobre productos inactivos.
+- ST-17: un producto tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero.
 
 ## Clientes
 
@@ -139,6 +144,13 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-19: el administrador puede cambiar la contraseña de otro usuario.
 - US-21: la contraseña tiene al menos 8 caracteres.
 
+## Inicio
+
+- IN-01: las ventas de hoy son las del día actual en hora de Argentina.
+- IN-02: se muestran hasta 15 ventas de hoy, de la más reciente a la más antigua.
+- IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
+- IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
+
 ## Abierto
 
 - [abierto] ST-15: largo mínimo y máximo del motivo de un movimiento manual (por qué se ajusta el stock, p. ej. "rotura" o "conteo de inventario").
@@ -147,6 +159,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - [abierto] US-23: si el usuario debe cambiar la contraseña inicial en su primer ingreso (requiere un campo nuevo en usuario y una migración).
 - [abierto] US-24: si el administrador elige el rol (administrador u operador) al crear un usuario, o solo crea operadores y los administradores salen del seed.
 - [abierto] US-25: si se suma un servicio de correo para invitaciones y avisos (puede tener costo; el proyecto se publica en planes gratuitos).
+- [abierto] PR-16: qué imagen definitiva reemplaza al bloque de color de los productos sin imagen (PR-13).
+- [abierto] PR-17: dónde se alojan las imágenes reales de los productos; las direcciones externas, como las de Wikimedia, pueden limitar su uso directo.
 
 ## Descartado
 
@@ -171,4 +185,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-07: el origen de un movimiento de stock es manual o venta; el stock inicial se registra como entrada manual, y las ventas solo generan salidas.
 - 2026-11-07: reglas de integridad también en la base (checks e índices únicos) además del servidor: motivo manual obligatorio, documento numérico, subtotal = precio × cantidad, un movimiento de deuda por venta.
 - 2026-11-07: sin Neon Auth (login con Better Auth); sin plataforma/categoría en productos ni fecha duplicada en movimientos de cuenta, porque la spec no los pide.
+- 2026-11-08: la imagen del producto se guarda como dirección externa y no como archivo subido, para no sumar un servicio de almacenamiento a los planes gratuitos.
+- 2026-11-08: el umbral de stock bajo es un valor fijo de 3 unidades y no un mínimo por producto, para no sumar un campo ni una migración.
+- 2026-11-08: el seed incluye clientes, productos y ventas de demostración, porque no es un proyecto real y sirve para ver las pantallas con contenido.
 - 2026-11-08: el sistema usa siempre modo oscuro, sin versión clara ni selector de tema: una sola paleta (negro, escala neutral y verde de marca) mantiene la identidad y simplifica el diseño.

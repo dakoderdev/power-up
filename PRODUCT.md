@@ -35,7 +35,7 @@ Nombre: Power Up. Identidad retro/pixel/gaming (inspiración: pixel art, termina
 
 ## Evidence on Hand
 
-Imagen de referencias del usuario (mosaico de inspiración). No hay logo ni paleta definidos. No inventar clientes, productos ni cifras de negocio.
+Imagen de referencias del usuario (mosaico de inspiración). No hay logo ni paleta definidos.
 
 ## Product Principles
 
