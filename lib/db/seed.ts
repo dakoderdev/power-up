@@ -85,20 +85,34 @@ const VENTAS: {
 
 const PAGO_PARCIAL = { documento: "30111222", importe: "50000.00" };
 
-const BASE_TAPAS = "https://upload.wikimedia.org/wikipedia/en";
+const BASE_TAPAS = "https://images.igdb.com/igdb/image/upload/t_cover_big";
 
 const TAPAS: Record<string, string> = {
-  "GTA-V": `${BASE_TAPAS}/a/a5/Grand_Theft_Auto_V.png`,
-  "SIMS-4": `${BASE_TAPAS}/7/7f/Sims4_Rebrand.png`,
-  "COD-MW3": `${BASE_TAPAS}/f/f6/MWIII_Cover_Art.png`,
-  "FIFA-23": `${BASE_TAPAS}/a/a6/FIFA_23_Cover.jpg`,
-  "SMB-WONDER": `${BASE_TAPAS}/a/a3/Mariowonder.png`,
-  "ZELDA-TOTK": `${BASE_TAPAS}/f/fb/The_Legend_of_Zelda_Tears_of_the_Kingdom_cover.jpg`,
-  "AC-VAL": `${BASE_TAPAS}/f/ff/Assassin%27s_Creed_Valhalla_cover.jpg`,
-  "HALO-INF": `${BASE_TAPAS}/1/14/Halo_Infinite.png`,
-  "RE-4": `${BASE_TAPAS}/d/df/Resident_Evil_4_remake_cover_art.jpg`,
-  "SONIC-SS": `${BASE_TAPAS}/f/f7/Sonic_Superstars_Cover_Art.png`,
-  "METROID-D": `${BASE_TAPAS}/f/f7/Metroid_Dread_Banner.png`,
+  "GTA-V": "co2lbd",
+  "SIMS-4": "co3h3l",
+  "COD-MW3": "co1wkn",
+  "FIFA-23": "co4zw5",
+  "SMB-WONDER": "co6nnl",
+  "POKE-ESC": "co5sfi",
+  "ZELDA-TOTK": "co5vmg",
+  "AC-VAL": "co2ed3",
+  "HALO-INF": "co2dto",
+  "RE-4": "co2wki",
+  "SONIC-SS": "cobbw4",
+  "METROID-D": "coba9g",
+  "SIMS-3": "co99qs",
+  "TOMO-LTD": "cobdqd",
+  "SPLA-3": "co59x3",
+  "SPLA-2": "cob8r9",
+  "PORTAL-2": "co1rs4",
+  PEAK: "cocokj",
+  SMO: "co1mxf",
+  SMS: "cob8q1",
+  "GTA-IV": "co2lbv",
+  DELTARUNE: "co9m71",
+  "JD-2014": "co1xf3",
+  "JD-4": "co1xf6",
+  CUPHEAD: "co62ao",
 };
 
 const JUEGOS: (typeof productos.$inferInsert)[] = [
@@ -159,6 +173,44 @@ const JUEGOS: (typeof productos.$inferInsert)[] = [
     precio: "59999.00",
     stock: 0,
   },
+  { codigo: "SIMS-3", nombre: "Los Sims 3", precio: "19999.00", stock: 16 },
+  {
+    codigo: "TOMO-LTD",
+    nombre: "Tomodachi Life: Living the Dream",
+    precio: "69999.00",
+    stock: 12,
+  },
+  { codigo: "SPLA-3", nombre: "Splatoon 3", precio: "64999.00", stock: 20 },
+  { codigo: "SPLA-2", nombre: "Splatoon 2", precio: "54999.00", stock: 9 },
+  { codigo: "PORTAL-2", nombre: "Portal 2", precio: "14999.00", stock: 8 },
+  { codigo: "PEAK", nombre: "Peak", precio: "9999.00", stock: 25 },
+  {
+    codigo: "SMO",
+    nombre: "Super Mario Odyssey",
+    precio: "59999.00",
+    stock: 14,
+  },
+  {
+    codigo: "SMS",
+    nombre: "Super Mario Sunshine",
+    precio: "44999.00",
+    stock: 2,
+  },
+  {
+    codigo: "GTA-IV",
+    nombre: "Grand Theft Auto IV",
+    precio: "19999.00",
+    stock: 11,
+  },
+  { codigo: "DELTARUNE", nombre: "Deltarune", precio: "24999.00", stock: 3 },
+  {
+    codigo: "JD-2014",
+    nombre: "Just Dance 2014",
+    precio: "12999.00",
+    stock: 6,
+  },
+  { codigo: "JD-4", nombre: "Just Dance 4", precio: "9999.00", stock: 1 },
+  { codigo: "CUPHEAD", nombre: "Cuphead", precio: "19999.00", stock: 17 },
 ];
 
 function leerVariable(nombre: string) {
@@ -371,10 +423,10 @@ async function crearVentas(usuarioId: string) {
 
 async function asignarTapas() {
   await db.transaction(async (tx) => {
-    for (const [codigo, imagenUrl] of Object.entries(TAPAS)) {
+    for (const [codigo, imagenId] of Object.entries(TAPAS)) {
       await tx
         .update(productos)
-        .set({ imagenUrl })
+        .set({ imagenUrl: `${BASE_TAPAS}/${imagenId}.webp` })
         .where(and(eq(productos.codigo, codigo), isNull(productos.imagenUrl)));
     }
   });
