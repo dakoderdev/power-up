@@ -54,9 +54,10 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 
 `specs/sistema.md` es la fuente de verdad de las reglas de negocio. Es un único archivo para todo el sistema, con una sección por módulo (ventas, productos, stock, clientes, cuentas corrientes, usuarios) y, al final, las secciones Abierto, Descartado y Decisiones. No crees un archivo de spec por módulo ni otros archivos en `specs/`: agregá o editá secciones de ese archivo. Usala para desempatar: si lo que te pido, lo que encontraste en el código o una "buena práctica" contradicen la spec, no elijas vos. Frená, mostrame el choque y esperá. Si decido cambiar la regla, actualizá la spec en el mismo cambio que el código.
 
-- Cada hecho vive en un solo lugar: reglas en la spec, datos en `lib/db/schema.ts`, estilo en este archivo. No los copies entre sí.
+- Cada hecho vive en un solo lugar: reglas en la spec, datos en `lib/db/schema.ts`, estilo de código en este archivo, diseño visual en `DESIGN.md`. No los copies entre sí.
+- Antes de tocar UI, leé `DESIGN.md` y usá los componentes y valores que nombra; no inventes colores, tamaños ni espaciados fuera de él.
 - Requisitos con ID, uno por línea (atomicos) y testeables (`V-03: un pago no puede superar el saldo.`). Los tests citan el ID.
-- `[abierto]` = duda sin resolver: frená y preguntá, no adivines.
+- `[abierto]` = duda sin resolver: frená y preguntá, no adivines. Si en la charla se genero una duda nueva no resuelta, sugerirle al desarrollador de agregarla al sistema.md o responderla para quedar en decisiones.
 - **Descartado** y **Decisiones** (una línea fechada con el porqué) evitan reabrir lo ya resuelto.
 
 <!-- BEGIN:nextjs-agent-rules -->
