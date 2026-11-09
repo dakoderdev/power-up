@@ -89,7 +89,7 @@ async function PieUsuario() {
           {usuario.nombre}
         </span>
         <span className="text-[0.8125rem] text-neutral-500">
-          {ETIQUETAS_ROL[usuario.rol] ?? usuario.rol}
+          {ETIQUETAS_ROL[usuario.rol]}
         </span>
       </div>
       <form action={cerrarSesion}>

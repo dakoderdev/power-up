@@ -1,10 +1,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import type { rolEnum } from "@/lib/db/schema";
 
-export const ROL_ADMINISTRADOR = "admin";
+type Rol = (typeof rolEnum.enumValues)[number];
 
-export const ETIQUETAS_ROL: Record<string, string> = {
+export const ROL_ADMINISTRADOR: Rol = "admin";
+
+export const ETIQUETAS_ROL: Record<Rol, string> = {
   admin: "Administrador",
   operator: "Operador",
 };
@@ -22,6 +25,16 @@ export async function obtenerUsuarioActual() {
     rol: sesion.user.role,
     esAdministrador: sesion.user.role === ROL_ADMINISTRADOR,
   };
+}
+
+export async function requerirAdministrador() {
+  const usuario = await obtenerUsuarioActual();
+
+  if (!usuario.esAdministrador) {
+    redirect("/");
+  }
+
+  return usuario;
 }
 
 export async function cerrarSesionActual() {
