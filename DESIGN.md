@@ -6,7 +6,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 
 - DI-01: solo se usan `verde`, `black`, `white`, la escala `neutral` y `yellow-400`/`red-400` (solo para marcar pendientes/errores), y `red-500` solo para el total adeudado. No se usan otros colores ni hex sueltos.
 - DI-02: `verde` va solo en el botón primario, el ícono de la sección activa, la selección de texto y el foco. Es el color de acento. Única excepción: las tapas de producto llevan el degradado de DI-32.
-- DI-03: el fondo de página, la barra lateral y el encabezado de página son `black`. Los campos van en `neutral-900`.
+- DI-03: el fondo de página, la barra lateral y el encabezado de página son `black`. Los campos van en `neutral-900`. Excepción: un campo secundario que acompaña a uno principal (por ejemplo, un filtro u orden junto a la búsqueda) puede ir con `claseBoton({ variante: "secundario", enFormulario: true })` y fondo `black`. Dentro de un formulario, todos los campos van iguales.
 - DI-04: los bordes van en `neutral-800`, `neutral-600` al pasar el mouse y `neutral-400` con el foco. Los separadores internos van en `neutral-900`; el borde entre la barra lateral y el contenido va en `neutral-950`.
 - DI-05: el texto principal va en `white` y el secundario en `neutral-400`. En las filas de tablas y listados, el secundario va en `neutral-300`. `neutral-500` queda solo para ayudas y placeholders, nunca para información necesaria.
 - DI-20: `yellow-400`, `red-400` y `red-500` se usan solo como color de texto o de borde, nunca como fondo relleno. En los avisos de texto, el amarillo va atenuado (`text-yellow-400/75`) y marca solo el dato clave, no la frase entera.
@@ -26,7 +26,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 
 ## Tamaños y forma
 
-- DI-09: los campos y los botones de formulario miden `h-11`, los botones del encabezado de página `h-10` (`h-11` debajo de `lg`) y las filas de menú o tabla `h-9`, salvo las de los listados de Inicio, que miden `h-11`.
+- DI-09: los campos, los botones de formulario y las filas de tabla o listado miden `h-11`; los botones del encabezado de página `h-10` (`h-11` debajo de `lg`); los ítems de menú y los encabezados de columna `h-9`.
 - DI-10: los íconos miden `size-5`; la única excepción es el botón de menú en celular, que mide `size-6`.
 - DI-11: todo lleva esquinas rectas, sin `rounded`. No se usan sombras, blur ni gradientes. Excepciones: las tapas de producto (DI-32), los botones flotantes en celular (DI-15) y el brillo de los bloques de carga (DI-30).
 - DI-32: las tapas de producto llevan `rounded-xs` y miden `h-8 w-6`. Sin imagen, o si la imagen no carga, se ve el fondo `bg-linear-to-br from-white to-verde to-60%`. Cuando se apilan dos, la de atrás mide `h-7 w-5`, va centrada en alto (`top-0.5`, excepción a DI-12) y corrida `left-3`, con `opacity-50`; la de adelante lleva `shadow-[2px_0_0_0_black]`, sólida y sin desenfoque, para separarlas. En un listado de ventas, la tapa va seguida de `×N` (unidades del primer juego, si son más de una; va a la izquierda, excepción a DI-08), su nombre y, si la venta tiene otros juegos, un badge `+N más` con el estilo de DI-28.
@@ -39,7 +39,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 
 - DI-13: hay cuatro tipos de botón: primario, secundario, de texto y badge (DI-33). Hay como máximo un primario por grupo de botones y máximo 2 por pantalla.
 - DI-25: todo botón o enlace con forma de botón usa `claseBoton({ variante, enFormulario })` de `components/estilos.ts`; todo campo de texto usa `CLASE_CAMPO`. No se escriben clases de botón o campo a mano.
-- DI-14: los íconos son solo de `pixelarticons`, se importan por archivo (`pixelarticons/react/Nombre.js`) y van con `aria-hidden` y texto al lado. No se usan emojis ni otra librería.
+- DI-14: los íconos son solo de `pixelarticons`, se importan por archivo (`pixelarticons/react/Nombre.js`) y van con `aria-hidden`, con texto al lado o, si el control es solo un ícono, con `aria-label` en el control. No se usan emojis ni otra librería.
 - DI-15: toda página del sistema empieza con `EncabezadoPagina` (`components/encabezado-pagina.tsx`): el h1 a la izquierda, en la misma fila que los botones "Nuevo producto" y "Nueva venta" a la derecha, y debajo una frase de descripción en `neutral-400`. Queda fijo arriba al bajar en la página. Debajo de `lg`, los dos botones salen del encabezado y quedan fijos abajo a la derecha, apilados con "Nueva venta" abajo de todo; el contenido deja `pb-36` libre para que no tapen nada. Flotando, llevan `shadow-[0_8px_24px_black]` para separarse del contenido que pasa por detrás. No lleva etiquetas encima del título.
 - DI-26: en la página de alta de venta o de producto, `EncabezadoPagina` recibe `actual` y oculta el botón que lleva a esa misma página.
 - DI-16: antes de crear un componente, buscá uno que ya exista en `components/` o en la sección y usalo. Si hace falta una variante nueva, se pregunta y no se inventa.
