@@ -67,6 +67,13 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - PR-13: un producto sin imagen muestra un bloque de color en su lugar.
 - PR-14: la imagen se muestra en el listado de productos, al elegir productos para una venta y en los listados de Inicio (ventas de hoy y productos con stock bajo).
 - PR-15: la imagen no forma parte del comprobante; los listados de ventas la toman del producto actual, sin copia.
+- PR-18: el listado de productos se puede ordenar por más recientes, más vendidos, nombre o precio (ascendente y descendente); por defecto, por nombre.
+- PR-19: el listado de productos se puede ver como lista o como grilla de tapas.
+- PR-20: el orden y la vista elegidos se recuerdan en el navegador.
+- PR-21: toda búsqueda del sistema ignora mayúsculas y acentos.
+- PR-22: el listado de productos incluye los inactivos, identificados por su estado.
+- PR-23: "más vendidos" ordena por unidades vendidas en toda la historia, con los productos sin ventas al final; a igual cantidad, por nombre.
+- PR-24: el listado de productos se pagina de a 32; cambiar la búsqueda o el orden vuelve a la primera página.
 
 ## Stock
 
@@ -192,3 +199,5 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-08: el rol es un enum en la base y no texto libre, para que solo existan los dos roles de US-07.
 - 2026-11-08: el proxy valida la sesión completa contra la base y no solo la cookie, para que ni un usuario inactivo ni un rol incorrecto vean la pantalla un instante.
 - 2026-11-09: sin categoría, plataforma ni entidad aparte para juegos y consolas: ninguna regla de venta, stock o comprobante cambia según el tipo de producto y ninguna pantalla obligatoria lo usa; el mismo juego en dos plataformas son dos productos con código y stock propios.
+- 2026-11-09: el orden y la vista de productos se guardan en localStorage y no por usuario en la base, para no sumar un campo ni una migración; se adelantan a lo obligatorio por pedido del desarrollador.
+- 2026-11-09: la búsqueda ignora acentos con `translate`, nativa de Postgres, y no con la extensión `unaccent` ni con una collation no determinista, para no sumar una migración.
