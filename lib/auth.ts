@@ -14,7 +14,11 @@ export const auth = betterAuth({
   emailAndPassword: { enabled: true, minPasswordLength: 8 },
   user: {
     additionalFields: {
-      role: { type: "string", defaultValue: "operator", input: false },
+      role: {
+        type: [...schema.rolEnum.enumValues],
+        defaultValue: "operator",
+        input: false,
+      },
       active: { type: "boolean", defaultValue: true, input: false },
     },
   },

@@ -1,5 +1,14 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import {
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+} from "drizzle-orm/pg-core";
+
+export const rolEnum = pgEnum("rol", ["admin", "operator"]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -14,7 +23,7 @@ export const user = pgTable("user", {
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
-  role: text("role").notNull().default("operator"),
+  role: rolEnum("role").notNull().default("operator"),
   active: boolean("active").notNull().default(true),
 });
 
