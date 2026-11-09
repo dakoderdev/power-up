@@ -59,20 +59,28 @@ export async function confirmarVenta({
             .from(clientes)
             .where(eq(clientes.id, entrada.clienteId));
 
-    // TODO #4 (VE-15): si vino clienteId y `cliente` no existe, devolver
-    // { confirmada: false, errores: [{ mensaje }] } antes de escribir nada;
-    // hoy se grabaría como consumidor final. El rechazo de cuenta corriente
-    // sin cliente ya está en esquemaVentaEntrada: la server action tiene que
-    // correr safeParse antes de llamar a confirmarVenta.
-
     const encontrados = await bloquearProductos(tx, [...cantidades.keys()]);
 
-    // TODO #2 (VE-03, VE-13, VE-14): recorrer `cantidades` contra `encontrados`
-    // y juntar un ErrorVenta por cada producto inexistente, inactivo o con
-    // stock < cantidad. Si hay errores, devolver { confirmada: false, errores }
-    // acá, antes del primer insert. Tiene que ir después del bloqueo para que
-    // el stock leído no cambie (VE-22). Las cantidades enteras positivas
-    // (VE-04) las valida esquemaVentaEntrada en la server action.
+    const errores: ErrorVenta[] = [];
+
+    for (const [id, cantidad] of cantidades) {
+      const prod = encontrados.find((p) => p.id === id);
+
+      if (!prod) {
+        errores.push({ productoId: id, mensaje: "El producto no existe." });
+      } else if (!prod.activo) {
+        errores.push({ productoId: id, mensaje: `${prod.nombre} está inactivo.` });
+      } else if (prod.stock < cantidad) {
+        errores.push({
+          productoId: id,
+          mensaje: `Stock insuficiente de ${prod.nombre} (hay ${prod.stock}).`,
+        });
+      }
+    }
+
+    if (errores.length > 0) {
+      return { confirmada: false, errores };
+    }
 
     const lineas = encontrados.map((producto) => {
       const cantidad = cantidades.get(producto.id)!;
