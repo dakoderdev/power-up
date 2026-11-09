@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import { auth } from "../auth";
 import { aCentavos, deCentavos } from "../moneda";
+import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
 import { db } from "./index";
 import {
   account,
@@ -15,8 +16,6 @@ import {
 } from "./schema";
 
 const LARGO_MINIMO_CLAVE = 8;
-
-const CONSUMIDOR_FINAL = "Consumidor final";
 
 const CLIENTES: (typeof clientes.$inferInsert)[] = [
   { nombre: "Martina Gómez", documento: "30111222", telefono: "1155550101" },
