@@ -41,44 +41,62 @@ const VENTAS: {
   {
     documento: null,
     formaPago: "contado",
-    haceMinutos: 70,
+    haceMinutos: 45,
     items: [
-      { codigo: "GTA-V", cantidad: 1 },
-      { codigo: "FIFA-23", cantidad: 1 },
+      { codigo: "TOMO-LTD", cantidad: 1 },
+      { codigo: "PEAK", cantidad: 1 },
     ],
   },
   {
     documento: "30111222",
     formaPago: "cuenta_corriente",
-    haceMinutos: 55,
+    haceMinutos: 38,
     items: [
-      { codigo: "ZELDA-TOTK", cantidad: 1 },
-      { codigo: "SMB-WONDER", cantidad: 1 },
+      { codigo: "SMO", cantidad: 1 },
+      { codigo: "SPLA-3", cantidad: 1 },
     ],
   },
   {
     documento: null,
     formaPago: "tarjeta",
-    haceMinutos: 40,
-    items: [{ codigo: "POKE-ESC", cantidad: 1 }],
+    haceMinutos: 32,
+    items: [
+      { codigo: "PORTAL-2", cantidad: 1 },
+      { codigo: "GTA-V", cantidad: 1 },
+    ],
   },
   {
     documento: "28444555",
     formaPago: "cuenta_corriente",
-    haceMinutos: 30,
-    items: [{ codigo: "COD-MW3", cantidad: 1 }],
+    haceMinutos: 25,
+    items: [{ codigo: "SPLA-2", cantidad: 1 }],
   },
   {
     documento: "35666777",
     formaPago: "cuenta_corriente",
-    haceMinutos: 20,
-    items: [{ codigo: "RE-4", cantidad: 2 }],
+    haceMinutos: 18,
+    items: [{ codigo: "CUPHEAD", cantidad: 2 }],
   },
   {
     documento: "33222111",
     formaPago: "tarjeta",
-    haceMinutos: 10,
-    items: [{ codigo: "SIMS-4", cantidad: 1 }],
+    haceMinutos: 12,
+    items: [
+      { codigo: "GTA-IV", cantidad: 1 },
+      { codigo: "SIMS-3", cantidad: 1 },
+    ],
+  },
+  {
+    documento: null,
+    formaPago: "contado",
+    haceMinutos: 7,
+    items: [{ codigo: "JD-2014", cantidad: 2 }],
+  },
+  {
+    documento: "33222111",
+    formaPago: "tarjeta",
+    haceMinutos: 3,
+    items: [{ codigo: "ZELDA-TOTK", cantidad: 1 }],
   },
 ];
 

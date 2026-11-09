@@ -77,8 +77,8 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 `npm run db:seed` hace lo siguiente:
 
 - Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
-- Crea 12 productos de demostración, con su movimiento de stock inicial.
-- Crea 4 clientes, 6 ventas (contado, tarjeta y cuenta corriente) y un pago parcial de prueba.
+- Crea 25 productos de demostración, con su movimiento de stock inicial.
+- Crea 4 clientes, 8 ventas (contado, tarjeta y cuenta corriente) y un pago parcial de prueba.
 - Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
 
 ## Roles
@@ -101,3 +101,4 @@ El rol y el estado activo se verifican en el servidor. Un usuario inactivo no pu
 | `npm run db:generate` | Genera una migración desde el esquema       |
 | `npm run db:migrate`  | Aplica las migraciones                      |
 | `npm run db:seed`     | Carga administrador y datos de demostración |
+| `npm run db:demo-hoy` | Mueve las ventas de demostración a hoy      |
