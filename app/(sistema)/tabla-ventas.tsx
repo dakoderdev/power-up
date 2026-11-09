@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { formatearMoneda } from "@/lib/moneda";
@@ -121,28 +122,5 @@ function JuegosVenta({ items }: { items: VentaFila["items"] }) {
         </MasJuegos>
       ) : null}
     </div>
-  );
-}
-
-export function Tapa({
-  url,
-  className,
-}: {
-  url: string | null;
-  className: string;
-}) {
-  const clase = `rounded-xs bg-linear-to-br from-white to-verde to-60% object-cover ${className}`;
-
-  return url ? (
-    // eslint-disable-next-line @next/next/no-img-element -- las direcciones son externas y de cualquier dominio (PR-12)
-    <img
-      src={url}
-      alt=""
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      className={clase}
-    />
-  ) : (
-    <span aria-hidden="true" className={`block ${clase}`} />
   );
 }
