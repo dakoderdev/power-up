@@ -1,5 +1,5 @@
 const BASE_BOTON =
-  "flex items-center justify-center gap-2 px-3 text-[0.9375rem] font-medium transition-colors disabled:cursor-wait disabled:opacity-60";
+  "flex items-center justify-center gap-2 px-3 text-[0.9375rem] font-medium transition-colors disabled:cursor-wait disabled:opacity-60 cursor-pointer";
 
 const VARIANTES_BOTON = {
   primario: "bg-verde text-black hover:bg-verde/85 active:bg-verde/70",
