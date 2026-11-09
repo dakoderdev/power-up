@@ -59,6 +59,22 @@ export async function confirmarVenta({
             .from(clientes)
             .where(eq(clientes.id, entrada.clienteId));
 
+    if (entrada.clienteId !== null && !cliente) {
+      return {
+        confirmada: false,
+        errores: [{ mensaje: "El cliente no existe." }],
+      };
+    }
+
+    if (entrada.formaPago === "cuenta_corriente" && !cliente) {
+      return {
+        confirmada: false,
+        errores: [
+          { mensaje: "Cuenta corriente solo se admite con cliente registrado." },
+        ],
+      };
+    }
+
     const encontrados = await bloquearProductos(tx, [...cantidades.keys()]);
 
     const errores: ErrorVenta[] = [];
