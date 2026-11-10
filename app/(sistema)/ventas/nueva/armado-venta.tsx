@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Vacio } from "@/components/vacio";
 import type { ClienteVenta } from "@/lib/clientes/listado";
 import type { ProductoVendible } from "@/lib/productos/listado";
+import { contar } from "@/lib/texto";
 import { confirmarVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaVentaEntrada } from "@/lib/ventas/esquemas";
 import { BuscadorProductos } from "./buscador-productos";
@@ -130,7 +131,11 @@ export function ArmadoVenta() {
           accion={
             lineas.length > 0 ? (
               <span className="flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] tabular-nums">
-                {lineas.length} {lineas.length === 1 ? "producto" : "productos"}
+                {contar({
+                  cantidad: lineas.length,
+                  singular: "producto",
+                  plural: "productos",
+                })}
               </span>
             ) : null
           }

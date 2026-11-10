@@ -4,7 +4,7 @@ import { Tapa } from "@/components/tapa";
 import { importePositivo } from "@/lib/esquemas-comunes";
 import { formatearMoneda } from "@/lib/moneda";
 import { esquemaProductoNuevo } from "@/lib/productos/esquemas";
-import { ETIQUETAS_ESTADO } from "@/lib/productos/etiquetas";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
 
 export type Borrador = {
   codigo: string;

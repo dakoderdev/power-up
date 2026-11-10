@@ -5,6 +5,7 @@ import { Tapa } from "@/components/tapa";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { formatearMoneda } from "@/lib/moneda";
+import { contar, pluralizar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { TablaVentas } from "./tabla-ventas";
@@ -37,8 +38,12 @@ export async function Resumen() {
           <>
             <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-[0.9375rem] tabular-nums">
               <p className="font-medium text-white">
-                {formatearMoneda(ventasHoy.total)} en {ventasHoy.cantidad}{" "}
-                {ventasHoy.cantidad === 1 ? "venta" : "ventas"}
+                {formatearMoneda(ventasHoy.total)} en{" "}
+                {contar({
+                  cantidad: ventasHoy.cantidad,
+                  singular: "venta",
+                  plural: "ventas",
+                })}
               </p>
               <dl className="flex flex-wrap gap-x-6 gap-y-2">
                 {ventasHoy.porFormaPago.map((fila) => (
@@ -117,10 +122,18 @@ export async function Resumen() {
           <>
             <p className="text-[0.9375rem] font-medium tabular-nums text-white">
               <span className="text-yellow-400/75">
-                {stockBajo.cantidad}{" "}
-                {stockBajo.cantidad === 1 ? "producto" : "productos"}
+                {contar({
+                  cantidad: stockBajo.cantidad,
+                  singular: "producto",
+                  plural: "productos",
+                })}
               </span>{" "}
-              {stockBajo.cantidad === 1 ? "activo" : "activos"} con stock bajo
+              {pluralizar({
+                cantidad: stockBajo.cantidad,
+                singular: "activo",
+                plural: "activos",
+              })}{" "}
+              con stock bajo
             </p>
             <ul className="text-[0.9375rem]">
               {stockBajo.lista.map((producto) => (

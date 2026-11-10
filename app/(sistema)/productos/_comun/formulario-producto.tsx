@@ -17,7 +17,7 @@ import {
   esquemaProductoNuevo,
   type ProductoFila,
 } from "@/lib/productos/esquemas";
-import { ETIQUETAS_ESTADO } from "@/lib/productos/etiquetas";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import type { ErroresProducto } from "@/lib/productos/guardar";
 import { VistaPrevia, type Borrador } from "./vista-previa";
 

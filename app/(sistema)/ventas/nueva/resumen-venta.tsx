@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { claseBoton } from "@/components/estilos";
 import { deCentavos, formatearMoneda } from "@/lib/moneda";
+import { contar } from "@/lib/texto";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { Dato, Seccion } from "./seccion-venta";
 
@@ -35,7 +36,11 @@ export function ResumenVenta({
     <Seccion titulo="Resumen" className={className}>
       <dl className="flex flex-col gap-3 text-[0.9375rem]">
         <Dato etiqueta="Productos">
-          {unidades} {unidades === 1 ? "unidad" : "unidades"}
+          {contar({
+            cantidad: unidades,
+            singular: "unidad",
+            plural: "unidades",
+          })}
         </Dato>
         <Dato etiqueta="Subtotal">{formatearMoneda(deCentavos(total))}</Dato>
         <div className="flex items-baseline justify-between gap-6 border-t border-neutral-900 pt-3 font-medium">

@@ -5,3 +5,9 @@ export const ETIQUETAS_FORMA_PAGO = {
   tarjeta: "Tarjeta",
   cuenta_corriente: "Cuenta corriente",
 };
+
+export const COLORES_FORMA_PAGO = {
+  contado: "text-neutral-300",
+  tarjeta: "text-neutral-300",
+  cuenta_corriente: "text-neutral-300",
+};

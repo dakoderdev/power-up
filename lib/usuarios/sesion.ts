@@ -12,6 +12,11 @@ export const ETIQUETAS_ROL: Record<Rol, string> = {
   operator: "Operador",
 };
 
+export const COLORES_ROL: Record<Rol, string> = {
+  admin: "text-neutral-300",
+  operator: "text-neutral-300",
+};
+
 export async function obtenerUsuarioActual() {
   const sesion = await auth.api.getSession({ headers: await headers() });
 

@@ -3,14 +3,19 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import { CLASE_CAMPO, CLASE_FILA, claseBoton } from "@/components/estilos";
+import {
+  CLASE_BADGE,
+  CLASE_CAMPO,
+  CLASE_FILA,
+  claseBoton,
+} from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { formatearMoneda } from "@/lib/moneda";
-import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/productos/etiquetas";
+import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
 import {
   limpiarOrden,
   limpiarVista,
@@ -212,7 +217,7 @@ export async function Listado({
                   </td>
                   <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
                     <span
-                      className={`inline-flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] ${COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]}`}
+                      className={`${CLASE_BADGE} ${COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]}`}
                     >
                       {
                         ETIQUETAS_ESTADO[
