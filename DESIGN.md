@@ -13,7 +13,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 
 ## Foco y hover
 
-- DI-21: el foco por teclado es el contorno verde global de `app/globals.css` (`:focus-visible`). No se agrega otro anillo ni se apaga, salvo en los campos.
+- DI-21: el foco por teclado es el contorno verde global de `app/globals.css` (`:focus-visible`). No se agrega otro anillo ni se apaga, salvo en los campos. Excepción: cuando un radio está oculto (`sr-only`) dentro de una etiqueta con forma de botón, la etiqueta muestra el mismo contorno con `has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`, porque el contorno del radio no se ve.
 - DI-22: los campos de texto son la única excepción: apagan el contorno y marcan el foco con borde `neutral-400` (ya lo hace `CLASE_CAMPO`).
 - DI-23: pasar el mouse aclara el texto o el borde; nunca agrega un fondo. La única excepción es el botón primario, que baja la opacidad del verde. Un enlace de texto que ya está en `white` no puede aclararse: se subraya con `underline-offset-4`.
 - DI-19: en la barra lateral, el ítem activo lleva fondo `neutral-950`, borde `neutral-800`, texto `white` e ícono `verde`, sin cambios al pasar el mouse. Los demás ítems van en `neutral-400` con borde transparente y pasan a `white` al pasar el mouse. "Cerrar sesión" se comporta como un ítem no activo.
@@ -26,12 +26,12 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 
 ## Tamaños y forma
 
-- DI-09: los campos, los botones de formulario y las filas de tabla o listado miden `h-11`; los botones del encabezado de página `h-10` (`h-11` debajo de `lg`); los ítems de menú y los encabezados de columna `h-9`.
+- DI-09: los campos, los botones de formulario y las filas de tabla o listado miden `h-11`; los botones del encabezado de página `h-10` (`h-11` debajo de `lg`); los ítems de menú y los encabezados de columna `h-9`. Excepción: en el detalle de una venta en armado, la fila de producto lleva dos líneas (nombre arriba; código y stock abajo, en `text-sm`) con `py-2`, para dejar a la vista el stock sin quitarle espacio a cantidad, precio y subtotal.
 - DI-10: los íconos miden `size-5`; la única excepción es el botón de menú en celular, que mide `size-6`.
 - DI-11: todo lleva esquinas rectas, sin `rounded`. No se usan sombras, blur ni gradientes. Excepciones: las tapas de producto (DI-32), los botones flotantes en celular (DI-15) y el brillo de los bloques de carga (DI-30).
-- DI-32: las tapas de producto llevan `rounded-xs` y miden `h-8 w-6`. Sin imagen, o si la imagen no carga, se ve el fondo `bg-linear-to-br from-white to-verde to-60%`. Cuando se apilan dos, la de atrás mide `h-7 w-5`, va centrada en alto (`top-0.5`, excepción a DI-12) y corrida `left-3`, con `opacity-50`; la de adelante lleva `shadow-[2px_0_0_0_black]`, sólida y sin desenfoque, para separarlas. En un listado de ventas, la tapa va seguida de `×N` (unidades del primer juego, si son más de una; va a la izquierda, excepción a DI-08), su nombre y, si la venta tiene otros juegos, un badge `+N más` con el estilo de DI-28.
-- DI-33: el botón badge `+N más` (excepción a DI-25) tiene un borde que pasa a `neutral-600` al pasar el mouse. Abre, con mouse, foco o toque, un panel `popover` en `black` con borde `neutral-800`, `p-3` y esquinas rectas, que lista todos los juegos de la venta con tapa, `×N` y nombre. Debajo de `sm`, la tabla de ventas oculta Comprobante, Hora y Forma de pago.
-- DI-34: debajo de `lg`, las secciones apiladas de una página se separan con `border-t border-neutral-900` y `pt-10`, salvo la primera.
+- DI-32: las tapas de producto llevan `rounded-xs` y miden `h-8 w-6`. Sin imagen, o si la imagen no carga, se ve el fondo `bg-linear-to-br from-white to-verde to-60%`. Cuando se apilan dos, la de atrás mide `h-7 w-5`, va centrada en alto (`top-0.5`, excepción a DI-12) y corrida `left-3`, con `opacity-50`; la de adelante lleva `shadow-[2px_0_0_0_black]`, sólida y sin desenfoque, para separarlas. En un listado de ventas, la tapa va seguida de `×N` (unidades del primer juego, si son más de una; va a la izquierda, excepción a DI-08), su nombre y, si la venta tiene otros juegos, un badge `+N más` con el estilo de DI-28. En la grilla de productos, la tapa ocupa todo el ancho de la celda con proporción `aspect-3/4`.
+- DI-33: el botón badge `+N más` (excepción a DI-25) tiene un borde que pasa a `neutral-600` al pasar el mouse. Abre, con mouse, foco o toque, un panel `popover` en `black` con borde `neutral-800`, `p-3` y esquinas rectas, que lista todos los juegos de la venta con tapa, `×N` y nombre.
+- DI-34: debajo de `lg`, las secciones apiladas de una página se separan con `border-t border-neutral-900` y `pt-10`, salvo la primera. Lo mismo vale para secciones apiladas en una misma columna en escritorio.
 - DI-12: el espaciado usa solo `0.5, 2, 3, 4, 6, 8, 10, 12`. `0.5` es solo entre ítems apilados de un menú; `12` es solo el margen lateral del contenido en escritorio. Entre el encabezado de la página y el contenido va `gap-8`.
 - DI-24: el contenido usa margen lateral `px-4` en celular, `sm:px-8` y `lg:px-12`. El único corte de la estructura es `lg`: debajo de `lg`, la barra lateral pasa a menú. `sm` solo se admite para la densidad de las tablas.
 
@@ -44,11 +44,16 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 - DI-26: en la página de alta de venta o de producto, `EncabezadoPagina` recibe `actual` y oculta el botón que lleva a esa misma página.
 - DI-16: antes de crear un componente, buscá uno que ya exista en `components/` o en la sección y usalo. Si hace falta una variante nueva, se pregunta y no se inventa.
 - DI-17: no se usan valores arbitrarios (`[...]`) salvo los que figuran en esta guía.
+- DI-37: un grupo de opciones excluyentes con forma de botón (vista lista/grilla, forma de pago) muestra la elegida con `claseBoton({ variante: "secundario" })` y las demás con la variante de texto y `border border-transparent`, para que el cambio no mueva nada.
+- DI-38: un combobox (campo con búsqueda) usa `CLASE_CAMPO` con un `ChevronDown` de `size-5` en `neutral-400` a la derecha. Su lista se abre debajo, con `mt-2`, en un panel como el de DI-33 (`black`, borde `neutral-800`, `p-3`); las opciones miden `h-11`, van en `neutral-300`, pasan a `white` al pasar el mouse y se separan con `neutral-900`.
+- DI-39: el título de una sección (h2) va en una fila con su acción opcional a la derecha (botón de texto o badge); la fila mide `min-h-10`, así la altura no cambia cuando la acción aparece o desaparece.
 
 ## Tablas y listados
 
 - DI-27: los encabezados de columna van en `text-sm font-medium text-neutral-400`, en una fila `h-9`; las filas, con la altura de DI-09 y separador `neutral-900` abajo, menos la última. Sin fondos alternados ni bordes verticales.
-- DI-28: los badges (activo/inactivo, entrada/salida, forma de pago) son texto `text-[0.8125rem]` con borde `neutral-800`, `px-2`, `h-6`. Solo cambian el color del texto, nunca el fondo; las etiquetas y colores salen de `lib/`.
+- DI-28: los badges (activo/inactivo, entrada/salida, forma de pago y contadores como "N productos") son texto `text-[0.8125rem]` con borde `neutral-800`, `px-2`, `h-6`. Solo cambian el color del texto, nunca el fondo; las etiquetas y colores salen de `lib/`.
+- DI-35: debajo de `sm`, las tablas ocultan sus columnas secundarias: la de ventas oculta Comprobante, Hora y Forma de pago; la de productos, Código y Estado; el detalle de una venta en armado, Precio.
+- DI-36: en un listado agrupado por día, cada grupo lleva un título (el día en `text-[0.9375rem] font-medium` y `white` a la izquierda; cantidad y total en `text-sm text-neutral-400` a la derecha) seguido de su propia fila de encabezados de columna. Entre grupos va `pt-10`.
 
 ## Estados
 
