@@ -75,7 +75,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - PR-21: toda búsqueda del sistema ignora mayúsculas y acentos.
 - PR-22: el listado de productos incluye los inactivos, identificados por su estado.
 - PR-23: "más vendidos" ordena por unidades vendidas en toda la historia, con los productos sin ventas al final; a igual cantidad, por nombre.
-- PR-24: el listado de productos se pagina de a 32; cambiar la búsqueda o el orden vuelve a la primera página.
+- PR-24: el listado de productos se pagina de a 36; cambiar la búsqueda o el orden vuelve a la primera página.
 
 ## Stock
 

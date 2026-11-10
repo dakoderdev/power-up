@@ -5,7 +5,7 @@ import { productos } from "@/lib/db/schema";
 import { ubicarPagina } from "@/lib/paginacion";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
-const PRODUCTOS_POR_PAGINA = 32;
+const PRODUCTOS_POR_PAGINA = 36;
 
 export type ParametrosListado = {
   q?: string | string[];
