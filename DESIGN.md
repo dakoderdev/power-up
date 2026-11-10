@@ -54,6 +54,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 - DI-27: los encabezados de columna van en `text-sm font-medium text-neutral-400`, en una fila `h-9`; las filas, con la altura de DI-09 y separador `neutral-900` abajo, menos la última. Sin fondos alternados ni bordes verticales.
 - DI-28: los badges (activo/inactivo, entrada/salida, forma de pago y contadores como "N productos") son texto `text-[0.8125rem]` con borde `neutral-800`, `px-2`, `h-6`. Solo cambian el color del texto, nunca el fondo; las etiquetas y colores salen de `lib/`.
 - DI-35: debajo de `sm`, las tablas ocultan sus columnas secundarias: la de ventas oculta Comprobante, Hora y Forma de pago; la de productos, Código y Estado; el detalle de una venta en armado, Precio.
+- DI-41: cuando una fila o una tarjeta de grilla abre su detalle, toda la fila o tarjeta es clickeable. En la tarjeta, el enlace la envuelve entera; en la fila, el enlace es el nombre y cubre la fila con `after:absolute after:inset-0` sobre el `tr` con `relative`, porque una fila no puede ir dentro de un enlace. Al pasar el mouse, el texto secundario pasa a `white` y el nombre se subraya con `underline-offset-4 decoration-neutral-600`; nunca se agrega fondo (DI-23).
 - DI-36: en un listado agrupado por día, cada grupo lleva un título (el día en `text-[0.9375rem] font-medium` y `white` a la izquierda; cantidad y total en `text-sm text-neutral-400` a la derecha) seguido de su propia fila de encabezados de columna. Entre grupos va `pt-10`.
 
 ## Estados

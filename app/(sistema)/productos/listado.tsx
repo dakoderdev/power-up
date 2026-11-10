@@ -155,18 +155,20 @@ export async function Listado({
       ) : vista === "grilla" ? (
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           {lista.map((producto) => (
-            <li key={producto.id} className="flex flex-col gap-2">
-              <Tapa url={producto.imagenUrl} className="aspect-3/4 w-full" />
+            <li key={producto.id}>
               <Link
                 href={`/productos/${producto.id}`}
-                className="line-clamp-2 text-[0.9375rem] font-medium underline-offset-4 hover:underline"
+                className="group flex flex-col gap-2"
               >
-                {producto.nombre}
+                <Tapa url={producto.imagenUrl} className="aspect-3/4 w-full" />
+                <p className="line-clamp-2 text-[0.9375rem] font-medium underline-offset-4 decoration-neutral-600 group-hover:underline">
+                  {producto.nombre}
+                </p>
+                <p className="text-sm tabular-nums text-neutral-300 transition-colors group-hover:text-white">
+                  {formatearMoneda(producto.precio)} · {producto.stock} unidades
+                  {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
+                </p>
               </Link>
-              <p className="text-sm tabular-nums text-neutral-300">
-                {formatearMoneda(producto.precio)} · {producto.stock} unidades
-                {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
-              </p>
             </li>
           ))}
         </ul>
@@ -188,20 +190,23 @@ export async function Listado({
             </thead>
             <tbody>
               {lista.map((producto) => (
-                <tr key={producto.id} className={CLASE_FILA}>
+                <tr
+                  key={producto.id}
+                  className={`${CLASE_FILA} group relative`}
+                >
                   <td className="pr-3 sm:pr-6">
                     <div className="flex items-center gap-3">
                       <Tapa url={producto.imagenUrl} className="h-8 w-6" />
                       <Link
                         href={`/productos/${producto.id}`}
-                        className="truncate underline-offset-4 hover:underline"
+                        className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
                       >
                         {producto.nombre}
                       </Link>
                     </div>
                   </td>
                   <td
-                    className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                    className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
                   >
                     {producto.codigo}
                   </td>
@@ -216,7 +221,7 @@ export async function Listado({
                       }
                     </span>
                   </td>
-                  <td className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
+                  <td className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
                     {producto.stock}
                   </td>
                   <td className="text-right tabular-nums">
