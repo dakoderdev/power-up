@@ -200,6 +200,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-08: la imagen del producto se guarda como dirección externa y no como archivo subido, para no sumar un servicio de almacenamiento a los planes gratuitos.
 - 2026-11-08: el umbral de stock bajo es un valor fijo de 3 unidades y no un mínimo por producto, para no sumar un campo ni una migración.
 - 2026-11-08: el seed incluye clientes, productos y ventas de demostración, porque no es un proyecto real y sirve para ver las pantallas con contenido.
+- 2026-11-10: el seed genera stock, clientes, ventas, pagos y ajustes manuales de stock al azar en cada corrida, con rangos ajustables en su configuración, para probar las pantallas con datos distintos; el catálogo de juegos queda fijo porque sus tapas están asociadas a mano. Los motivos de los ajustes son cortos y fijos, sin resolver ST-15.
+- 2026-11-10: el seed acepta `--reiniciar`, que borra físicamente los datos de demostración (no los usuarios) para volver a generarlos; es una herramienta de desarrollo y no contradice la baja lógica de la app, que sigue sin borrar productos, usuarios ni clientes.
 - 2026-11-08: el sistema usa siempre modo oscuro, sin versión clara ni selector de tema: una sola paleta (negro, escala neutral y verde de marca) mantiene la identidad y simplifica el diseño.
 - 2026-11-08: el rol es un enum en la base y no texto libre, para que solo existan los dos roles de US-07.
 - 2026-11-08: el proxy valida la sesión completa contra la base y no solo la cookie, para que ni un usuario inactivo ni un rol incorrecto vean la pantalla un instante.

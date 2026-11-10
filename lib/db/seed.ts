@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import { auth } from "../auth";
+import { formatearHora } from "../fechas";
 import { aCentavos, deCentavos } from "../moneda";
 import { MOTIVO_STOCK_INICIAL } from "../stock/etiquetas";
 import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
@@ -18,90 +19,68 @@ import {
 
 const LARGO_MINIMO_CLAVE = 8;
 
-const CLIENTES: (typeof clientes.$inferInsert)[] = [
-  { nombre: "Martina Gómez", documento: "30111222", telefono: "1155550101" },
-  {
-    nombre: "Lucas Fernández",
-    documento: "28444555",
-    email: "lucas@ejemplo.com",
-  },
-  { nombre: "Sofía Ramírez", documento: "35666777", telefono: "1155550102" },
-  {
-    nombre: "Tomás Herrera",
-    documento: "33222111",
-    email: "tomas@ejemplo.com",
-  },
+const CONFIGURACION = {
+  clientes: { min: 4, max: 8 },
+  ventasHoy: { min: 8, max: 18 },
+  ventasDiasAnteriores: { min: 4, max: 10 },
+  diasAnteriores: 5,
+  productosPorVenta: { min: 1, max: 3 },
+  unidadesPorProducto: { min: 1, max: 2 },
+  stockInicial: { min: 4, max: 40 },
+  productosSinStock: 1,
+  productosStockBajo: 3,
+  pesosFormaPago: { contado: 3, tarjeta: 3, cuenta_corriente: 2 },
+  probabilidadConsumidorFinal: 0.5,
+  probabilidadPago: 0.5,
+  ajustesManuales: { min: 3, max: 8 },
+  unidadesPorAjuste: { min: 1, max: 5 },
+  probabilidadSalida: 0.5,
+};
+
+const MOTIVOS_AJUSTE = {
+  entrada: ["Reposición de proveedor", "Conteo de inventario"],
+  salida: ["Rotura", "Conteo de inventario", "Unidad de exhibición"],
+};
+
+const FLAG_REINICIAR = "--reiniciar";
+
+const NOMBRES = [
+  "Martina",
+  "Lucas",
+  "Sofía",
+  "Tomás",
+  "Valentina",
+  "Mateo",
+  "Camila",
+  "Joaquín",
+  "Julieta",
+  "Benjamín",
+  "Agustina",
+  "Facundo",
 ];
 
-const VENTAS: {
-  documento: string | null;
-  formaPago: (typeof ventas.$inferInsert)["formaPago"];
-  haceMinutos: number;
-  items: { codigo: string; cantidad: number }[];
-}[] = [
-  {
-    documento: null,
-    formaPago: "contado",
-    haceMinutos: 45,
-    items: [
-      { codigo: "TOMO-LTD", cantidad: 1 },
-      { codigo: "PEAK", cantidad: 1 },
-    ],
-  },
-  {
-    documento: "30111222",
-    formaPago: "cuenta_corriente",
-    haceMinutos: 38,
-    items: [
-      { codigo: "SMO", cantidad: 1 },
-      { codigo: "SPLA-3", cantidad: 1 },
-    ],
-  },
-  {
-    documento: null,
-    formaPago: "tarjeta",
-    haceMinutos: 32,
-    items: [
-      { codigo: "PORTAL-2", cantidad: 1 },
-      { codigo: "GTA-V", cantidad: 1 },
-    ],
-  },
-  {
-    documento: "28444555",
-    formaPago: "cuenta_corriente",
-    haceMinutos: 25,
-    items: [{ codigo: "SPLA-2", cantidad: 1 }],
-  },
-  {
-    documento: "35666777",
-    formaPago: "cuenta_corriente",
-    haceMinutos: 18,
-    items: [{ codigo: "CUPHEAD", cantidad: 2 }],
-  },
-  {
-    documento: "33222111",
-    formaPago: "tarjeta",
-    haceMinutos: 12,
-    items: [
-      { codigo: "GTA-IV", cantidad: 1 },
-      { codigo: "SIMS-3", cantidad: 1 },
-    ],
-  },
-  {
-    documento: null,
-    formaPago: "contado",
-    haceMinutos: 7,
-    items: [{ codigo: "JD-2014", cantidad: 2 }],
-  },
-  {
-    documento: "33222111",
-    formaPago: "tarjeta",
-    haceMinutos: 3,
-    items: [{ codigo: "ZELDA-TOTK", cantidad: 1 }],
-  },
+const APELLIDOS = [
+  "Gómez",
+  "Fernández",
+  "Ramírez",
+  "Herrera",
+  "López",
+  "Díaz",
+  "Martínez",
+  "Romero",
+  "Sosa",
+  "Álvarez",
+  "Torres",
+  "Benítez",
 ];
 
-const PAGO_PARCIAL = { documento: "30111222", importe: "50000.00" };
+const STOCK_BAJO = { min: 1, max: 3 };
+
+const MINUTOS_POR_DIA = 24 * 60;
+
+type Rango = { min: number; max: number };
+
+type FormaPago = keyof typeof CONFIGURACION.pesosFormaPago;
 
 const BASE_TAPAS = "https://images.igdb.com/igdb/image/upload/t_cover_big";
 
@@ -138,98 +117,246 @@ const JUEGOS: (typeof productos.$inferInsert)[] = [
     codigo: "GTA-V",
     nombre: "Grand Theft Auto V",
     precio: "29999.00",
-    stock: 25,
   },
-  { codigo: "SIMS-4", nombre: "Los Sims 4", precio: "24999.00", stock: 30 },
+  { codigo: "SIMS-4", nombre: "Los Sims 4", precio: "24999.00" },
   {
     codigo: "COD-MW3",
     nombre: "Call of Duty: Modern Warfare III",
     precio: "69999.00",
-    stock: 20,
   },
-  { codigo: "FIFA-23", nombre: "FIFA 23", precio: "39999.00", stock: 40 },
+  { codigo: "FIFA-23", nombre: "FIFA 23", precio: "39999.00" },
   {
     codigo: "SMB-WONDER",
     nombre: "Super Mario Bros. Wonder",
     precio: "64999.00",
-    stock: 18,
   },
   {
     codigo: "POKE-ESC",
     nombre: "Pokémon Escarlata",
     precio: "64999.00",
-    stock: 22,
   },
   {
     codigo: "ZELDA-TOTK",
     nombre: "The Legend of Zelda: Tears of the Kingdom",
     precio: "69999.00",
-    stock: 15,
   },
   {
     codigo: "AC-VAL",
     nombre: "Assassin's Creed Valhalla",
     precio: "34999.00",
-    stock: 12,
   },
   {
     codigo: "HALO-INF",
     nombre: "Halo Infinite",
     precio: "39999.00",
-    stock: 10,
   },
-  { codigo: "RE-4", nombre: "Resident Evil 4", precio: "49999.00", stock: 14 },
+  { codigo: "RE-4", nombre: "Resident Evil 4", precio: "49999.00" },
   {
     codigo: "SONIC-SS",
     nombre: "Sonic Superstars",
     precio: "44999.00",
-    stock: 0,
   },
   {
     codigo: "METROID-D",
     nombre: "Metroid Dread",
     precio: "59999.00",
-    stock: 0,
   },
-  { codigo: "SIMS-3", nombre: "Los Sims 3", precio: "19999.00", stock: 16 },
+  { codigo: "SIMS-3", nombre: "Los Sims 3", precio: "19999.00" },
   {
     codigo: "TOMO-LTD",
     nombre: "Tomodachi Life: Living the Dream",
     precio: "69999.00",
-    stock: 12,
   },
-  { codigo: "SPLA-3", nombre: "Splatoon 3", precio: "64999.00", stock: 20 },
-  { codigo: "SPLA-2", nombre: "Splatoon 2", precio: "54999.00", stock: 9 },
-  { codigo: "PORTAL-2", nombre: "Portal 2", precio: "14999.00", stock: 8 },
-  { codigo: "PEAK", nombre: "Peak", precio: "9999.00", stock: 25 },
+  { codigo: "SPLA-3", nombre: "Splatoon 3", precio: "64999.00" },
+  { codigo: "SPLA-2", nombre: "Splatoon 2", precio: "54999.00" },
+  { codigo: "PORTAL-2", nombre: "Portal 2", precio: "14999.00" },
+  { codigo: "PEAK", nombre: "Peak", precio: "9999.00" },
   {
     codigo: "SMO",
     nombre: "Super Mario Odyssey",
     precio: "59999.00",
-    stock: 14,
   },
   {
     codigo: "SMS",
     nombre: "Super Mario Sunshine",
     precio: "44999.00",
-    stock: 2,
   },
   {
     codigo: "GTA-IV",
     nombre: "Grand Theft Auto IV",
     precio: "19999.00",
-    stock: 11,
   },
-  { codigo: "DELTARUNE", nombre: "Deltarune", precio: "24999.00", stock: 3 },
+  { codigo: "DELTARUNE", nombre: "Deltarune", precio: "24999.00" },
   {
     codigo: "JD-2014",
     nombre: "Just Dance 2014",
     precio: "12999.00",
-    stock: 6,
   },
-  { codigo: "JD-4", nombre: "Just Dance 4", precio: "9999.00", stock: 1 },
-  { codigo: "CUPHEAD", nombre: "Cuphead", precio: "19999.00", stock: 17 },
+  { codigo: "JD-4", nombre: "Just Dance 4", precio: "9999.00" },
+  { codigo: "CUPHEAD", nombre: "Cuphead", precio: "19999.00" },
 ];
+
+function entero({ min, max }: Rango) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function elegir<T>(lista: T[]) {
+  return lista[Math.floor(Math.random() * lista.length)];
+}
+
+function mezclar<T>(lista: T[]) {
+  const copia = [...lista];
+
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+
+  return copia;
+}
+
+function elegirFormaPago() {
+  const pesos = Object.entries(CONFIGURACION.pesosFormaPago) as [
+    FormaPago,
+    number,
+  ][];
+  const total = pesos.reduce((suma, [, peso]) => suma + peso, 0);
+  let tirada = Math.random() * total;
+
+  for (const [formaPago, peso] of pesos) {
+    tirada -= peso;
+
+    if (tirada < 0) {
+      return formaPago;
+    }
+  }
+
+  return pesos[pesos.length - 1][0];
+}
+
+function sinAcentos(texto: string) {
+  return texto.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+function generarClientes() {
+  const cantidad = entero(CONFIGURACION.clientes);
+  const documentos = new Set<string>();
+  const nombres = new Set<string>();
+  const generados: (typeof clientes.$inferInsert)[] = [];
+
+  while (generados.length < cantidad) {
+    const nombre = `${elegir(NOMBRES)} ${elegir(APELLIDOS)}`;
+    const documento = String(entero({ min: 20_000_000, max: 45_999_999 }));
+
+    if (nombres.has(nombre) || documentos.has(documento)) {
+      continue;
+    }
+
+    nombres.add(nombre);
+    documentos.add(documento);
+
+    const contacto = entero({ min: 0, max: 2 });
+    const usuario = sinAcentos(nombre).toLowerCase().replace(" ", ".");
+
+    generados.push({
+      nombre,
+      documento,
+      telefono:
+        contacto === 1
+          ? null
+          : `11${entero({ min: 10_000_000, max: 99_999_999 })}`,
+      email: contacto === 0 ? null : `${usuario}@ejemplo.com`,
+    });
+  }
+
+  return generados;
+}
+
+function sortearStock() {
+  const codigos = mezclar(JUEGOS.map((juego) => juego.codigo));
+  const sinStock = CONFIGURACION.productosSinStock;
+  const bajo = sinStock + CONFIGURACION.productosStockBajo;
+
+  return new Map(
+    codigos.map((codigo, indice) => [
+      codigo,
+      indice < sinStock
+        ? 0
+        : indice < bajo
+          ? entero(STOCK_BAJO)
+          : entero(CONFIGURACION.stockInicial),
+    ]),
+  );
+}
+
+function haceMinutos(minutos: number) {
+  return new Date(Date.now() - minutos * 60_000);
+}
+
+function minutosDesdeMedianoche() {
+  const [horas, minutos] = formatearHora(new Date()).split(":").map(Number);
+
+  return Math.max(1, horas * 60 + minutos);
+}
+
+function sortearMinutos({
+  cantidad,
+  rango,
+}: {
+  cantidad: number;
+  rango: Rango;
+}) {
+  return Array.from({ length: cantidad }, () => entero(rango));
+}
+
+function sortearEventos() {
+  const hoy = { min: 1, max: minutosDesdeMedianoche() };
+  const anteriores = {
+    min: hoy.max + 1,
+    max: hoy.max + CONFIGURACION.diasAnteriores * MINUTOS_POR_DIA,
+  };
+  const ventasEnMinutos = [
+    ...sortearMinutos({
+      cantidad: entero(CONFIGURACION.ventasHoy),
+      rango: hoy,
+    }),
+    ...sortearMinutos({
+      cantidad: entero(CONFIGURACION.ventasDiasAnteriores),
+      rango: anteriores,
+    }),
+  ];
+  const ajustes = sortearMinutos({
+    cantidad: entero(CONFIGURACION.ajustesManuales),
+    rango: { min: hoy.min, max: anteriores.max },
+  });
+
+  return [
+    ...ventasEnMinutos.map((minutos) => ({ minutos, esAjuste: false })),
+    ...ajustes.map((minutos) => ({ minutos, esAjuste: true })),
+  ]
+    .sort((a, b) => b.minutos - a.minutos)
+    .map((evento) => ({
+      fecha: haceMinutos(evento.minutos),
+      esAjuste: evento.esAjuste,
+    }));
+}
+
+async function reiniciarDemostracion() {
+  if (!process.argv.includes(FLAG_REINICIAR)) {
+    return;
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(`${FLAG_REINICIAR} no se puede usar en Vercel.`);
+  }
+
+  const base = new URL(leerVariable("DATABASE_URL")).host;
+  console.log(`Borrando los datos de demostración de ${base}…`);
+
+  await db.execute(
+    sql`truncate table ${movimientosCuenta}, ${movimientosStock}, ${itemsVenta}, ${ventas}, ${clientes}, ${productos} restart identity`,
+  );
+}
 
 function leerVariable(nombre: string) {
   const valor = process.env[nombre]?.trim();
@@ -290,10 +417,16 @@ async function crearAdministrador() {
 }
 
 async function crearProductos(usuarioId: string) {
+  const stock = sortearStock();
   const creados = await db.transaction(async (tx) => {
     const insertados = await tx
       .insert(productos)
-      .values(JUEGOS)
+      .values(
+        JUEGOS.map((juego) => ({
+          ...juego,
+          stock: stock.get(juego.codigo),
+        })),
+      )
       .onConflictDoNothing({ target: productos.codigo })
       .returning({ id: productos.id, stock: productos.stock });
 
@@ -308,6 +441,9 @@ async function crearProductos(usuarioId: string) {
           cantidad: producto.stock,
           motivo: MOTIVO_STOCK_INICIAL,
           usuarioId,
+          creadoEn: haceMinutos(
+            (CONFIGURACION.diasAnteriores + 1) * MINUTOS_POR_DIA,
+          ),
         })),
       );
     }
@@ -326,22 +462,24 @@ async function crearVentas(usuarioId: string) {
     return;
   }
 
-  await db.transaction(async (tx) => {
+  const generados = generarClientes();
+
+  const resumen = await db.transaction(async (tx) => {
     await tx
       .insert(clientes)
-      .values(CLIENTES)
+      .values(generados)
       .onConflictDoNothing({ target: clientes.documento });
 
-    const clientesGuardados = await tx
+    const registrados = await tx
       .select()
       .from(clientes)
       .where(
         inArray(
           clientes.documento,
-          CLIENTES.map((cliente) => cliente.documento),
+          generados.map((cliente) => cliente.documento),
         ),
       );
-    const productosGuardados = await tx
+    const disponibles = await tx
       .select()
       .from(productos)
       .where(
@@ -350,38 +488,96 @@ async function crearVentas(usuarioId: string) {
           JUEGOS.map((juego) => juego.codigo),
         ),
       );
-    const clientePorDocumento = new Map(
-      clientesGuardados.map((cliente) => [cliente.documento, cliente]),
+    const restante = new Map(
+      disponibles.map((producto) => [producto.id, producto.stock]),
     );
-    const productoPorCodigo = new Map(
-      productosGuardados.map((producto) => [producto.codigo, producto]),
-    );
+    const saldos = new Map<number, number>();
+    let creadas = 0;
+    let ajustes = 0;
 
-    for (const venta of VENTAS) {
-      const cliente = venta.documento
-        ? clientePorDocumento.get(venta.documento)!
-        : null;
-      const lineas = venta.items.map((item) => {
-        const producto = productoPorCodigo.get(item.codigo)!;
-
-        return {
-          producto,
-          cantidad: item.cantidad,
-          centavos: aCentavos(producto.precio) * item.cantidad,
-        };
-      });
-      const total = deCentavos(
-        lineas.reduce((suma, linea) => suma + linea.centavos, 0),
+    for (const { fecha, esAjuste } of sortearEventos()) {
+      const conStock = disponibles.filter(
+        (producto) => restante.get(producto.id)! > 0,
       );
+
+      if (esAjuste) {
+        const reponibles = disponibles.filter(
+          (producto) => restante.get(producto.id)! > STOCK_BAJO.max,
+        );
+        const tipo =
+          conStock.length > 0 &&
+          (reponibles.length === 0 ||
+            Math.random() < CONFIGURACION.probabilidadSalida)
+            ? "salida"
+            : "entrada";
+        const candidatos = tipo === "salida" ? conStock : reponibles;
+
+        if (candidatos.length === 0) {
+          continue;
+        }
+
+        const producto = elegir(candidatos);
+        const actual = restante.get(producto.id)!;
+        const sorteadas = entero(CONFIGURACION.unidadesPorAjuste);
+        const unidades =
+          tipo === "salida" ? Math.min(sorteadas, actual) : sorteadas;
+        const diferencia = tipo === "salida" ? -unidades : unidades;
+
+        await tx.insert(movimientosStock).values({
+          productoId: producto.id,
+          tipo,
+          origen: "manual",
+          cantidad: unidades,
+          motivo: elegir(MOTIVOS_AJUSTE[tipo]),
+          usuarioId,
+          creadoEn: fecha,
+        });
+        await tx
+          .update(productos)
+          .set({ stock: sql`${productos.stock} + ${diferencia}` })
+          .where(eq(productos.id, producto.id));
+        restante.set(producto.id, actual + diferencia);
+        ajustes++;
+        continue;
+      }
+
+      if (conStock.length === 0) {
+        continue;
+      }
+
+      const formaPago = elegirFormaPago();
+      const cliente =
+        formaPago === "cuenta_corriente" ||
+        Math.random() >= CONFIGURACION.probabilidadConsumidorFinal
+          ? elegir(registrados)
+          : null;
+      const lineas = mezclar(conStock)
+        .slice(0, entero(CONFIGURACION.productosPorVenta))
+        .map((producto) => {
+          const disponible = restante.get(producto.id)!;
+          const unidades = Math.min(
+            entero(CONFIGURACION.unidadesPorProducto),
+            disponible,
+          );
+          restante.set(producto.id, disponible - unidades);
+
+          return {
+            producto,
+            cantidad: unidades,
+            centavos: aCentavos(producto.precio) * unidades,
+          };
+        });
+      const centavos = lineas.reduce((suma, linea) => suma + linea.centavos, 0);
+      const total = deCentavos(centavos);
 
       const [{ ventaId }] = await tx
         .insert(ventas)
         .values({
-          creadoEn: new Date(Date.now() - venta.haceMinutos * 60_000),
+          creadoEn: fecha,
           clienteId: cliente?.id ?? null,
           clienteNombre: cliente?.nombre ?? CONSUMIDOR_FINAL,
           clienteDocumento: cliente?.documento ?? null,
-          formaPago: venta.formaPago,
+          formaPago,
           total,
           usuarioId,
         })
@@ -406,6 +602,7 @@ async function crearVentas(usuarioId: string) {
           cantidad: linea.cantidad,
           ventaId,
           usuarioId,
+          creadoEn: fecha,
         })),
       );
 
@@ -416,27 +613,53 @@ async function crearVentas(usuarioId: string) {
           .where(eq(productos.id, linea.producto.id));
       }
 
-      if (venta.formaPago === "cuenta_corriente" && cliente) {
+      if (formaPago === "cuenta_corriente" && cliente) {
         await tx.insert(movimientosCuenta).values({
           clienteId: cliente.id,
           tipo: "venta",
           importe: total,
           ventaId,
           usuarioId,
+          fecha,
         });
+        saldos.set(cliente.id, (saldos.get(cliente.id) ?? 0) + centavos);
       }
+
+      creadas++;
     }
 
-    await tx.insert(movimientosCuenta).values({
-      clienteId: clientePorDocumento.get(PAGO_PARCIAL.documento)!.id,
-      tipo: "pago",
-      importe: PAGO_PARCIAL.importe,
-      observacion: "Pago parcial de prueba",
-      usuarioId,
+    const pagos = [...saldos].flatMap(([clienteId, saldo]) => {
+      const porcentaje = entero({ min: 20, max: 80 });
+      const centavos =
+        Math.floor((saldo * porcentaje) / 100 / 100_000) * 100_000;
+
+      return Math.random() < CONFIGURACION.probabilidadPago && centavos > 0
+        ? [{ clienteId, importe: deCentavos(centavos) }]
+        : [];
     });
+
+    if (pagos.length > 0) {
+      await tx.insert(movimientosCuenta).values(
+        pagos.map((pago) => ({
+          ...pago,
+          tipo: "pago" as const,
+          observacion: "Pago parcial de prueba",
+          usuarioId,
+        })),
+      );
+    }
+
+    return {
+      clientes: registrados.length,
+      ventas: creadas,
+      pagos: pagos.length,
+      ajustes,
+    };
   });
 
-  console.log(`Ventas creadas: ${VENTAS.length}.`);
+  console.log(
+    `Clientes: ${resumen.clientes}. Ventas: ${resumen.ventas}. Pagos: ${resumen.pagos}. Ajustes de stock: ${resumen.ajustes}.`,
+  );
 }
 
 async function asignarTapas() {
@@ -454,6 +677,7 @@ async function asignarTapas() {
 
 async function sembrar() {
   const usuarioId = await crearAdministrador();
+  await reiniciarDemostracion();
   await crearProductos(usuarioId);
   await asignarTapas();
   await crearVentas(usuarioId);

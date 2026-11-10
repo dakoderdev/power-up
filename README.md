@@ -77,9 +77,10 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 `npm run db:seed` hace lo siguiente:
 
 - Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
-- Crea 25 productos de demostración, con su movimiento de stock inicial.
-- Crea 4 clientes, 8 ventas (contado, tarjeta y cuenta corriente) y un pago parcial de prueba.
+- Crea 25 productos de demostración con stock al azar (siempre algunos sin stock y otros con stock bajo), con su movimiento de stock inicial.
+- Crea clientes, ventas (la mayoría de hoy, el resto de los días anteriores) (contado, tarjeta y cuenta corriente), pagos parciales y ajustes manuales de stock, todo al azar en cada corrida. Las cantidades y rangos se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
 - Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
+- `npm run db:seed -- --reiniciar` borra productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
 
 ## Roles
 
