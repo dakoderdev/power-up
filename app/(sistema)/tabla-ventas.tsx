@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
@@ -9,7 +10,12 @@ import { MasJuegos } from "./mas-juegos";
 type Resumen = Awaited<ReturnType<typeof obtenerResumenInicio>>;
 type VentaFila = Resumen["ventasHoy"]["ultimas"][number];
 
-export const CLASE_FILA = "h-11 border-b border-neutral-900 last:border-b-0";
+export type GrupoVentas = {
+  clave: string;
+  titulo?: string;
+  detalle?: string;
+  ventas: VentaFila[];
+};
 
 const SOLO_ESCRITORIO = "hidden sm:table-cell";
 
@@ -22,58 +28,93 @@ const COLUMNAS = [
   { titulo: "Total", clase: "w-px text-right" },
 ];
 
-export function TablaVentas({ ventas }: { ventas: VentaFila[] }) {
+export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
+  const agrupada = grupos.some((grupo) => grupo.titulo);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-        <thead>
-          <tr className="border-b border-neutral-900">
-            {COLUMNAS.map((columna) => (
-              <th
-                key={columna.titulo}
-                scope="col"
-                className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-              >
-                {columna.titulo}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {ventas.map((venta) => (
-            <tr key={venta.id} className={CLASE_FILA}>
-              <td className="pr-3 sm:pr-6">
-                <JuegosVenta items={venta.items} />
-              </td>
-              <td className={`pr-6 tabular-nums ${SOLO_ESCRITORIO}`}>
-                <Link
-                  href={`/ventas/${venta.id}`}
-                  className="text-neutral-300 transition-colors hover:text-white"
-                >
-                  N.º {venta.numero}
-                </Link>
-              </td>
-              <td
-                className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-              >
-                {formatearHora(venta.creadoEn)}
-              </td>
-              <td className="max-w-20 truncate pr-3 text-white sm:max-w-64 sm:pr-6">
-                {venta.clienteNombre}
-              </td>
-              <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                <span className="inline-flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] text-neutral-300">
-                  {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
-                </span>
-              </td>
-              <td className="text-right tabular-nums text-white">
-                {formatearMoneda(venta.total)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+        {agrupada ? null : (
+          <thead>
+            <FilaColumnas />
+          </thead>
+        )}
+        {grupos.map((grupo, indice) => {
+          const primero = indice === 0;
+
+          return (
+            <tbody key={grupo.clave}>
+              {grupo.titulo ? (
+                <tr>
+                  <th
+                    scope="colgroup"
+                    colSpan={COLUMNAS.length}
+                    className={`text-left font-normal ${primero ? "pb-2" : "pb-2 pt-10"}`}
+                  >
+                    <div className="flex items-baseline justify-between gap-6">
+                      <span className="text-[0.9375rem] font-medium text-white">
+                        {grupo.titulo}
+                      </span>
+                      <span className="text-sm tabular-nums text-neutral-400">
+                        {grupo.detalle}
+                      </span>
+                    </div>
+                  </th>
+                </tr>
+              ) : null}
+              {grupo.titulo ? <FilaColumnas /> : null}
+              {grupo.ventas.map((venta) => (
+                <tr key={venta.id} className={CLASE_FILA}>
+                  <td className="pr-3 sm:pr-6">
+                    <JuegosVenta items={venta.items} />
+                  </td>
+                  <td className={`pr-6 tabular-nums ${SOLO_ESCRITORIO}`}>
+                    <Link
+                      href={`/ventas/${venta.id}`}
+                      className="text-neutral-300 transition-colors hover:text-white"
+                    >
+                      N.º {venta.numero}
+                    </Link>
+                  </td>
+                  <td
+                    className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  >
+                    {formatearHora(venta.creadoEn)}
+                  </td>
+                  <td className="max-w-20 truncate pr-3 text-white sm:max-w-64 sm:pr-6">
+                    {venta.clienteNombre}
+                  </td>
+                  <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                    <span className="inline-flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] text-neutral-300">
+                      {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
+                    </span>
+                  </td>
+                  <td className="text-right tabular-nums text-white">
+                    {formatearMoneda(venta.total)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          );
+        })}
       </table>
     </div>
+  );
+}
+
+function FilaColumnas() {
+  return (
+    <tr className="border-b border-neutral-900">
+      {COLUMNAS.map((columna) => (
+        <th
+          key={columna.titulo}
+          scope="col"
+          className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
+        >
+          {columna.titulo}
+        </th>
+      ))}
+    </tr>
   );
 }
 

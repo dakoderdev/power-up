@@ -49,6 +49,8 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 
 - VE-30: hay un listado de ventas, de la más reciente a la más antigua.
 - VE-31: cada comprobante tiene una vista de detalle.
+- VE-35: el listado de ventas se agrupa por día (hora de Argentina), y cada día muestra su cantidad de ventas y su total.
+- VE-36: el listado de ventas se pagina de a 30.
 
 ## Productos
 
