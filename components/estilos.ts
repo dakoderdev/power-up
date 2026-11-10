@@ -7,6 +7,8 @@ const VARIANTES_BOTON = {
   texto: "text-neutral-400 hover:text-white",
 };
 
+export const CLASE_FILA = "h-11 border-b border-neutral-900 last:border-b-0";
+
 export const CLASE_CAMPO =
   "h-11 w-full border bg-neutral-900 px-3 text-[0.9375rem] text-white transition-colors placeholder:text-neutral-500 hover:border-neutral-600 focus:border-neutral-400 focus:outline-none";
 

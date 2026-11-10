@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { limpiarBusqueda } from "@/lib/db/busqueda";
+import { buscarProductosActivos } from "@/lib/productos/listado";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { confirmarVenta } from "./confirmar";
 import { esquemaVentaEntrada } from "./esquemas";
@@ -17,11 +19,22 @@ export async function confirmarVentaAccion(datos: unknown) {
     };
   }
 
-  const venta = await confirmarVenta({ entrada: res.data, usuarioId: usuario.id });
+  const venta = await confirmarVenta({
+    entrada: res.data,
+    usuarioId: usuario.id,
+  });
 
   if (venta.confirmada) {
     revalidatePath("/ventas");
   }
 
   return venta;
+}
+
+export async function buscarProductosAccion(busqueda: unknown) {
+  await obtenerUsuarioActual();
+
+  return buscarProductosActivos(
+    limpiarBusqueda(typeof busqueda === "string" ? busqueda : ""),
+  );
 }
