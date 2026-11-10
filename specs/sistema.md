@@ -69,7 +69,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - PR-13: un producto sin imagen muestra un bloque de color en su lugar.
 - PR-14: la imagen se muestra en el listado de productos, al elegir productos para una venta y en los listados de Inicio (ventas de hoy y productos con stock bajo).
 - PR-15: la imagen no forma parte del comprobante; los listados de ventas la toman del producto actual, sin copia.
-- PR-18: el listado de productos se puede ordenar por más recientes, más vendidos, nombre o precio (ascendente y descendente); por defecto, por nombre.
+- PR-18: el listado de productos se puede ordenar por más recientes, más vendidos, nombre, precio o stock (precio y stock, ascendente y descendente); por defecto, por nombre.
 - PR-19: el listado de productos se puede ver como lista o como grilla de tapas.
 - PR-20: el orden y la vista elegidos se recuerdan en el navegador.
 - PR-21: toda búsqueda del sistema ignora mayúsculas y acentos.

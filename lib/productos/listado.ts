@@ -32,6 +32,8 @@ const CRITERIOS = {
   nombre: [asc(productos.nombre), asc(productos.codigo)],
   precio_menor: [asc(productos.precio), asc(productos.nombre)],
   precio_mayor: [desc(productos.precio), asc(productos.nombre)],
+  stock_mayor: [desc(productos.stock), asc(productos.nombre)],
+  stock_menor: [asc(productos.stock), asc(productos.nombre)],
 };
 
 export function limpiarOrden(texto: string | string[] | undefined) {

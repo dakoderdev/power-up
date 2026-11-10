@@ -4,6 +4,8 @@ export const ORDENES = {
   nombre: "Nombre (A-Z)",
   precio_menor: "Precio: menor a mayor",
   precio_mayor: "Precio: mayor a menor",
+  stock_mayor: "Stock: mayor a menor",
+  stock_menor: "Stock: menor a mayor",
 };
 
 export type Orden = keyof typeof ORDENES;
