@@ -152,6 +152,10 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-18: las credenciales de evaluación se documentan en el README.
 - US-19: el administrador puede cambiar la contraseña de otro usuario.
 - US-21: la contraseña tiene al menos 8 caracteres.
+- US-26: el listado de usuarios muestra primero los activos, ordenados por nombre.
+- US-27: el administrador puede cambiar el rol de otro usuario.
+- US-28: no se puede pasar a operador ni desactivar al último administrador activo (US-16).
+- US-29: un administrador no puede cambiar su propio rol ni desactivarse a sí mismo.
 
 ## Inicio
 
@@ -204,3 +208,4 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-09: la búsqueda ignora acentos con `translate`, nativa de Postgres, y no con la extensión `unaccent` ni con una collation no determinista, para no sumar una migración.
 - 2026-11-10: los importes que se escriben aceptan coma decimal (`45999,90`, también `45.999,90`) además de punto, porque es como se escriben en Argentina; se normalizan a punto antes de validar y guardar.
 - 2026-11-10: PR-17 resuelto: las imágenes de los productos no se alojan en el sistema; se usa la dirección de la tapa en IGDB (`images.igdb.com`), que el formulario explica cómo copiar, en línea con no sumar un servicio de almacenamiento.
+- 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
