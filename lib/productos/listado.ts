@@ -1,10 +1,10 @@
-import { asc, count, desc, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import { productos } from "@/lib/db/schema";
+import { ubicarPagina } from "@/lib/paginacion";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
-const BUSQUEDA_MAXIMA = 120;
 const PRODUCTOS_POR_PAGINA = 32;
 
 export const ETIQUETAS_ESTADO = {
@@ -32,6 +32,8 @@ const CRITERIOS = {
   nombre: [asc(productos.nombre), asc(productos.codigo)],
   precio_menor: [asc(productos.precio), asc(productos.nombre)],
   precio_mayor: [desc(productos.precio), asc(productos.nombre)],
+  stock_mayor: [desc(productos.stock), asc(productos.nombre)],
+  stock_menor: [asc(productos.stock), asc(productos.nombre)],
 };
 
 export function limpiarOrden(texto: string | string[] | undefined) {
@@ -44,18 +46,6 @@ export function limpiarVista(texto: string | string[] | undefined) {
   const valor = Array.isArray(texto) ? texto[0] : texto;
 
   return valor === "grilla" ? "grilla" : "lista";
-}
-
-export function limpiarBusqueda(texto: string | string[] | undefined) {
-  const valor = Array.isArray(texto) ? texto[0] : texto;
-
-  return (valor ?? "").trim().slice(0, BUSQUEDA_MAXIMA);
-}
-
-export function limpiarPagina(texto: string | string[] | undefined) {
-  const valor = Number(Array.isArray(texto) ? texto[0] : texto);
-
-  return Number.isSafeInteger(valor) && valor >= 1 ? valor : 1;
 }
 
 export async function listarProductos({
@@ -78,8 +68,11 @@ export async function listarProductos({
     .select({ cantidad: count() })
     .from(productos)
     .where(filtro);
-  const paginas = Math.max(1, Math.ceil(cantidad / PRODUCTOS_POR_PAGINA));
-  const pagina = Math.min(paginaPedida, paginas);
+  const { pagina, paginas, desde } = ubicarPagina({
+    cantidad,
+    porPagina: PRODUCTOS_POR_PAGINA,
+    pedida: paginaPedida,
+  });
 
   const lista = await db
     .select({
@@ -95,7 +88,39 @@ export async function listarProductos({
     .where(filtro)
     .orderBy(...CRITERIOS[orden], asc(productos.id))
     .limit(PRODUCTOS_POR_PAGINA)
-    .offset((pagina - 1) * PRODUCTOS_POR_PAGINA);
+    .offset(desde);
 
   return { lista, pagina, paginas };
 }
+
+const LIMITE_BUSQUEDA_VENTA = 8;
+
+export async function buscarProductosActivos(busqueda: string) {
+  return db
+    .select({
+      id: productos.id,
+      codigo: productos.codigo,
+      nombre: productos.nombre,
+      precio: productos.precio,
+      stock: productos.stock,
+      imagenUrl: productos.imagenUrl,
+    })
+    .from(productos)
+    .where(
+      and(
+        eq(productos.activo, true),
+        busqueda
+          ? coincideBusqueda({
+              columnas: [productos.nombre, productos.codigo],
+              busqueda,
+            })
+          : undefined,
+      ),
+    )
+    .orderBy(asc(productos.nombre), asc(productos.id))
+    .limit(LIMITE_BUSQUEDA_VENTA);
+}
+
+export type ProductoVendible = Awaited<
+  ReturnType<typeof buscarProductosActivos>
+>[number];

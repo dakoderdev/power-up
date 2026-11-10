@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { claseBoton } from "@/components/estilos";
+import { CLASE_FILA, claseBoton } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
+import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { formatearMoneda } from "@/lib/moneda";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
-import { CLASE_FILA, TablaVentas } from "./tabla-ventas";
+import { TablaVentas } from "./tabla-ventas";
 
 const SEPARADOR_MOVIL =
   "border-t border-neutral-900 pt-10 lg:border-t-0 lg:pt-0";
@@ -51,7 +52,9 @@ export async function Resumen() {
               </dl>
             </div>
 
-            <TablaVentas ventas={ventasHoy.ultimas} />
+            <TablaVentas
+              grupos={[{ clave: "hoy", ventas: ventasHoy.ultimas }]}
+            />
           </>
         )}
       </Seccion>
@@ -202,13 +205,5 @@ function Dato({
         {children}
       </dd>
     </div>
-  );
-}
-
-export function Vacio({ children }: { children: ReactNode }) {
-  return (
-    <p className="border border-dashed border-neutral-800 px-6 py-8 text-center text-sm text-neutral-500">
-      {children}
-    </p>
   );
 }

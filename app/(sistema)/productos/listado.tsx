@@ -3,15 +3,17 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO, CLASE_FILA, claseBoton } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
+import { Paginacion } from "@/components/paginacion";
+import { Vacio } from "@/components/vacio";
+import { limpiarBusqueda } from "@/lib/db/busqueda";
+import { limpiarPagina } from "@/lib/paginacion";
 import { formatearMoneda } from "@/lib/moneda";
 import {
   COLORES_ESTADO,
   ETIQUETAS_ESTADO,
-  limpiarBusqueda,
   limpiarOrden,
-  limpiarPagina,
   limpiarVista,
   listarProductos,
   type ParametrosListado,
@@ -21,8 +23,6 @@ import {
   COOKIE_VISTA,
   type Orden,
 } from "@/lib/productos/ordenes";
-import { Vacio } from "../resumen";
-import { CLASE_FILA } from "../tabla-ventas";
 import { Preferencias, SelectorOrden } from "./preferencias";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 
@@ -222,32 +222,13 @@ export async function Listado({
         </div>
       )}
 
-      {paginas > 1 ? (
-        <nav
-          aria-label="Páginas"
-          className="flex items-center justify-end gap-2"
-        >
-          <p className="mr-auto text-sm tabular-nums text-neutral-400">
-            Página {pagina} de {paginas}
-          </p>
-          {pagina > 1 ? (
-            <Link
-              href={enlaceVista({ vista, busqueda, orden, pagina: pagina - 1 })}
-              className={claseBoton({ variante: "secundario" })}
-            >
-              Anterior
-            </Link>
-          ) : null}
-          {pagina < paginas ? (
-            <Link
-              href={enlaceVista({ vista, busqueda, orden, pagina: pagina + 1 })}
-              className={claseBoton({ variante: "secundario" })}
-            >
-              Siguiente
-            </Link>
-          ) : null}
-        </nav>
-      ) : null}
+      <Paginacion
+        pagina={pagina}
+        paginas={paginas}
+        enlace={(numero) =>
+          enlaceVista({ vista, busqueda, orden, pagina: numero })
+        }
+      />
     </section>
   );
 }
