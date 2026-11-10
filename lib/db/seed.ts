@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import { auth } from "../auth";
 import { aCentavos, deCentavos } from "../moneda";
+import { MOTIVO_STOCK_INICIAL } from "../stock/etiquetas";
 import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
 import { db } from "./index";
 import {
@@ -305,7 +306,7 @@ async function crearProductos(usuarioId: string) {
           tipo: "entrada" as const,
           origen: "manual" as const,
           cantidad: producto.stock,
-          motivo: "Stock inicial",
+          motivo: MOTIVO_STOCK_INICIAL,
           usuarioId,
         })),
       );

@@ -1,23 +1,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { esDuplicado } from "@/lib/db/errores";
 import { clientes } from "@/lib/db/schema";
 import type { ClienteNuevo } from "./esquemas";
 
-const VIOLACION_UNICA = "23505";
 const MENSAJE_DUPLICADO = "Ya hay un cliente con ese documento.";
-
-function esDuplicado(error: unknown) {
-  const causa =
-    error instanceof Error && "cause" in error ? error.cause : undefined;
-
-  return [error, causa].some(
-    (posible) =>
-      typeof posible === "object" &&
-      posible !== null &&
-      "code" in posible &&
-      posible.code === VIOLACION_UNICA,
-  );
-}
 
 export async function crearCliente(entrada: ClienteNuevo) {
   const [existente] = await db

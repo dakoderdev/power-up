@@ -10,9 +10,8 @@ import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { formatearMoneda } from "@/lib/moneda";
+import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/productos/etiquetas";
 import {
-  COLORES_ESTADO,
-  ETIQUETAS_ESTADO,
   limpiarOrden,
   limpiarVista,
   listarProductos,
