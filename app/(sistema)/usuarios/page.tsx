@@ -7,7 +7,12 @@ import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
 import { listarUsuarios } from "@/lib/usuarios/listado";
-import { ETIQUETAS_ROL, ROL_ADMINISTRADOR } from "@/lib/usuarios/sesion";
+import { contar } from "@/lib/texto";
+import {
+  COLORES_ROL,
+  ETIQUETAS_ROL,
+  ROL_ADMINISTRADOR,
+} from "@/lib/usuarios/sesion";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -24,18 +29,6 @@ const COLUMNAS = [
   { titulo: "Rol", clase: "w-px sm:pr-6" },
   { titulo: "Estado", clase: `w-px ${SOLO_ESCRITORIO}` },
 ];
-
-function contar({
-  cantidad,
-  singular,
-  plural,
-}: {
-  cantidad: number;
-  singular: string;
-  plural: string;
-}) {
-  return `${cantidad} ${cantidad === 1 ? singular : plural}`;
-}
 
 export default function Usuarios() {
   return (
@@ -130,7 +123,7 @@ async function Lista() {
                         aria-label={`Rol de ${usuario.nombre}`}
                         defaultValue={usuario.rol}
                         disabled={usuario.esActual || ultimoAdministrador}
-                        className={`${CLASE_BADGE} appearance-none bg-black pr-8 text-neutral-300 transition-colors enabled:cursor-pointer enabled:hover:border-neutral-600 disabled:text-neutral-400`}
+                        className={`${CLASE_BADGE} appearance-none bg-black pr-8 ${COLORES_ROL[usuario.rol]} transition-colors enabled:cursor-pointer enabled:hover:border-neutral-600 disabled:text-neutral-400`}
                       >
                         {Object.entries(ETIQUETAS_ROL).map(
                           ([valor, etiqueta]) => (

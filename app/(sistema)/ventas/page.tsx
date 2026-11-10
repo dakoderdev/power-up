@@ -6,6 +6,7 @@ import { Vacio } from "@/components/vacio";
 import { etiquetaDia } from "@/lib/fechas";
 import { formatearMoneda } from "@/lib/moneda";
 import { limpiarPagina } from "@/lib/paginacion";
+import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { listarVentas } from "@/lib/ventas/listado";
 import { TablaVentas } from "../tabla-ventas";
@@ -57,7 +58,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
         grupos={grupos.map((grupo) => ({
           clave: grupo.dia,
           titulo: etiquetaDia({ clave: grupo.dia, ahora }),
-          detalle: `${grupo.cantidad} ${grupo.cantidad === 1 ? "venta" : "ventas"} · ${formatearMoneda(grupo.total)}`,
+          detalle: `${contar({ cantidad: grupo.cantidad, singular: "venta", plural: "ventas" })} · ${formatearMoneda(grupo.total)}`,
           ventas: grupo.ventas,
         }))}
       />
