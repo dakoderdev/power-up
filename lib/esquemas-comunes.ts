@@ -3,16 +3,27 @@ import { aCentavos } from "@/lib/moneda";
 
 const FORMATO_IMPORTE = /^\d{1,10}(\.\d{1,2})?$/;
 
+function normalizarImporte(texto: string) {
+  return texto.includes(",")
+    ? texto.replaceAll(".", "").replace(",", ".")
+    : texto;
+}
+
 export const importePositivo = z
   .string()
   .trim()
-  .regex(
-    FORMATO_IMPORTE,
-    "Importe inválido: hasta 10 enteros y 2 decimales, con punto.",
-  )
-  .refine(
-    (valor) => aCentavos(valor) > 0,
-    "El importe debe ser mayor que cero.",
+  .transform(normalizarImporte)
+  .pipe(
+    z
+      .string()
+      .regex(
+        FORMATO_IMPORTE,
+        "Importe inválido: hasta 10 enteros y 2 decimales, por ejemplo 45999,90.",
+      )
+      .refine(
+        (valor) => aCentavos(valor) > 0,
+        "El importe debe ser mayor que cero.",
+      ),
   );
 
 export const enteroPositivo = z
