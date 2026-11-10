@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { Close } from "pixelarticons/react/Close.js";
 import { Menu } from "pixelarticons/react/Menu.js";
@@ -58,18 +58,34 @@ export function MarcoBarra({ children }: { children: ReactNode }) {
   );
 }
 
-export function EnlaceSeccion({
-  href,
-  icono,
-  children,
-}: {
+type PropsEnlace = {
   href: string;
   icono: ReactNode;
   children: ReactNode;
-}) {
-  const ruta = usePathname();
-  const activo = href === "/" ? ruta === "/" : ruta.startsWith(href);
+};
 
+export function EnlaceSeccion(props: PropsEnlace) {
+  return (
+    <Suspense fallback={<Enlace {...props} activo={false} />}>
+      <EnlaceSegunRuta {...props} />
+    </Suspense>
+  );
+}
+
+function EnlaceSegunRuta(props: PropsEnlace) {
+  const ruta = usePathname();
+  const activo =
+    props.href === "/" ? ruta === "/" : ruta.startsWith(props.href);
+
+  return <Enlace {...props} activo={activo} />;
+}
+
+function Enlace({
+  href,
+  icono,
+  children,
+  activo,
+}: PropsEnlace & { activo: boolean }) {
   return (
     <Link
       href={href}
