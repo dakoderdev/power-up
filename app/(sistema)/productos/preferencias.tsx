@@ -4,50 +4,30 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
 import { claseBoton } from "@/components/estilos";
-import { ORDENES, type Orden } from "@/lib/productos/ordenes";
+import {
+  COOKIE_ORDEN,
+  COOKIE_VISTA,
+  ORDENES,
+  type Orden,
+} from "@/lib/productos/ordenes";
 
-const CLAVE = "productos:preferencias";
+const UN_ANIO = 60 * 60 * 24 * 365;
 
-function leerGuardadas() {
-  try {
-    const guardadas = JSON.parse(localStorage.getItem(CLAVE) ?? "null");
-
-    return guardadas && typeof guardadas === "object" ? guardadas : null;
-  } catch {
-    return null;
-  }
+function guardarCookie({ nombre, valor }: { nombre: string; valor: string }) {
+  document.cookie = `${nombre}=${valor}; path=/productos; max-age=${UN_ANIO}; samesite=lax`;
 }
 
 export function Preferencias({
   vista,
   orden,
-  aplicar,
 }: {
   vista: string;
   orden: string;
-  aplicar: boolean;
 }) {
-  const router = useRouter();
-  const ruta = usePathname();
-  const parametros = useSearchParams();
-
   useEffect(() => {
-    if (aplicar) {
-      const guardadas = leerGuardadas();
-
-      if (guardadas) {
-        const siguientes = new URLSearchParams(parametros);
-        siguientes.set("vista", String(guardadas.vista));
-        siguientes.set("orden", String(guardadas.orden));
-        router.replace(`${ruta}?${siguientes.toString()}`);
-        return;
-      }
-    }
-
-    try {
-      localStorage.setItem(CLAVE, JSON.stringify({ vista, orden }));
-    } catch {}
-  }, [aplicar, vista, orden, parametros, ruta, router]);
+    guardarCookie({ nombre: COOKIE_VISTA, valor: vista });
+    guardarCookie({ nombre: COOKIE_ORDEN, valor: orden });
+  }, [vista, orden]);
 
   return null;
 }

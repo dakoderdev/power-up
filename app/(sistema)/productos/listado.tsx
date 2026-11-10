@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
@@ -15,7 +16,11 @@ import {
   listarProductos,
   type ParametrosListado,
 } from "@/lib/productos/listado";
-import type { Orden } from "@/lib/productos/ordenes";
+import {
+  COOKIE_ORDEN,
+  COOKIE_VISTA,
+  type Orden,
+} from "@/lib/productos/ordenes";
 import { Vacio } from "../resumen";
 import { CLASE_FILA } from "../tabla-ventas";
 import { Preferencias, SelectorOrden } from "./preferencias";
@@ -72,9 +77,9 @@ export async function Listado({
     pagina: paginaTexto,
   } = await parametros;
   const busqueda = limpiarBusqueda(q);
-  const vista = limpiarVista(vistaPedida);
-  const orden = limpiarOrden(ordenPedido);
-  const sinPreferencias = !vistaPedida && !ordenPedido;
+  const guardadas = await cookies();
+  const vista = limpiarVista(vistaPedida ?? guardadas.get(COOKIE_VISTA)?.value);
+  const orden = limpiarOrden(ordenPedido ?? guardadas.get(COOKIE_ORDEN)?.value);
   await obtenerUsuarioActual();
   const { lista, pagina, paginas } = await listarProductos({
     busqueda,
@@ -84,7 +89,7 @@ export async function Listado({
 
   return (
     <section className="flex flex-col gap-4">
-      <Preferencias vista={vista} orden={orden} aplicar={sinPreferencias} />
+      <Preferencias vista={vista} orden={orden} />
       <form
         role="search"
         action="/productos"

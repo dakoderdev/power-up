@@ -199,5 +199,5 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-08: el rol es un enum en la base y no texto libre, para que solo existan los dos roles de US-07.
 - 2026-11-08: el proxy valida la sesión completa contra la base y no solo la cookie, para que ni un usuario inactivo ni un rol incorrecto vean la pantalla un instante.
 - 2026-11-09: sin categoría, plataforma ni entidad aparte para juegos y consolas: ninguna regla de venta, stock o comprobante cambia según el tipo de producto y ninguna pantalla obligatoria lo usa; el mismo juego en dos plataformas son dos productos con código y stock propios.
-- 2026-11-09: el orden y la vista de productos se guardan en localStorage y no por usuario en la base, para no sumar un campo ni una migración; se adelantan a lo obligatorio por pedido del desarrollador.
+- 2026-11-09: el orden y la vista de productos se guardan en una cookie y no por usuario en la base, para que el servidor renderice la preferencia en la primera carga, sin un campo ni una migración; se adelantan a lo obligatorio por pedido del desarrollador.
 - 2026-11-09: la búsqueda ignora acentos con `translate`, nativa de Postgres, y no con la extensión `unaccent` ni con una collation no determinista, para no sumar una migración.
