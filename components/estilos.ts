@@ -7,6 +7,9 @@ const VARIANTES_BOTON = {
   texto: "text-neutral-400 hover:text-white",
 };
 
+export const CLASE_BADGE =
+  "inline-flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem]";
+
 export const CLASE_FILA = "h-11 border-b border-neutral-900 last:border-b-0";
 
 export const CLASE_CAMPO =

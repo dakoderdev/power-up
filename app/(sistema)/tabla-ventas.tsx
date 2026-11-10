@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CLASE_FILA } from "@/components/estilos";
+import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
@@ -85,7 +85,7 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                     {venta.clienteNombre}
                   </td>
                   <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <span className="inline-flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] text-neutral-300">
+                    <span className={`${CLASE_BADGE} text-neutral-300`}>
                       {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
                     </span>
                   </td>
