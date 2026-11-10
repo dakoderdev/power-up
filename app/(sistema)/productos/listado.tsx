@@ -10,9 +10,8 @@ import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { formatearMoneda } from "@/lib/moneda";
+import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/productos/etiquetas";
 import {
-  COLORES_ESTADO,
-  ETIQUETAS_ESTADO,
   limpiarOrden,
   limpiarVista,
   listarProductos,
@@ -158,9 +157,12 @@ export async function Listado({
           {lista.map((producto) => (
             <li key={producto.id} className="flex flex-col gap-2">
               <Tapa url={producto.imagenUrl} className="aspect-3/4 w-full" />
-              <p className="line-clamp-2 text-[0.9375rem] font-medium">
+              <Link
+                href={`/productos/${producto.id}`}
+                className="line-clamp-2 text-[0.9375rem] font-medium underline-offset-4 hover:underline"
+              >
                 {producto.nombre}
-              </p>
+              </Link>
               <p className="text-sm tabular-nums text-neutral-300">
                 {formatearMoneda(producto.precio)} · {producto.stock} unidades
                 {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
@@ -190,7 +192,12 @@ export async function Listado({
                   <td className="pr-3 sm:pr-6">
                     <div className="flex items-center gap-3">
                       <Tapa url={producto.imagenUrl} className="h-8 w-6" />
-                      <span className="truncate">{producto.nombre}</span>
+                      <Link
+                        href={`/productos/${producto.id}`}
+                        className="truncate underline-offset-4 hover:underline"
+                      >
+                        {producto.nombre}
+                      </Link>
                     </div>
                   </td>
                   <td

@@ -169,7 +169,6 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - [abierto] US-24: si el administrador elige el rol (administrador u operador) al crear un usuario, o solo crea operadores y los administradores salen del seed.
 - [abierto] US-25: si se suma un servicio de correo para invitaciones y avisos (puede tener costo; el proyecto se publica en planes gratuitos).
 - [abierto] PR-16: qué imagen definitiva reemplaza al bloque de color de los productos sin imagen (PR-13).
-- [abierto] PR-17: dónde se alojan las imágenes reales de los productos; las direcciones externas, como las de Wikimedia, pueden limitar su uso directo.
 
 ## Descartado
 
@@ -203,3 +202,5 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-09: sin categoría, plataforma ni entidad aparte para juegos y consolas: ninguna regla de venta, stock o comprobante cambia según el tipo de producto y ninguna pantalla obligatoria lo usa; el mismo juego en dos plataformas son dos productos con código y stock propios.
 - 2026-11-09: el orden y la vista de productos se guardan en una cookie y no por usuario en la base, para que el servidor renderice la preferencia en la primera carga, sin un campo ni una migración; se adelantan a lo obligatorio por pedido del desarrollador.
 - 2026-11-09: la búsqueda ignora acentos con `translate`, nativa de Postgres, y no con la extensión `unaccent` ni con una collation no determinista, para no sumar una migración.
+- 2026-11-10: los importes que se escriben aceptan coma decimal (`45999,90`, también `45.999,90`) además de punto, porque es como se escriben en Argentina; se normalizan a punto antes de validar y guardar.
+- 2026-11-10: PR-17 resuelto: las imágenes de los productos no se alojan en el sistema; se usa la dirección de la tapa en IGDB (`images.igdb.com`), que el formulario explica cómo copiar, en línea con no sumar un servicio de almacenamiento.

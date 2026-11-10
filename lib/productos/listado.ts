@@ -7,16 +7,6 @@ import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
 const PRODUCTOS_POR_PAGINA = 32;
 
-export const ETIQUETAS_ESTADO = {
-  activo: "Activo",
-  inactivo: "Inactivo",
-};
-
-export const COLORES_ESTADO = {
-  activo: "text-white",
-  inactivo: "text-neutral-400",
-};
-
 export type ParametrosListado = {
   q?: string | string[];
   vista?: string | string[];

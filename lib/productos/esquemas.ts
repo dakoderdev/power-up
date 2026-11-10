@@ -3,8 +3,8 @@ import { z } from "zod";
 import { productos } from "@/lib/db/schema";
 import { importePositivo, textoOpcional } from "@/lib/esquemas-comunes";
 
-const CODIGO_MAXIMO = 30;
-const NOMBRE_MAXIMO = 120;
+export const CODIGO_MAXIMO = 30;
+export const NOMBRE_MAXIMO = 120;
 const IMAGEN_URL_MAXIMA = 2048;
 
 const imagenUrl = textoOpcional.pipe(

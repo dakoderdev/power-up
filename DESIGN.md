@@ -47,6 +47,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 - DI-37: un grupo de opciones excluyentes con forma de botón (vista lista/grilla, forma de pago) muestra la elegida con `claseBoton({ variante: "secundario" })` y las demás con la variante de texto y `border border-transparent`, para que el cambio no mueva nada.
 - DI-38: un combobox (campo con búsqueda) usa `CLASE_CAMPO` con un `ChevronDown` de `size-5` en `neutral-400` a la derecha. Su lista se abre debajo, con `mt-2`, en un panel como el de DI-33 (`black`, borde `neutral-800`, `p-3`); las opciones miden `h-11`, van en `neutral-300`, pasan a `white` al pasar el mouse y se separan con `neutral-900`.
 - DI-39: el título de una sección (h2) va en una fila con su acción opcional a la derecha (botón de texto o badge); la fila mide `min-h-10`, así la altura no cambia cuando la acción aparece o desaparece.
+- [abierto] DI-40: un componente de campo compartido en `components/` (etiqueta, campo, ayuda y error, con el estilo de DI-31) para los formularios. Hoy ese bloque se repite casi igual en `ventas/nueva/alta-cliente.tsx` y `productos/_comun/formulario-producto.tsx`. Se discutió el 2026-11-10 y se dejó para el módulo de clientes, donde aparece un tercer uso.
 
 ## Tablas y listados
 
