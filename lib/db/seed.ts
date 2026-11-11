@@ -12,7 +12,9 @@ import { auth } from "../auth";
 import { formatearHora } from "../fechas";
 import { aCentavos, deCentavos } from "../moneda";
 import { MOTIVO_STOCK_INICIAL } from "../stock/etiquetas";
+import { PUNTO_VENTA } from "../ventas/comprobante";
 import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
+import { siguienteNumero } from "../ventas/numeracion";
 import { db } from "./index";
 import {
   account,
@@ -40,6 +42,8 @@ const CONFIGURACION = {
   pesosFormaPago: { contado: 3, tarjeta: 3, cuenta_corriente: 2 },
   probabilidadConsumidorFinal: 0.5,
   probabilidadPago: 0.5,
+  probabilidadLimite: 0.5,
+  margenLimite: { min: 1, max: 4 },
   ajustesManuales: { min: 3, max: 8 },
   unidadesPorAjuste: { min: 1, max: 5 },
   probabilidadSalida: 0.5,
@@ -94,6 +98,8 @@ const APELLIDOS = [
 const STOCK_BAJO = { min: 1, max: 3 };
 
 const MINUTOS_POR_DIA = 24 * 60;
+
+const ESCALON_LIMITE = 5_000_000;
 
 type Rango = { min: number; max: number };
 
@@ -595,6 +601,8 @@ async function crearVentas(usuarioId: string) {
       const [{ ventaId }] = await tx
         .insert(ventas)
         .values({
+          puntoVenta: PUNTO_VENTA,
+          numero: siguienteNumero(PUNTO_VENTA),
           creadoEn: fecha,
           clienteId: cliente?.id ?? null,
           clienteNombre: cliente?.nombre ?? CONSUMIDOR_FINAL,
@@ -671,8 +679,27 @@ async function crearVentas(usuarioId: string) {
       );
     }
 
+    const limites = registrados.filter(
+      () => Math.random() < CONFIGURACION.probabilidadLimite,
+    );
+
+    for (const cliente of limites) {
+      const pagado = pagos.find((pago) => pago.clienteId === cliente.id);
+      const saldo =
+        (saldos.get(cliente.id) ?? 0) -
+        (pagado ? aCentavos(pagado.importe) : 0);
+      const escalones =
+        Math.floor(saldo / ESCALON_LIMITE) + entero(CONFIGURACION.margenLimite);
+
+      await tx
+        .update(clientes)
+        .set({ limiteCredito: deCentavos(escalones * ESCALON_LIMITE) })
+        .where(eq(clientes.id, cliente.id));
+    }
+
     return {
       clientes: registrados.length,
+      limites: limites.length,
       ventas: creadas,
       pagos: pagos.length,
       ajustes,
@@ -680,7 +707,7 @@ async function crearVentas(usuarioId: string) {
   });
 
   console.log(
-    `Clientes: ${resumen.clientes}. Ventas: ${resumen.ventas}. Pagos: ${resumen.pagos}. Ajustes de stock: ${resumen.ajustes}.`,
+    `Clientes: ${resumen.clientes} (${resumen.limites} con límite de crédito). Ventas: ${resumen.ventas}. Pagos: ${resumen.pagos}. Ajustes de stock: ${resumen.ajustes}.`,
   );
 }
 

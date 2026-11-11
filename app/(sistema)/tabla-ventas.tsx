@@ -4,8 +4,10 @@ import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { formatearMoneda } from "@/lib/moneda";
+import { formatearComprobante } from "@/lib/ventas/comprobante";
 import {
   COLORES_FORMA_PAGO,
+  ETIQUETA_ANULADA,
   ETIQUETAS_FORMA_PAGO,
 } from "@/lib/ventas/etiquetas";
 import { MasJuegos } from "./mas-juegos";
@@ -76,7 +78,7 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                       href={`/ventas/${venta.id}`}
                       className="text-neutral-300 transition-colors hover:text-white"
                     >
-                      N.º {venta.numero}
+                      N.º {formatearComprobante(venta)}
                     </Link>
                   </td>
                   <td
@@ -94,8 +96,21 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                       {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
                     </span>
                   </td>
-                  <td className="text-right tabular-nums text-white">
-                    {formatearMoneda(venta.total)}
+                  <td className="text-right tabular-nums">
+                    {venta.anuladaEn ? (
+                      <span className="flex items-center justify-end gap-2">
+                        <span className={`${CLASE_BADGE} text-neutral-400`}>
+                          {ETIQUETA_ANULADA}
+                        </span>
+                        <span className="text-neutral-400 line-through">
+                          {formatearMoneda(venta.total)}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-white">
+                        {formatearMoneda(venta.total)}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

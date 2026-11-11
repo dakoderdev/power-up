@@ -8,7 +8,7 @@ import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
 import type { ClienteVenta } from "@/lib/clientes/listado";
 import { z } from "zod";
 
-type Campo = "nombre" | "documento" | "telefono" | "email";
+type Campo = "nombre" | "documento" | "telefono" | "email" | "limiteCredito";
 type Errores = Partial<Record<Campo, string[]>>;
 
 const CAMPOS: { nombre: Campo; etiqueta: string; tipo: string }[] = [
@@ -16,7 +16,17 @@ const CAMPOS: { nombre: Campo; etiqueta: string; tipo: string }[] = [
   { nombre: "documento", etiqueta: "Documento", tipo: "text" },
   { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel" },
   { nombre: "email", etiqueta: "Correo", tipo: "email" },
+  {
+    nombre: "limiteCredito",
+    etiqueta: "Límite de crédito (opcional)",
+    tipo: "text",
+  },
 ];
+
+const MODO_TECLADO: Partial<Record<Campo, "numeric" | "decimal">> = {
+  documento: "numeric",
+  limiteCredito: "decimal",
+};
 
 export function AltaCliente({
   onCreado,
@@ -82,7 +92,7 @@ export function AltaCliente({
                 id={idCampo}
                 name={campo.nombre}
                 type={campo.tipo}
-                inputMode={campo.nombre === "documento" ? "numeric" : undefined}
+                inputMode={MODO_TECLADO[campo.nombre]}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? `${idCampo}-error` : undefined}
                 className={`${CLASE_CAMPO} ${error ? "border-red-400" : "border-neutral-800"}`}
@@ -97,7 +107,8 @@ export function AltaCliente({
         })}
       </div>
       <p className="text-sm text-neutral-500">
-        Teléfono o correo: al menos uno de los dos.
+        Teléfono o correo: al menos uno de los dos. Sin límite de crédito, la
+        cuenta corriente no tiene tope.
       </p>
       <div className="flex flex-wrap justify-end gap-2">
         <button

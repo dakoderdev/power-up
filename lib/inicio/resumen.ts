@@ -6,10 +6,12 @@ import {
   eq,
   gte,
   inArray,
+  isNull,
   lte,
   sql,
   sum,
 } from "drizzle-orm";
+import { SALDO } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import {
   clientes,
@@ -24,11 +26,6 @@ import { aCentavos, deCentavos } from "@/lib/moneda";
 const LIMITE_LISTA = 5;
 const LIMITE_VENTAS = 15;
 const UMBRAL_STOCK_BAJO = 3;
-
-const SALDO =
-  sql<string>`coalesce(sum(case when ${movimientosCuenta.tipo} = 'venta' then ${movimientosCuenta.importe} else -${movimientosCuenta.importe} end), 0)`.mapWith(
-    movimientosCuenta.importe,
-  );
 
 async function obtenerItemsDeVentas(ventaIds: number[]) {
   if (ventaIds.length === 0) {
@@ -49,7 +46,10 @@ async function obtenerItemsDeVentas(ventaIds: number[]) {
 }
 
 async function obtenerVentasDeHoy() {
-  const desdeHoy = gte(ventas.creadoEn, inicioDelDia(new Date()));
+  const desdeHoy = and(
+    gte(ventas.creadoEn, inicioDelDia(new Date())),
+    isNull(ventas.anuladaEn),
+  );
 
   const [totales, ultimas] = await Promise.all([
     db
@@ -65,7 +65,9 @@ async function obtenerVentasDeHoy() {
     db
       .select({
         id: ventas.id,
+        puntoVenta: ventas.puntoVenta,
         numero: ventas.numero,
+        anuladaEn: ventas.anuladaEn,
         creadoEn: ventas.creadoEn,
         clienteNombre: ventas.clienteNombre,
         formaPago: ventas.formaPago,

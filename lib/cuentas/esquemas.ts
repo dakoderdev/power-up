@@ -46,9 +46,10 @@ export const esquemaMovimientoCuenta = base
   .omit({ id: true, fecha: true })
   .refine(
     (movimiento) =>
-      (movimiento.tipo === "venta") === (movimiento.ventaId != null),
+      (movimiento.tipo !== "pago") === (movimiento.ventaId != null),
     {
-      message: "Solo los movimientos por venta llevan venta asociada.",
+      message:
+        "Solo los movimientos por venta o anulación llevan venta asociada.",
       path: ["ventaId"],
     },
   );
