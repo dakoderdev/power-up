@@ -1,4 +1,7 @@
 export const ZONA = "America/Argentina/Buenos_Aires";
+export const DESFASE_HORAS = -3;
+
+const MS_POR_HORA = 3_600_000;
 
 const formato = new Intl.DateTimeFormat("es-AR", {
   timeZone: ZONA,
@@ -49,6 +52,12 @@ export function claveDia(fecha: Date) {
   const { day, month, year } = partes(fecha);
 
   return `${year}-${month}-${day}`;
+}
+
+export function inicioDelDia(fecha: Date) {
+  const medianoche = new Date(`${claveDia(fecha)}T00:00:00Z`);
+
+  return new Date(medianoche.getTime() - DESFASE_HORAS * MS_POR_HORA);
 }
 
 export function etiquetaDia({ clave, ahora }: { clave: string; ahora: Date }) {

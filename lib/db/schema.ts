@@ -1,44 +1,44 @@
 import { sql } from "drizzle-orm";
 import {
-  pgTable,
-  pgEnum,
-  serial,
+  sqliteTable,
+  customType,
   integer,
   text,
-  varchar,
-  boolean,
   uniqueIndex,
-  numeric,
-  timestamp,
   index,
   check,
-} from "drizzle-orm/pg-core";
-import { user } from "./auth-schema";
+} from "drizzle-orm/sqlite-core";
+import { aCentavos, deCentavos } from "../moneda";
+import { AHORA, booleano, enLista, fecha, user } from "./auth-schema";
 
 export * from "./auth-schema";
 
-export const formaPagoEnum = pgEnum("forma_pago", [
-  "contado",
-  "tarjeta",
-  "cuenta_corriente",
-]);
-export const tipoStockEnum = pgEnum("tipo_stock", ["entrada", "salida"]);
-export const origenStockEnum = pgEnum("origen_stock", ["manual", "venta"]);
-export const tipoCuentaEnum = pgEnum("tipo_cuenta", ["venta", "pago"]);
+export const FORMAS_PAGO = ["contado", "tarjeta", "cuenta_corriente"] as const;
+export const TIPOS_STOCK = ["entrada", "salida"] as const;
+export const ORIGENES_STOCK = ["manual", "venta"] as const;
+export const TIPOS_CUENTA = ["venta", "pago"] as const;
 
-const dinero = (nombre: string) => numeric(nombre, { precision: 12, scale: 2 });
+const dinero = customType<{ data: string; driverData: number }>({
+  dataType: () => "integer",
+  toDriver: (importe) => aCentavos(importe),
+  fromDriver: (centavos) => deCentavos(centavos),
+});
 
-export const productos = pgTable(
+function id() {
+  return integer("id").primaryKey({ autoIncrement: true });
+}
+
+export const productos = sqliteTable(
   "productos",
   {
-    id: serial("id").primaryKey(),
-    codigo: varchar("codigo", { length: 30 }).notNull().unique(),
-    nombre: varchar("nombre", { length: 120 }).notNull(),
+    id: id(),
+    codigo: text("codigo", { length: 30 }).notNull().unique(),
+    nombre: text("nombre", { length: 120 }).notNull(),
     precio: dinero("precio").notNull(),
     stock: integer("stock").notNull().default(0),
-    activo: boolean("activo").notNull().default(true),
+    activo: booleano("activo").notNull().default(true),
     imagenUrl: text("imagen_url"),
-    creadoEn: timestamp("creado_en").notNull().defaultNow(),
+    creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [
     check("productos_precio_positivo", sql`${t.precio} > 0`),
@@ -49,15 +49,15 @@ export const productos = pgTable(
   ],
 );
 
-export const clientes = pgTable(
+export const clientes = sqliteTable(
   "clientes",
   {
-    id: serial("id").primaryKey(),
+    id: id(),
     nombre: text("nombre").notNull(),
     documento: text("documento").notNull().unique(),
     telefono: text("telefono"),
     email: text("email"),
-    creadoEn: timestamp("creado_en").notNull().defaultNow(),
+    creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [
     check(
@@ -65,27 +65,37 @@ export const clientes = pgTable(
       sql`${t.telefono} IS NOT NULL OR ${t.email} IS NOT NULL`,
     ),
     check("clientes_nombre_no_vacio", sql`length(trim(${t.nombre})) > 0`),
-    check("clientes_documento_numerico", sql`${t.documento} ~ '^[0-9]+$'`),
+    check(
+      "clientes_documento_numerico",
+      sql`length(${t.documento}) > 0 AND ${t.documento} NOT GLOB '*[^0-9]*'`,
+    ),
     index("clientes_nombre_idx").on(t.nombre),
   ],
 );
 
-export const ventas = pgTable(
+export const ventas = sqliteTable(
   "ventas",
   {
-    id: serial("id").primaryKey(),
-    numero: integer("numero").notNull().unique().generatedAlwaysAsIdentity(),
-    creadoEn: timestamp("creado_en").notNull().defaultNow(),
+    id: id(),
+    numero: integer("numero")
+      .notNull()
+      .unique()
+      .$defaultFn(() => sql`(select coalesce(max(numero), 0) + 1 from ventas)`),
+    creadoEn: fecha("creado_en").notNull().default(AHORA),
     clienteId: integer("cliente_id").references(() => clientes.id),
     clienteNombre: text("cliente_nombre").notNull(),
     clienteDocumento: text("cliente_documento"),
-    formaPago: formaPagoEnum("forma_pago").notNull(),
+    formaPago: text("forma_pago", { enum: FORMAS_PAGO }).notNull(),
     total: dinero("total").notNull(),
     usuarioId: text("usuario_id")
       .notNull()
       .references(() => user.id),
   },
   (t) => [
+    check(
+      "ventas_forma_pago_valida",
+      sql`${t.formaPago} in ${enLista(FORMAS_PAGO)}`,
+    ),
     check("ventas_total_positivo", sql`${t.total} > 0`),
     check(
       "ventas_final_sin_documento",
@@ -100,10 +110,10 @@ export const ventas = pgTable(
   ],
 );
 
-export const itemsVenta = pgTable(
+export const itemsVenta = sqliteTable(
   "items_venta",
   {
-    id: serial("id").primaryKey(),
+    id: id(),
     ventaId: integer("venta_id")
       .notNull()
       .references(() => ventas.id),
@@ -127,24 +137,29 @@ export const itemsVenta = pgTable(
   ],
 );
 
-export const movimientosStock = pgTable(
+export const movimientosStock = sqliteTable(
   "movimientos_stock",
   {
-    id: serial("id").primaryKey(),
+    id: id(),
     productoId: integer("producto_id")
       .notNull()
       .references(() => productos.id),
-    tipo: tipoStockEnum("tipo").notNull(),
-    origen: origenStockEnum("origen").notNull(),
+    tipo: text("tipo", { enum: TIPOS_STOCK }).notNull(),
+    origen: text("origen", { enum: ORIGENES_STOCK }).notNull(),
     cantidad: integer("cantidad").notNull(),
     motivo: text("motivo"),
     ventaId: integer("venta_id").references(() => ventas.id),
     usuarioId: text("usuario_id")
       .notNull()
       .references(() => user.id),
-    creadoEn: timestamp("creado_en").notNull().defaultNow(),
+    creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [
+    check("mov_stock_tipo_valido", sql`${t.tipo} in ${enLista(TIPOS_STOCK)}`),
+    check(
+      "mov_stock_origen_valido",
+      sql`${t.origen} in ${enLista(ORIGENES_STOCK)}`,
+    ),
     check("mov_stock_cantidad_positiva", sql`${t.cantidad} > 0`),
     check(
       "mov_stock_manual_con_motivo",
@@ -162,23 +177,24 @@ export const movimientosStock = pgTable(
   ],
 );
 
-export const movimientosCuenta = pgTable(
+export const movimientosCuenta = sqliteTable(
   "movimientos_cuenta",
   {
-    id: serial("id").primaryKey(),
+    id: id(),
     clienteId: integer("cliente_id")
       .notNull()
       .references(() => clientes.id),
-    tipo: tipoCuentaEnum("tipo").notNull(),
+    tipo: text("tipo", { enum: TIPOS_CUENTA }).notNull(),
     importe: dinero("importe").notNull(),
     ventaId: integer("venta_id").references(() => ventas.id),
     observacion: text("observacion"),
-    fecha: timestamp("fecha").notNull().defaultNow(),
+    fecha: fecha("fecha").notNull().default(AHORA),
     usuarioId: text("usuario_id")
       .notNull()
       .references(() => user.id),
   },
   (t) => [
+    check("mov_cuenta_tipo_valido", sql`${t.tipo} in ${enLista(TIPOS_CUENTA)}`),
     check("mov_cuenta_importe_positivo", sql`${t.importe} > 0`),
     check(
       "mov_cuenta_venta_vinculada",

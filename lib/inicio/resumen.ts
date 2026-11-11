@@ -18,18 +18,17 @@ import {
   productos,
   ventas,
 } from "@/lib/db/schema";
-import { ZONA } from "@/lib/fechas";
+import { inicioDelDia } from "@/lib/fechas";
 import { aCentavos, deCentavos } from "@/lib/moneda";
 
 const LIMITE_LISTA = 5;
 const LIMITE_VENTAS = 15;
 const UMBRAL_STOCK_BAJO = 3;
 
-const INICIO_DE_HOY = sql.raw(
-  `(date_trunc('day', now() at time zone '${ZONA}') at time zone '${ZONA}') at time zone 'UTC'`,
-);
-
-const SALDO = sql<string>`coalesce(sum(case when ${movimientosCuenta.tipo} = 'venta' then ${movimientosCuenta.importe} else -${movimientosCuenta.importe} end), 0)`;
+const SALDO =
+  sql<string>`coalesce(sum(case when ${movimientosCuenta.tipo} = 'venta' then ${movimientosCuenta.importe} else -${movimientosCuenta.importe} end), 0)`.mapWith(
+    movimientosCuenta.importe,
+  );
 
 async function obtenerItemsDeVentas(ventaIds: number[]) {
   if (ventaIds.length === 0) {
@@ -50,14 +49,14 @@ async function obtenerItemsDeVentas(ventaIds: number[]) {
 }
 
 async function obtenerVentasDeHoy() {
-  const desdeHoy = gte(ventas.creadoEn, sql`${INICIO_DE_HOY}`);
+  const desdeHoy = gte(ventas.creadoEn, inicioDelDia(new Date()));
 
   const [totales, ultimas] = await Promise.all([
     db
       .select({
         formaPago: ventas.formaPago,
         cantidad: count(),
-        importe: sum(ventas.total),
+        importe: sum(ventas.total).mapWith(ventas.total),
       })
       .from(ventas)
       .where(desdeHoy)
