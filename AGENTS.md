@@ -17,7 +17,7 @@ Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cu
 
 ## No construir
 
-Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se piden ni guardan números de tarjeta), impuestos, descuentos, cuotas, intereses, pagos combinados, devoluciones, anulación o edición de ventas y pagos confirmados, asignación de pagos a facturas concretas, multiempresa, multidepósito, multimoneda, borrado físico de productos, usuarios o clientes. Gráficos, impresión, filtros y roles configurables solo cuando lo obligatorio esté terminado.
+Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se piden ni guardan números de tarjeta), impuestos, descuentos, cuotas, intereses, pagos combinados, devoluciones, edición de ventas confirmadas, anulación o edición de pagos, asignación de pagos a facturas concretas, multiempresa, multidepósito, multimoneda, borrado físico de productos, usuarios o clientes. Gráficos, impresión, filtros y roles configurables solo cuando lo obligatorio esté terminado.
 
 ## Dominio en corto
 

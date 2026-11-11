@@ -18,6 +18,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - VE-10: se puede dar de alta un cliente durante la venta sin perder lo ya cargado.
 - VE-11: el cliente recién creado queda seleccionado en la venta.
 - VE-12: el pago con tarjeta es simulado; no se piden ni guardan datos de tarjeta.
+- VE-49: se puede agregar un producto a la venta solo con teclado: escribir en el buscador, recorrer los resultados con las flechas y elegir con Enter.
 
 ### Confirmación
 
@@ -40,10 +41,25 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - VE-26: el comprobante guarda copia del nombre y documento del cliente al momento de la venta.
 - VE-27: un comprobante no se recalcula ni cambia si luego cambian producto o cliente.
 - VE-28: un producto pasado a inactivo sigue visible en sus comprobantes viejos.
-- VE-29: una venta confirmada no se edita ni se anula.
-- VE-32: el número de comprobante es un correlativo entero simple.
+- VE-29: una venta confirmada no se edita; solo se puede anular (VE-37 a VE-46).
+- VE-32: el número de comprobante tiene punto de venta (4 dígitos) y correlativo (8 dígitos), con el formato `0001-00000001`.
 - VE-33: la fecha del comprobante la asigna el servidor al confirmar.
 - VE-34: del consumidor final solo se guarda la etiqueta "Consumidor final", sin documento ni otros datos.
+- VE-47: el correlativo es por punto de venta y se asigna como el último más uno dentro de la transacción de la venta, así no quedan números salteados.
+- VE-48: hay un solo punto de venta, fijo en el código; cambiarlo no altera los comprobantes ya emitidos, que guardan el suyo.
+
+### Anulación
+
+- VE-37: solo un administrador anula una venta, verificado en el servidor.
+- VE-38: anular exige escribir un motivo.
+- VE-39: una venta anulada no se borra: sigue visible, marcada como anulada, con fecha, usuario y motivo de la anulación.
+- VE-40: anular devuelve el stock de cada producto con un movimiento de entrada con origen anulación.
+- VE-41: anular una venta en cuenta corriente registra un movimiento de anulación que resta su total del saldo del cliente.
+- VE-42: no se anula una venta en cuenta corriente si el saldo del cliente quedaría negativo (por ejemplo, porque ya pagó parte).
+- VE-43: una venta anulada no se vuelve a anular.
+- VE-44: anular graba la marca, los movimientos de stock y el de cuenta corriente en una sola transacción.
+- VE-45: las ventas anuladas no suman en los totales del listado de ventas, no aparecen en las ventas de hoy de Inicio y no cuentan en "más vendidos".
+- VE-46: el número de una venta anulada no se reutiliza.
 
 ### Consulta
 
@@ -74,7 +90,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - PR-20: el orden y la vista elegidos se recuerdan en el navegador.
 - PR-21: toda búsqueda del sistema ignora mayúsculas y acentos.
 - PR-22: el listado de productos incluye los inactivos, identificados por su estado.
-- PR-23: "más vendidos" ordena por unidades vendidas en toda la historia, con los productos sin ventas al final; a igual cantidad, por nombre.
+- PR-23: "más vendidos" ordena por unidades vendidas en toda la historia, sin contar ventas anuladas, con los productos sin ventas al final; a igual cantidad, por nombre.
 - PR-24: el listado de productos se pagina de a 36; cambiar la búsqueda o el orden vuelve a la primera página.
 
 ## Stock
@@ -82,7 +98,7 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - ST-01: el stock se maneja en unidades enteras.
 - ST-02: el stock nunca queda negativo.
 - ST-03: todo cambio de stock es un movimiento.
-- ST-04: un movimiento tiene tipo (entrada o salida), cantidad, motivo y origen (manual o venta).
+- ST-04: un movimiento tiene tipo (entrada o salida), cantidad, motivo y origen (manual, venta o anulación).
 - ST-05: la cantidad de un movimiento es un entero positivo.
 - ST-06: el motivo de un movimiento manual es obligatorio.
 - ST-07: una salida manual mayor que el stock actual se rechaza en el servidor.
@@ -113,12 +129,15 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 
 - CC-01: cada cliente registrado tiene una cuenta corriente.
 - CC-02: el consumidor final no tiene cuenta corriente.
-- CC-03: el saldo es la suma de ventas en cuenta corriente menos la suma de pagos.
+- CC-03: el saldo es la suma de ventas en cuenta corriente menos la suma de anulaciones y de pagos.
 - CC-04: se consulta el saldo adeudado.
 - CC-05: se listan las ventas en cuenta corriente del cliente.
 - CC-06: se consulta el historial de movimientos (ventas y pagos) en orden cronológico.
 - CC-07: las ventas de contado o tarjeta no figuran como deuda.
 - CC-08: el listado de clientes muestra el saldo de cada uno.
+- CC-09: un cliente puede tener un límite de crédito; es opcional y, sin límite, la cuenta corriente no tiene tope.
+- CC-10: el límite de crédito es un importe mayor que cero.
+- CC-11: una venta en cuenta corriente no puede dejar el saldo del cliente por encima de su límite, validado en el servidor.
 - PA-01: un pago tiene fecha, importe y observación opcional.
 - PA-02: el importe es mayor que cero.
 - PA-03: un pago no puede superar el saldo adeudado, validado en el servidor.
@@ -164,6 +183,10 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-02: se muestran hasta 15 ventas de hoy, de la más reciente a la más antigua.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
+
+## Interfaz
+
+- IU-01: todo listado muestra un estado mientras carga, un estado vacío que dice qué falta y un estado de error que permite reintentar.
 
 ## Abierto
 
@@ -212,4 +235,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-10: PR-17 resuelto: las imágenes de los productos no se alojan en el sistema; se usa la dirección de la tapa en IGDB (`images.igdb.com`), que el formulario explica cómo copiar, en línea con no sumar un servicio de almacenamiento.
 - 2026-11-10: US-24 resuelto: el administrador elige el rol al crear un usuario, igual que puede cambiarlo después (US-27); así sumar otro administrador no obliga a crear un operador y ascenderlo.
 - 2026-11-11: la base pasa de Postgres (Neon) a Turso (libSQL/SQLite) por requerimiento del profesor. Consecuencias: los importes se guardan en centavos enteros, porque SQLite no tiene decimales exactos; el número de comprobante se asigna como el máximo más uno dentro de la transacción de la venta, porque no hay secuencias; VE-22 y PA-07 se apoyan en que toda transacción de libSQL toma el lock de escritura al empezar (no existe `FOR UPDATE`) y en el check de stock no negativo; los enums son texto con check; la búsqueda ignora mayúsculas y acentos con un patrón `GLOB` armado en el servidor, que reemplaza a la decisión del 2026-11-09 sobre `translate`; el día de una venta se calcula con el desfase fijo de Argentina (UTC−3).
+- 2026-11-11: se permite anular ventas, porque la consigna del parcial lo pregunta en la defensa; reemplaza la parte de VE-29 que lo prohibía. Solo la anula un administrador y con motivo, como las demás acciones sensibles, y se rechaza si dejaría el saldo del cliente negativo, para no manejar saldos a favor. La venta no se borra: queda marcada, y stock y cuenta se corrigen con movimientos nuevos, para mantener el historial auditable.
+- 2026-11-11: límite de crédito opcional por cliente, porque la consigna lo pregunta; vacío significa sin tope, para que el alta rápida durante una venta siga igual.
+- 2026-11-11: el número de comprobante suma un punto de venta fijo (`0001-00000001`), guardado en cada venta, porque la consigna pide poder cambiarlo; reemplaza el correlativo simple de VE-32. El correlativo se calcula dentro de la transacción (no con un autoincremental) para que no queden números salteados.
+- 2026-11-11: el buscador de la venta se recorre con flechas y se elige con Enter (VE-49), y las pantallas tienen un estado de error con reintento (IU-01), porque la consigna los pregunta en la defensa.
 - 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
