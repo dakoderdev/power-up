@@ -1,9 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import type { rolEnum } from "@/lib/db/schema";
+import type { ROLES } from "@/lib/db/schema";
 
-type Rol = (typeof rolEnum.enumValues)[number];
+type Rol = (typeof ROLES)[number];
 
 export const ROL_ADMINISTRADOR: Rol = "admin";
 

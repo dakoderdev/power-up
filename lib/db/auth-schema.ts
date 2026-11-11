@@ -1,40 +1,57 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
-  pgEnum,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
-  boolean,
+  integer,
   index,
-} from "drizzle-orm/pg-core";
+  check,
+} from "drizzle-orm/sqlite-core";
 
-export const rolEnum = pgEnum("rol", ["admin", "operator"]);
+export const ROLES = ["admin", "operator"] as const;
 
-export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").default(false).notNull(),
-  image: text("image"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  username: text("username").unique(),
-  displayUsername: text("display_username"),
-  role: rolEnum("role").notNull().default("operator"),
-  active: boolean("active").notNull().default(true),
-});
+export const AHORA = sql`(cast(unixepoch('subsecond') * 1000 as integer))`;
 
-export const session = pgTable(
+export function fecha(nombre: string) {
+  return integer(nombre, { mode: "timestamp_ms" });
+}
+
+export function booleano(nombre: string) {
+  return integer(nombre, { mode: "boolean" });
+}
+
+export function enLista(valores: readonly string[]) {
+  return sql.raw(`(${valores.map((valor) => `'${valor}'`).join(", ")})`);
+}
+
+export const user = sqliteTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: booleano("email_verified").default(false).notNull(),
+    image: text("image"),
+    createdAt: fecha("created_at").default(AHORA).notNull(),
+    updatedAt: fecha("updated_at")
+      .default(AHORA)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    username: text("username").unique(),
+    displayUsername: text("display_username"),
+    role: text("role", { enum: ROLES }).notNull().default("operator"),
+    active: booleano("active").notNull().default(true),
+  },
+  (t) => [check("user_rol_valido", sql`${t.role} in ${enLista(ROLES)}`)],
+);
+
+export const session = sqliteTable(
   "session",
   {
     id: text("id").primaryKey(),
-    expiresAt: timestamp("expires_at").notNull(),
+    expiresAt: fecha("expires_at").notNull(),
     token: text("token").notNull().unique(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: fecha("created_at").default(AHORA).notNull(),
+    updatedAt: fecha("updated_at")
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
     ipAddress: text("ip_address"),
@@ -46,7 +63,7 @@ export const session = pgTable(
   (table) => [index("session_userId_idx").on(table.userId)],
 );
 
-export const account = pgTable(
+export const account = sqliteTable(
   "account",
   {
     id: text("id").primaryKey(),
@@ -58,28 +75,28 @@ export const account = pgTable(
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
-    accessTokenExpiresAt: timestamp("access_token_expires_at"),
-    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    accessTokenExpiresAt: fecha("access_token_expires_at"),
+    refreshTokenExpiresAt: fecha("refresh_token_expires_at"),
     scope: text("scope"),
     password: text("password"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: fecha("created_at").default(AHORA).notNull(),
+    updatedAt: fecha("updated_at")
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
   (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const verification = pgTable(
+export const verification = sqliteTable(
   "verification",
   {
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
+    expiresAt: fecha("expires_at").notNull(),
+    createdAt: fecha("created_at").default(AHORA).notNull(),
+    updatedAt: fecha("updated_at")
+      .default(AHORA)
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },

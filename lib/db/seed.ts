@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  eq,
+  getTableName,
+  inArray,
+  isNull,
+  sql,
+} from "drizzle-orm";
 import { auth } from "../auth";
 import { formatearHora } from "../fechas";
 import { aCentavos, deCentavos } from "../moneda";
@@ -43,6 +51,15 @@ const MOTIVOS_AJUSTE = {
 };
 
 const FLAG_REINICIAR = "--reiniciar";
+
+const TABLAS_DEMOSTRACION = [
+  movimientosCuenta,
+  movimientosStock,
+  itemsVenta,
+  ventas,
+  clientes,
+  productos,
+];
 
 const NOMBRES = [
   "Martina",
@@ -350,12 +367,17 @@ async function reiniciarDemostracion() {
     throw new Error(`${FLAG_REINICIAR} no se puede usar en Vercel.`);
   }
 
-  const base = new URL(leerVariable("DATABASE_URL")).host;
+  const base = leerVariable("TURSO_DATABASE_URL");
   console.log(`Borrando los datos de demostración de ${base}…`);
 
-  await db.execute(
-    sql`truncate table ${movimientosCuenta}, ${movimientosStock}, ${itemsVenta}, ${ventas}, ${clientes}, ${productos} restart identity`,
-  );
+  await db.transaction(async (tx) => {
+    for (const tabla of TABLAS_DEMOSTRACION) {
+      await tx.delete(tabla);
+      await tx.run(
+        sql`delete from sqlite_sequence where name = ${getTableName(tabla)}`,
+      );
+    }
+  });
 }
 
 function leerVariable(nombre: string) {

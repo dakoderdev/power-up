@@ -1,10 +1,10 @@
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import ws from "ws";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
-neonConfig.webSocketConstructor = ws;
+const cliente = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-export const db = drizzle(pool, { schema });
+export const db = drizzle(cliente, { schema });

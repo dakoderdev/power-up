@@ -10,12 +10,12 @@ import * as schema from "./db/schema";
 export const auth = betterAuth({
   secret: process.env.AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
-  database: drizzleAdapter(db, { provider: "pg", schema }),
+  database: drizzleAdapter(db, { provider: "sqlite", schema }),
   emailAndPassword: { enabled: true, minPasswordLength: 8 },
   user: {
     additionalFields: {
       role: {
-        type: [...schema.rolEnum.enumValues],
+        type: [...schema.ROLES],
         defaultValue: "operator",
         input: false,
       },

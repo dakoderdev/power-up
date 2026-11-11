@@ -1,33 +1,12 @@
 {
   "version": "7",
-  "dialect": "postgresql",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1794102181028,
-      "tag": "0000_wealthy_mysterio",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1794105894540,
-      "tag": "0001_aromatic_slipstream",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794165524003,
-      "tag": "0002_dear_the_captain",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794182850195,
-      "tag": "0003_rol_enum",
+      "version": "6",
+      "when": 1794415096639,
+      "tag": "0000_perpetual_shape",
       "breakpoints": true
     }
   ]

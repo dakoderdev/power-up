@@ -27,7 +27,7 @@ Herramienta de trabajo de un comercio gamer: la identidad retro/pixel es de la m
 
 ## Capabilities and Constraints
 
-Next.js, Tailwind, Drizzle sobre Postgres (Neon), Better Auth, Zod, deploy en Vercel. Planes gratuitos. Sin lógica de negocio todavía: el diseño se hace antes. Librería de UI sin decidir.
+Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod, deploy en Vercel. Planes gratuitos. Sin lógica de negocio todavía: el diseño se hace antes. Librería de UI sin decidir.
 
 ## Brand Commitments
 

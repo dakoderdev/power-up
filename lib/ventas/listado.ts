@@ -1,12 +1,12 @@
 import { asc, count, desc, eq, inArray, sql, sum } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { itemsVenta, productos, ventas } from "@/lib/db/schema";
-import { claveDia, ZONA } from "@/lib/fechas";
+import { claveDia, DESFASE_HORAS } from "@/lib/fechas";
 import { ubicarPagina } from "@/lib/paginacion";
 
 const VENTAS_POR_PAGINA = 30;
 
-const DIA = sql<string>`to_char((${ventas.creadoEn} at time zone 'UTC') at time zone ${sql.raw(`'${ZONA}'`)}, 'YYYY-MM-DD')`;
+const DIA = sql<string>`strftime('%Y-%m-%d', ${ventas.creadoEn} / 1000, 'unixepoch', ${sql.raw(`'${DESFASE_HORAS} hours'`)})`;
 
 async function obtenerItems(ventaIds: number[]) {
   return db
@@ -24,7 +24,11 @@ async function obtenerItems(ventaIds: number[]) {
 
 async function obtenerTotalesPorDia(dias: string[]) {
   return db
-    .select({ dia: DIA, cantidad: count(), total: sum(ventas.total) })
+    .select({
+      dia: DIA,
+      cantidad: count(),
+      total: sum(ventas.total).mapWith(ventas.total),
+    })
     .from(ventas)
     .where(inArray(DIA, dias))
     .groupBy(DIA);

@@ -32,13 +32,12 @@ function unificarItems(items: VentaEntrada["items"]) {
   return cantidades;
 }
 
-async function bloquearProductos(tx: Transaccion, ids: number[]) {
+async function buscarProductos(tx: Transaccion, ids: number[]) {
   return tx
     .select()
     .from(productos)
     .where(inArray(productos.id, ids))
-    .orderBy(asc(productos.id))
-    .for("update");
+    .orderBy(asc(productos.id));
 }
 
 export async function confirmarVenta({
@@ -70,12 +69,14 @@ export async function confirmarVenta({
       return {
         confirmada: false,
         errores: [
-          { mensaje: "Cuenta corriente solo se admite con cliente registrado." },
+          {
+            mensaje: "Cuenta corriente solo se admite con cliente registrado.",
+          },
         ],
       };
     }
 
-    const encontrados = await bloquearProductos(tx, [...cantidades.keys()]);
+    const encontrados = await buscarProductos(tx, [...cantidades.keys()]);
 
     const errores: ErrorVenta[] = [];
 
@@ -85,7 +86,10 @@ export async function confirmarVenta({
       if (!prod) {
         errores.push({ productoId: id, mensaje: "El producto no existe." });
       } else if (!prod.activo) {
-        errores.push({ productoId: id, mensaje: `${prod.nombre} está inactivo.` });
+        errores.push({
+          productoId: id,
+          mensaje: `${prod.nombre} está inactivo.`,
+        });
       } else if (prod.stock < cantidad) {
         errores.push({
           productoId: id,

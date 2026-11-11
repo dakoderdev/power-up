@@ -2,7 +2,7 @@
 
 Sistema de ventas y gestión comercial: ventas con comprobante, productos y stock, clientes, cuentas corrientes y pagos, y usuarios con roles. Moneda única: pesos argentinos.
 
-Stack: Next.js, Tailwind, Drizzle ORM sobre Postgres (Neon), Better Auth, Zod con drizzle-zod, deploy en Vercel.
+Stack: Next.js, Tailwind, Drizzle ORM sobre Turso (libSQL/SQLite), Better Auth, Zod con drizzle-zod, deploy en Vercel.
 
 Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El diseño visual está en [`DESIGN.md`](DESIGN.md).
 
@@ -19,7 +19,7 @@ Hoy el seed solo crea el administrador. El usuario operador de prueba está pend
 ## Requisitos
 
 - Node.js 20 o superior
-- Una base Postgres (Neon, plan gratuito)
+- Una base en Turso (plan gratuito). En desarrollo también sirve un archivo local: `TURSO_DATABASE_URL=file:local.db`, sin token
 
 ## Puesta en marcha
 
@@ -55,15 +55,17 @@ Hoy el seed solo crea el administrador. El usuario operador de prueba está pend
 
 Las credenciales y claves van solo en variables de entorno (`.env.local` o `.env`, ignorados por git). Nunca en el código.
 
-| Variable                | Descripción                                                      |
-| ----------------------- | ---------------------------------------------------------------- |
-| `DATABASE_URL`          | Cadena de conexión a Postgres                                    |
-| `DATABASE_URL_UNPOOLED` | Conexión directa a Postgres, sin pooler                          |
-| `AUTH_SECRET`           | Secreto de Better Auth para firmar sesiones                      |
-| `BETTER_AUTH_URL`       | URL base del sistema (`http://localhost:3000` en desarrollo)     |
-| `SEED_ADMIN_EMAIL`      | Correo del administrador que crea el seed                        |
-| `SEED_ADMIN_PASSWORD`   | Contraseña del administrador (mínimo 8 caracteres)               |
-| `SEED_ADMIN_NAME`       | Nombre del administrador (opcional, por defecto `Administrador`) |
+| Variable              | Descripción                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `TURSO_DATABASE_URL`  | URL de la base en Turso (`libsql://...`) o `file:local.db`                                |
+| `TURSO_AUTH_TOKEN`    | Token de la base en Turso (no hace falta con un archivo local)                            |
+| `AUTH_SECRET`         | Secreto de Better Auth para firmar sesiones                                               |
+| `BETTER_AUTH_URL`     | URL base del sistema (`http://localhost:3000` en desarrollo)                              |
+| `SEED_ADMIN_EMAIL`    | Correo del administrador que crea el seed                                                 |
+| `SEED_ADMIN_PASSWORD` | Contraseña del administrador (mínimo 8 caracteres)                                        |
+| `SEED_ADMIN_NAME`     | Nombre del administrador (opcional, por defecto `Administrador`)                          |
+| `IGDB_CLIENT_ID`      | Opcional: cuenta de IGDB para cargar juegos en bloque con el asistente (la app no la lee) |
+| `IGDB_CLIENT_SECRET`  | Opcional: secreto de la cuenta de IGDB (ídem)                                             |
 
 Para que el seed cree el usuario de evaluación, usar estos valores:
 

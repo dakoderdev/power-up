@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { ventas } from "@/lib/db/schema";
+import { AHORA, ventas } from "@/lib/db/schema";
 
 async function moverVentasAHoy() {
   const movidas = await db
     .update(ventas)
     .set({
-      creadoEn: sql`${ventas.creadoEn} + (now() - (select max(${ventas.creadoEn}) from ${ventas}))`,
+      creadoEn: sql`${ventas.creadoEn} + (${AHORA} - (select max(${ventas.creadoEn}) from ${ventas}))`,
     })
     .returning({ id: ventas.id });
 
