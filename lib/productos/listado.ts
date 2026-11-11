@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
-import { productos } from "@/lib/db/schema";
+import { itemsVenta, productos, ventas } from "@/lib/db/schema";
 import { ubicarPagina } from "@/lib/paginacion";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
@@ -14,7 +14,7 @@ export type ParametrosListado = {
   pagina?: string | string[];
 };
 
-const UNIDADES_VENDIDAS = sql`coalesce((select sum(cantidad) from items_venta where items_venta.producto_id = ${productos.id}), 0)`;
+const UNIDADES_VENDIDAS = sql`coalesce((select sum(${itemsVenta.cantidad}) from ${itemsVenta} inner join ${ventas} on ${ventas.id} = ${itemsVenta.ventaId} where ${itemsVenta.productoId} = ${productos.id} and ${ventas.anuladaEn} is null), 0)`;
 
 const CRITERIOS = {
   recientes: [desc(productos.creadoEn), desc(productos.id)],

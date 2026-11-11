@@ -20,18 +20,35 @@ export const esquemaMovimientoRegistro = base
     (movimiento) =>
       movimiento.origen !== "manual" ||
       (movimiento.motivo ?? "").trim().length > 0,
-    { message: "El motivo es obligatorio en ajustes manuales.", path: ["motivo"] },
+    {
+      message: "El motivo es obligatorio en ajustes manuales.",
+      path: ["motivo"],
+    },
   )
   .refine(
-    (movimiento) => (movimiento.origen === "venta") === (movimiento.ventaId != null),
+    (movimiento) =>
+      (movimiento.origen !== "manual") === (movimiento.ventaId != null),
     {
-      message: "Solo los movimientos por venta llevan venta asociada.",
+      message:
+        "Solo los movimientos por venta o anulación llevan venta asociada.",
       path: ["ventaId"],
     },
   )
   .refine(
-    (movimiento) => movimiento.origen !== "venta" || movimiento.tipo === "salida",
-    { message: "Los movimientos por venta son siempre salidas.", path: ["tipo"] },
+    (movimiento) =>
+      movimiento.origen !== "venta" || movimiento.tipo === "salida",
+    {
+      message: "Los movimientos por venta son siempre salidas.",
+      path: ["tipo"],
+    },
+  )
+  .refine(
+    (movimiento) =>
+      movimiento.origen !== "anulacion" || movimiento.tipo === "entrada",
+    {
+      message: "Los movimientos por anulación son siempre entradas.",
+      path: ["tipo"],
+    },
   );
 
 export type AjusteManual = z.infer<typeof esquemaAjusteManual>;

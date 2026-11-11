@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import type { FocusEvent, ReactNode } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { FocusEvent, KeyboardEvent, ReactNode } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
 import { CLASE_CAMPO } from "@/components/estilos";
 
 const ESPERA_BUSQUEDA = 250;
+const SELECTOR_OPCION = "[data-opcion]:not(:disabled)";
 const CLASE_OPCION =
   "flex h-11 w-full items-center gap-3 text-left text-neutral-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:text-neutral-500";
 
@@ -34,6 +35,9 @@ export function Combobox<T extends { id: number }>({
   const [encontrados, setEncontrados] = useState<T[] | null>(null);
   const [buscando, setBuscando] = useState(true);
   const [abierto, setAbierto] = useState(false);
+  const contenedor = useRef<HTMLDivElement>(null);
+  const campo = useRef<HTMLInputElement>(null);
+  const volviendo = useRef(false);
 
   useEffect(() => {
     let vigente = true;
@@ -63,6 +67,69 @@ export function Combobox<T extends { id: number }>({
     setBusqueda("");
   }
 
+  function volverAlCampo() {
+    volviendo.current = true;
+    campo.current?.focus();
+  }
+
+  function abrirAlEnfocar() {
+    if (volviendo.current) {
+      volviendo.current = false;
+      return;
+    }
+
+    setAbierto(true);
+  }
+
+  function elegir(accion: () => void) {
+    accion();
+    cerrar();
+    volverAlCampo();
+  }
+
+  function moverFoco(paso: number) {
+    const opciones = [
+      ...(contenedor.current?.querySelectorAll<HTMLElement>(SELECTOR_OPCION) ??
+        []),
+    ];
+
+    if (opciones.length === 0) {
+      return;
+    }
+
+    const actual = opciones.indexOf(document.activeElement as HTMLElement);
+    const siguiente =
+      actual === -1 ? (paso > 0 ? 0 : opciones.length - 1) : actual + paso;
+
+    if (siguiente < 0 || siguiente >= opciones.length) {
+      volverAlCampo();
+      return;
+    }
+
+    opciones[siguiente].focus();
+  }
+
+  function manejarTeclas(evento: KeyboardEvent<HTMLDivElement>) {
+    if (evento.key === "Escape") {
+      cerrar();
+      volverAlCampo();
+      return;
+    }
+
+    if (evento.key !== "ArrowDown" && evento.key !== "ArrowUp") {
+      return;
+    }
+
+    evento.preventDefault();
+
+    if (!abierto) {
+      setAbierto(true);
+      return;
+    }
+
+    moverFoco(evento.key === "ArrowDown" ? 1 : -1);
+  }
+
   function cerrarAlSalir(evento: FocusEvent<HTMLDivElement>) {
     if (!evento.currentTarget.contains(evento.relatedTarget)) {
       cerrar();
@@ -71,12 +138,9 @@ export function Combobox<T extends { id: number }>({
 
   return (
     <div
+      ref={contenedor}
       onBlur={cerrarAlSalir}
-      onKeyDown={(evento) => {
-        if (evento.key === "Escape") {
-          cerrar();
-        }
-      }}
+      onKeyDown={manejarTeclas}
       className="relative flex flex-col gap-2"
     >
       <label htmlFor={idCampo} className="text-sm font-medium text-neutral-400">
@@ -84,6 +148,7 @@ export function Combobox<T extends { id: number }>({
       </label>
       <div className="relative">
         <input
+          ref={campo}
           id={idCampo}
           type="text"
           role="combobox"
@@ -92,7 +157,7 @@ export function Combobox<T extends { id: number }>({
           aria-controls={idLista}
           value={abierto ? busqueda : (elegido ?? busqueda)}
           onChange={(evento) => cambiarBusqueda(evento.target.value)}
-          onFocus={() => setAbierto(true)}
+          onFocus={abrirAlEnfocar}
           maxLength={120}
           placeholder={abierto && elegido ? elegido : placeholder}
           autoComplete="off"
@@ -117,10 +182,8 @@ export function Combobox<T extends { id: number }>({
               <li className="border-b border-neutral-900">
                 <button
                   type="button"
-                  onClick={() => {
-                    opcionFija.onElegir();
-                    cerrar();
-                  }}
+                  data-opcion
+                  onClick={() => elegir(opcionFija.onElegir)}
                   className={CLASE_OPCION}
                 >
                   {opcionFija.etiqueta}
@@ -141,11 +204,9 @@ export function Combobox<T extends { id: number }>({
                 >
                   <button
                     type="button"
+                    data-opcion
                     disabled={deshabilitada?.(opcion)}
-                    onClick={() => {
-                      onElegir(opcion);
-                      cerrar();
-                    }}
+                    onClick={() => elegir(() => onElegir(opcion))}
                     className={`group ${CLASE_OPCION}`}
                   >
                     {renderOpcion(opcion)}

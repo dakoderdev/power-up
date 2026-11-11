@@ -26,7 +26,7 @@ export function ResumenVenta({
   formaPago: FormaPago;
   conCliente: boolean;
   errores: string[];
-  confirmada: number | null;
+  confirmada: string | null;
   confirmando: boolean;
   onFormaPago: (formaPago: FormaPago) => void;
   onConfirmar: () => void;

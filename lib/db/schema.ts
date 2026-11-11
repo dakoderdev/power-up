@@ -15,8 +15,8 @@ export * from "./auth-schema";
 
 export const FORMAS_PAGO = ["contado", "tarjeta", "cuenta_corriente"] as const;
 export const TIPOS_STOCK = ["entrada", "salida"] as const;
-export const ORIGENES_STOCK = ["manual", "venta"] as const;
-export const TIPOS_CUENTA = ["venta", "pago"] as const;
+export const ORIGENES_STOCK = ["manual", "venta", "anulacion"] as const;
+export const TIPOS_CUENTA = ["venta", "pago", "anulacion"] as const;
 
 const dinero = customType<{ data: string; driverData: number }>({
   dataType: () => "integer",
@@ -57,6 +57,7 @@ export const clientes = sqliteTable(
     documento: text("documento").notNull().unique(),
     telefono: text("telefono"),
     email: text("email"),
+    limiteCredito: dinero("limite_credito"),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [
@@ -69,6 +70,10 @@ export const clientes = sqliteTable(
       "clientes_documento_numerico",
       sql`length(${t.documento}) > 0 AND ${t.documento} NOT GLOB '*[^0-9]*'`,
     ),
+    check(
+      "clientes_limite_positivo",
+      sql`${t.limiteCredito} IS NULL OR ${t.limiteCredito} > 0`,
+    ),
     index("clientes_nombre_idx").on(t.nombre),
   ],
 );
@@ -77,10 +82,8 @@ export const ventas = sqliteTable(
   "ventas",
   {
     id: id(),
-    numero: integer("numero")
-      .notNull()
-      .unique()
-      .$defaultFn(() => sql`(select coalesce(max(numero), 0) + 1 from ventas)`),
+    puntoVenta: integer("punto_venta").notNull().default(1),
+    numero: integer("numero").notNull(),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
     clienteId: integer("cliente_id").references(() => clientes.id),
     clienteNombre: text("cliente_nombre").notNull(),
@@ -90,8 +93,18 @@ export const ventas = sqliteTable(
     usuarioId: text("usuario_id")
       .notNull()
       .references(() => user.id),
+    anuladaEn: fecha("anulada_en"),
+    anuladaPor: text("anulada_por").references(() => user.id),
+    motivoAnulacion: text("motivo_anulacion"),
   },
   (t) => [
+    uniqueIndex("ventas_comprobante_unico").on(t.puntoVenta, t.numero),
+    check("ventas_punto_venta_valido", sql`${t.puntoVenta} between 1 and 9999`),
+    check("ventas_numero_positivo", sql`${t.numero} > 0`),
+    check(
+      "ventas_anulacion_completa",
+      sql`(${t.anuladaEn} IS NULL AND ${t.anuladaPor} IS NULL AND ${t.motivoAnulacion} IS NULL) OR (${t.anuladaEn} IS NOT NULL AND ${t.anuladaPor} IS NOT NULL AND length(trim(coalesce(${t.motivoAnulacion}, ''))) > 0)`,
+    ),
     check(
       "ventas_forma_pago_valida",
       sql`${t.formaPago} in ${enLista(FORMAS_PAGO)}`,
@@ -167,11 +180,15 @@ export const movimientosStock = sqliteTable(
     ),
     check(
       "mov_stock_venta_vinculada",
-      sql`(${t.origen} = 'venta') = (${t.ventaId} IS NOT NULL)`,
+      sql`(${t.origen} in ('venta', 'anulacion')) = (${t.ventaId} IS NOT NULL)`,
     ),
     check(
       "mov_stock_venta_es_salida",
       sql`${t.origen} <> 'venta' OR ${t.tipo} = 'salida'`,
+    ),
+    check(
+      "mov_stock_anulacion_es_entrada",
+      sql`${t.origen} <> 'anulacion' OR ${t.tipo} = 'entrada'`,
     ),
     index("mov_stock_producto_idx").on(t.productoId),
   ],
@@ -198,10 +215,10 @@ export const movimientosCuenta = sqliteTable(
     check("mov_cuenta_importe_positivo", sql`${t.importe} > 0`),
     check(
       "mov_cuenta_venta_vinculada",
-      sql`(${t.tipo} = 'venta') = (${t.ventaId} IS NOT NULL)`,
+      sql`(${t.tipo} in ('venta', 'anulacion')) = (${t.ventaId} IS NOT NULL)`,
     ),
     uniqueIndex("mov_cuenta_venta_unica")
-      .on(t.ventaId)
+      .on(t.ventaId, t.tipo)
       .where(sql`${t.ventaId} IS NOT NULL`),
     index("mov_cuenta_cliente_idx").on(t.clienteId),
   ],

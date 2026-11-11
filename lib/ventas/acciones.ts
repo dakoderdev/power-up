@@ -3,9 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { buscarProductosActivos } from "@/lib/productos/listado";
-import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import {
+  obtenerUsuarioActual,
+  requerirAdministrador,
+} from "@/lib/usuarios/sesion";
+import { anularVenta } from "./anular";
 import { confirmarVenta } from "./confirmar";
-import { esquemaVentaEntrada } from "./esquemas";
+import { esquemaAnulacion, esquemaVentaEntrada } from "./esquemas";
 
 export async function confirmarVentaAccion(datos: unknown) {
   const usuario = await obtenerUsuarioActual();
@@ -29,6 +33,34 @@ export async function confirmarVentaAccion(datos: unknown) {
   }
 
   return venta;
+}
+
+export async function anularVentaAccion(datos: unknown) {
+  const usuario = await requerirAdministrador();
+
+  const validacion = esquemaAnulacion.safeParse(datos);
+
+  if (!validacion.success) {
+    return {
+      anulada: false as const,
+      mensaje: validacion.error.issues[0].message,
+    };
+  }
+
+  const resultado = await anularVenta({
+    ventaId: validacion.data.id,
+    motivo: validacion.data.motivoAnulacion,
+    usuarioId: usuario.id,
+  });
+
+  if (resultado.anulada) {
+    revalidatePath("/");
+    revalidatePath("/ventas");
+    revalidatePath(`/ventas/${validacion.data.id}`);
+    revalidatePath("/productos");
+  }
+
+  return resultado;
 }
 
 export async function buscarProductosAccion(busqueda: unknown) {

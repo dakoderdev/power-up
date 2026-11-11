@@ -1,5 +1,7 @@
 export const CONSUMIDOR_FINAL = "Consumidor final";
 
+export const ETIQUETA_ANULADA = "Anulada";
+
 export const ETIQUETAS_FORMA_PAGO = {
   contado: "Contado",
   tarjeta: "Tarjeta",

@@ -8,6 +8,13 @@
       "when": 1794415096639,
       "tag": "0000_perpetual_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794416891686,
+      "tag": "0001_anulacion_credito_numeracion",
+      "breakpoints": true
     }
   ]
 }

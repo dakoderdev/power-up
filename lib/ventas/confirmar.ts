@@ -1,5 +1,6 @@
 import { asc, eq, inArray, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { obtenerSaldo } from "@/lib/cuentas/saldo";
+import { db, type Transaccion } from "@/lib/db";
 import {
   clientes,
   itemsVenta,
@@ -8,15 +9,17 @@ import {
   productos,
   ventas,
 } from "@/lib/db/schema";
-import { aCentavos, deCentavos } from "@/lib/moneda";
+import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
+import { formatearComprobante, PUNTO_VENTA } from "./comprobante";
 import type { VentaEntrada } from "./esquemas";
 import { CONSUMIDOR_FINAL } from "./etiquetas";
+import { siguienteNumero } from "./numeracion";
 
-type Transaccion = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type ErrorVenta = { productoId?: number; mensaje: string };
+type Cliente = typeof clientes.$inferSelect;
 
 type ResultadoConfirmar =
-  | { confirmada: true; ventaId: number; numero: number }
+  | { confirmada: true; ventaId: number; comprobante: string }
   | { confirmada: false; errores: ErrorVenta[] };
 
 function unificarItems(items: VentaEntrada["items"]) {
@@ -38,6 +41,27 @@ async function buscarProductos(tx: Transaccion, ids: number[]) {
     .from(productos)
     .where(inArray(productos.id, ids))
     .orderBy(asc(productos.id));
+}
+
+async function excedeLimite({
+  tx,
+  cliente,
+  centavos,
+}: {
+  tx: Transaccion;
+  cliente: Cliente;
+  centavos: number;
+}) {
+  if (cliente.limiteCredito === null) {
+    return null;
+  }
+
+  const saldo = await obtenerSaldo({ consulta: tx, clienteId: cliente.id });
+  const disponible = aCentavos(cliente.limiteCredito) - aCentavos(saldo);
+
+  return centavos > disponible
+    ? `La venta supera el límite de crédito de ${cliente.nombre}: le quedan ${formatearMoneda(deCentavos(Math.max(0, disponible)))} disponibles.`
+    : null;
 }
 
 export async function confirmarVenta({
@@ -111,13 +135,23 @@ export async function confirmarVenta({
         centavos: aCentavos(producto.precio) * cantidad,
       };
     });
-    const total = deCentavos(
-      lineas.reduce((suma, linea) => suma + linea.centavos, 0),
-    );
+    const centavos = lineas.reduce((suma, linea) => suma + linea.centavos, 0);
+    const total = deCentavos(centavos);
+
+    const sinCredito =
+      entrada.formaPago === "cuenta_corriente" && cliente
+        ? await excedeLimite({ tx, cliente, centavos })
+        : null;
+
+    if (sinCredito) {
+      return { confirmada: false, errores: [{ mensaje: sinCredito }] };
+    }
 
     const [{ ventaId, numero }] = await tx
       .insert(ventas)
       .values({
+        puntoVenta: PUNTO_VENTA,
+        numero: siguienteNumero(PUNTO_VENTA),
         clienteId: cliente?.id ?? null,
         clienteNombre: cliente?.nombre ?? CONSUMIDOR_FINAL,
         clienteDocumento: cliente?.documento ?? null,
@@ -167,6 +201,10 @@ export async function confirmarVenta({
       });
     }
 
-    return { confirmada: true, ventaId, numero };
+    return {
+      confirmada: true,
+      ventaId,
+      comprobante: formatearComprobante({ puntoVenta: PUNTO_VENTA, numero }),
+    };
   });
 }

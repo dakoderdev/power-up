@@ -1,4 +1,14 @@
-import { asc, count, desc, eq, inArray, sql, sum } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  sql,
+  sum,
+} from "drizzle-orm";
 import { db } from "@/lib/db";
 import { itemsVenta, productos, ventas } from "@/lib/db/schema";
 import { claveDia, DESFASE_HORAS } from "@/lib/fechas";
@@ -30,7 +40,7 @@ async function obtenerTotalesPorDia(dias: string[]) {
       total: sum(ventas.total).mapWith(ventas.total),
     })
     .from(ventas)
-    .where(inArray(DIA, dias))
+    .where(and(inArray(DIA, dias), isNull(ventas.anuladaEn)))
     .groupBy(DIA);
 }
 
@@ -45,7 +55,9 @@ export async function listarVentas(paginaPedida: number) {
   const lista = await db
     .select({
       id: ventas.id,
+      puntoVenta: ventas.puntoVenta,
       numero: ventas.numero,
+      anuladaEn: ventas.anuladaEn,
       creadoEn: ventas.creadoEn,
       clienteNombre: ventas.clienteNombre,
       formaPago: ventas.formaPago,

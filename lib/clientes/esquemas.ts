@@ -1,7 +1,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { clientes } from "@/lib/db/schema";
-import { textoOpcional } from "@/lib/esquemas-comunes";
+import { importePositivo, textoOpcional } from "@/lib/esquemas-comunes";
 
 const FORMATO_DOCUMENTO = /^[0-9]+$/;
 
@@ -14,6 +14,7 @@ const base = createInsertSchema(clientes, {
       .regex(FORMATO_DOCUMENTO, "El documento debe ser numérico."),
   telefono: () => textoOpcional,
   email: () => textoOpcional,
+  limiteCredito: () => textoOpcional.pipe(importePositivo.nullish()),
 });
 
 export const esquemaClienteNuevo = base

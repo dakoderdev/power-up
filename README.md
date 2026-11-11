@@ -80,9 +80,28 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 
 - Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
 - Crea 25 productos de demostración con stock al azar (siempre algunos sin stock y otros con stock bajo), con su movimiento de stock inicial.
-- Crea clientes, ventas (la mayoría de hoy, el resto de los días anteriores) (contado, tarjeta y cuenta corriente), pagos parciales y ajustes manuales de stock, todo al azar en cada corrida. Las cantidades y rangos se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
+- Crea clientes (algunos con límite de crédito), ventas (la mayoría de hoy, el resto de los días anteriores) (contado, tarjeta y cuenta corriente), pagos parciales y ajustes manuales de stock, todo al azar en cada corrida. Las cantidades y rangos se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
 - Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
 - `npm run db:seed -- --reiniciar` borra productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
+
+## Uso de inteligencia artificial
+
+El sistema se desarrolló con [Claude Code](https://claude.com/claude-code) como agente, en todas las capas: esquema y migraciones, casos de uso, pantallas, seed y documentación.
+
+El método de trabajo se armó a partir del artículo ["Probabilistic isn’t a dirty word…"](https://www.designsystemscollective.com/probabilistic-isnt-a-dirty-word-37fa836bedd8), de Cassie Groos. No es una copia directa del método, sino una adaptación a la escala de este proyecto.
+
+Método de trabajo:
+
+- [`AGENTS.md`](AGENTS.md) fija las reglas que el agente sigue en cada tarea: stack, estilo de código, dónde va cada cosa y qué no construir.
+- [`specs/sistema.md`](specs/sistema.md) es la fuente de verdad de las reglas de negocio. Si un pedido la contradice, el agente frena y pregunta; las dudas quedan como `[abierto]` y lo resuelto, en Decisiones, con fecha y motivo.
+- [`DESIGN.md`](DESIGN.md) fija los valores visuales que el agente puede usar.
+- Los cambios grandes se planifican antes de tocar código, y el agente los prueba (migración, seed, chequeo de tipos, lint, build y el sistema levantado) antes de entregarlos. Cada cambio se revisa antes del commit.
+
+Errores del agente que se detectaron y corrigieron:
+
+- Al pasar la base de Postgres a Turso, la búsqueda sin acentos se armó con una cadena de `replace()` anidados que SQLite no pudo procesar (`parser stack overflow`). Se reemplazó por un patrón `GLOB` armado en el servidor (`lib/db/busqueda.ts`).
+- En la misma migración, la detección de códigos y documentos duplicados quedó con el código de error de Postgres (`23505`), así que un duplicado salía como error genérico. Se corrigió para reconocer el error de SQLite (`lib/db/errores.ts`).
+- La migración que generó `drizzle-kit` para sumar la anulación y el límite de crédito copiaba columnas nuevas desde las tablas viejas, y habría fallado sobre una base con datos. Se corrigió a mano y se probó sobre una base con datos del seed (`drizzle/0001_anulacion_credito_numeracion.sql`).
 
 ## Roles
 

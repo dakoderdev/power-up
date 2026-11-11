@@ -35,7 +35,15 @@ export const esquemaVentaRegistro = createInsertSchema(ventas, {
     esquema.trim().min(1, "El nombre del cliente es obligatorio."),
   total: () => importePositivo,
 })
-  .omit({ id: true, creadoEn: true })
+  .omit({
+    id: true,
+    creadoEn: true,
+    puntoVenta: true,
+    numero: true,
+    anuladaEn: true,
+    anuladaPor: true,
+    motivoAnulacion: true,
+  })
   .refine(
     (venta) => venta.clienteId != null || venta.clienteDocumento == null,
     {
@@ -67,6 +75,17 @@ export const esquemaItemRegistro = createInsertSchema(itemsVenta, {
     },
   );
 
+export const esquemaAnulacion = baseVenta
+  .pick({ id: true, motivoAnulacion: true })
+  .extend({
+    id: idPositivo,
+    motivoAnulacion: z
+      .string()
+      .trim()
+      .min(1, "Escribí el motivo de la anulación."),
+  });
+
 export type VentaEntrada = z.infer<typeof esquemaVentaEntrada>;
 export type VentaRegistro = z.infer<typeof esquemaVentaRegistro>;
 export type ItemRegistro = z.infer<typeof esquemaItemRegistro>;
+export type Anulacion = z.infer<typeof esquemaAnulacion>;

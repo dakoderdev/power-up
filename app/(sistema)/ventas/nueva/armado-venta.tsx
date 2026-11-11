@@ -21,7 +21,7 @@ export function ArmadoVenta() {
   const [lineas, setLineas] = useState<Linea[]>([]);
   const [formaPago, setFormaPago] = useState<FormaPago>(FORMA_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
-  const [confirmada, setConfirmada] = useState<number | null>(null);
+  const [confirmada, setConfirmada] = useState<string | null>(null);
   const [confirmando, iniciarConfirmacion] = useTransition();
 
   const total = lineas.reduce((suma, linea) => suma + subtotal(linea), 0);
@@ -110,7 +110,7 @@ export function ArmadoVenta() {
       const respuesta = await confirmarVentaAccion(validacion.data);
 
       if (respuesta.confirmada) {
-        setConfirmada(respuesta.numero);
+        setConfirmada(respuesta.comprobante);
         setLineas([]);
         setCliente(null);
         setFormaPago(FORMA_INICIAL);
