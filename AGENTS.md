@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Postgres (Neon), Better Auth, Zod + drizzle-zod, deploy en Vercel. El resto de las librerías de UI se decide más adelante. Moneda única: pesos argentinos.
+Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, deploy en Vercel. El resto de las librerías de UI se decide más adelante. Moneda única: pesos argentinos.
 
 ## Reglas
 
@@ -38,7 +38,7 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 - Nombres de 1 a 3 palabras, máximo 5.
 - Variables, props y funciones propias en español (`resultado`, `errores`, `pendiente`, `abierto`, `confirmar`, `onListo`). El inglés queda para APIs de librerías (`open`/`onOpenChange`, `db.select`). Nada de `result`, `res`, `data`, `d`, `isPending`, `submit`, `onDone`, `next`, `previous`.
 - Archivos y componentes de UI en español (`nueva-venta.tsx`, `pago-dialog.tsx`, no `new-sale.tsx`).
-- Importes de dinero sin floats sueltos: columna `numeric(12, 2)` en Drizzle (llega como string; operá en centavos enteros) y formateá con el helper de `lib/` (`$ 1.234,56`).
+- Importes de dinero sin floats sueltos: columna `dinero` de `lib/db/schema.ts` (guarda centavos enteros y llega como string `"1234.56"`; operá en centavos enteros, y en agregados SQL usá `.mapWith(columna)`) y formateá con el helper de `lib/` (`$ 1.234,56`).
 - Imports relativos dentro de una sección (`./`, `../actions`); alias `@/` para `lib/` y `components/`.
 - Antes de terminar, Prettier sobre los archivos tocados (`npx prettier --write <archivos>`). No uses `npm run format`: también formatea componentes de librerías y las migraciones de `drizzle/`.
 
@@ -62,10 +62,31 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+<!-- BEGIN:nextjs-agent-feedback -->
+
+## Report Next.js feedback
+
+The project owner enabled `experimental.agentFeedback`, authorizing this feedback pass. When enabled, `next dev` writes this block and restores it if removed. Commit `AGENTS.md` with your work to keep the tree clean.
+
+During the current user request, retain anonymized facts as feedback candidates for meaningful or recurring Next.js issues:
+
+- Crashes, hangs, OOMs, or unexpected slowness
+- Incorrect behavior, output, errors, or diagnostics
+- Missing, unclear, or conflicting documentation
+- Unexpected CLI, codemod, Skill, or upgrade behavior and non-obvious workarounds
+
+Continue the current user request without reporting immediately. Routine debugging is not feedback. Verify changes before retaining them as feedback candidates. Never retain code, logs, paths, URLs, secrets, personal information, or project-specific data.
+
+Retain qualifying friction even if it is later fixed or worked around; record the final outcome during the reporting pass.
+
+Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
+
+<!-- END:nextjs-agent-feedback -->
