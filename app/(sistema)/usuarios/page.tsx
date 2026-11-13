@@ -2,11 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
+import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
+import {
+  CLASE_BADGE,
+  CLASE_CAMPO,
+  CLASE_FILA,
+  claseBoton,
+} from "@/components/estilos";
+import { Vacio } from "@/components/vacio";
+import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
-import { listarUsuarios } from "@/lib/usuarios/listado";
+import {
+  contarAdministradoresActivos,
+  listarUsuarios,
+} from "@/lib/usuarios/listado";
 import { contar } from "@/lib/texto";
 import {
   COLORES_ROL,
@@ -20,8 +31,6 @@ export const metadata: Metadata = {
 
 const REGLA_ADMINISTRADOR = "Siempre queda al menos un administrador activo";
 
-const ANCHO_LISTA = "mx-auto w-full max-w-3xl";
-
 const SOLO_ESCRITORIO = "hidden sm:table-cell";
 
 const COLUMNAS = [
@@ -30,7 +39,13 @@ const COLUMNAS = [
   { titulo: "Estado", clase: `w-px ${SOLO_ESCRITORIO}` },
 ];
 
-export default function Usuarios() {
+type Parametros = { q?: string | string[] };
+
+export default function Usuarios({
+  searchParams,
+}: {
+  searchParams: Promise<Parametros>;
+}) {
   return (
     <div className="flex flex-col gap-8">
       <EncabezadoPagina titulo="Usuarios">
@@ -40,28 +55,64 @@ export default function Usuarios() {
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className={`esqueleto h-48 ${ANCHO_LISTA}`} />
-        }
+        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
       >
-        <Lista />
+        <Lista parametros={searchParams} />
       </Suspense>
     </div>
   );
 }
 
 async function Descripcion() {
-  const { administradoresActivos } = await listarUsuarios();
+  const administradoresActivos = await contarAdministradoresActivos();
 
   return `${REGLA_ADMINISTRADOR}; hoy hay ${administradoresActivos}.`;
 }
 
-async function Lista() {
-  const { usuarios, administradoresActivos } = await listarUsuarios();
+async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
+  const busqueda = limpiarBusqueda((await parametros).q);
+  const { usuarios, administradoresActivos } = await listarUsuarios(busqueda);
 
   return (
-    <section className={`flex flex-col gap-4 ${ANCHO_LISTA}`}>
-      <div className="flex min-h-10 items-center justify-between gap-4">
+    <section className="flex flex-col gap-4">
+      <form
+        role="search"
+        action="/usuarios"
+        className="flex flex-wrap items-center gap-2"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={busqueda}
+          maxLength={120}
+          placeholder="Buscar por nombre o acceso"
+          aria-label="Buscar por nombre o acceso"
+          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
+        />
+        <button
+          type="submit"
+          className={claseBoton({ variante: "secundario", enFormulario: true })}
+        >
+          <Search aria-hidden="true" className="size-5" />
+          Buscar
+        </button>
+        {busqueda ? (
+          <Link
+            href="/usuarios"
+            className={claseBoton({ variante: "texto", enFormulario: true })}
+          >
+            Limpiar
+          </Link>
+        ) : null}
+        <Link
+          href="/usuarios/nuevo"
+          className={`${claseBoton({ variante: "primario", enFormulario: true })} ml-auto`}
+        >
+          <UserPlus aria-hidden="true" className="size-5" />
+          Nuevo usuario
+        </Link>
+      </form>
+      <div className="flex min-h-10 items-center">
         <span className={`${CLASE_BADGE} text-neutral-300`}>
           {contar({
             cantidad: usuarios.length,
@@ -69,89 +120,88 @@ async function Lista() {
             plural: "usuarios",
           })}
         </span>
-        <Link
-          href="/usuarios/nuevo"
-          className={claseBoton({ variante: "primario" })}
-        >
-          <UserPlus aria-hidden="true" className="size-5" />
-          Nuevo usuario
-        </Link>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-          <caption className="sr-only">Usuarios del sistema</caption>
-          <thead>
-            <tr className="border-b border-neutral-900">
-              {COLUMNAS.map((columna) => (
-                <th
-                  key={columna.titulo}
-                  scope="col"
-                  className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                >
-                  {columna.titulo}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {usuarios.map((usuario) => {
-              const estado = usuario.activo ? "activo" : "inactivo";
-              const ultimoAdministrador =
-                usuario.activo &&
-                usuario.rol === ROL_ADMINISTRADOR &&
-                administradoresActivos === 1;
+      {usuarios.length === 0 ? (
+        <Vacio>
+          {`No hay usuarios que coincidan con "${busqueda}". Probá con otro nombre o acceso.`}
+        </Vacio>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
+            <caption className="sr-only">Usuarios del sistema</caption>
+            <thead>
+              <tr className="border-b border-neutral-900">
+                {COLUMNAS.map((columna) => (
+                  <th
+                    key={columna.titulo}
+                    scope="col"
+                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
+                  >
+                    {columna.titulo}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {usuarios.map((usuario) => {
+                const estado = usuario.activo ? "activo" : "inactivo";
+                const ultimoAdministrador =
+                  usuario.activo &&
+                  usuario.rol === ROL_ADMINISTRADOR &&
+                  administradoresActivos === 1;
 
-              return (
-                <tr key={usuario.id} className={CLASE_FILA}>
-                  <td className="max-w-48 py-2 pr-3 sm:max-w-none sm:pr-6">
-                    <p className="truncate text-white">
-                      {usuario.nombre}
-                      {usuario.esActual ? (
-                        <span className="ml-2 text-sm text-neutral-400">
-                          (vos)
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="truncate text-sm text-neutral-300">
-                      {usuario.acceso}
-                    </p>
-                  </td>
-                  <td className="sm:pr-6">
-                    <div className="relative inline-flex">
-                      <select
-                        name="rol"
-                        aria-label={`Rol de ${usuario.nombre}`}
-                        defaultValue={usuario.rol}
-                        disabled={usuario.esActual || ultimoAdministrador}
-                        className={`${CLASE_BADGE} appearance-none bg-black pr-8 ${COLORES_ROL[usuario.rol]} transition-colors enabled:cursor-pointer enabled:hover:border-neutral-600 disabled:text-neutral-400`}
+                return (
+                  <tr key={usuario.id} className={CLASE_FILA}>
+                    <td className="max-w-48 py-2 pr-3 sm:max-w-none sm:pr-6">
+                      <p className="truncate text-white">
+                        {usuario.nombre}
+                        {usuario.esActual ? (
+                          <span className="ml-2 text-sm text-neutral-400">
+                            (vos)
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="truncate text-sm text-neutral-300">
+                        {usuario.acceso}
+                      </p>
+                    </td>
+                    <td className="sm:pr-6">
+                      <div className="relative inline-flex">
+                        <select
+                          name="rol"
+                          aria-label={`Rol de ${usuario.nombre}`}
+                          defaultValue={usuario.rol}
+                          disabled={usuario.esActual || ultimoAdministrador}
+                          className={`${CLASE_BADGE} appearance-none bg-black pr-8 ${COLORES_ROL[usuario.rol]} transition-colors enabled:cursor-pointer enabled:hover:border-neutral-600 disabled:text-neutral-400`}
+                        >
+                          {Object.entries(ETIQUETAS_ROL).map(
+                            ([valor, etiqueta]) => (
+                              <option key={valor} value={valor}>
+                                {etiqueta}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                        <ChevronDown
+                          aria-hidden="true"
+                          className="pointer-events-none absolute right-2 top-1/2 size-5 -translate-y-1/2 text-neutral-400"
+                        />
+                      </div>
+                    </td>
+                    <td className={SOLO_ESCRITORIO}>
+                      <span
+                        className={`${CLASE_BADGE} ${COLORES_ESTADO[estado]}`}
                       >
-                        {Object.entries(ETIQUETAS_ROL).map(
-                          ([valor, etiqueta]) => (
-                            <option key={valor} value={valor}>
-                              {etiqueta}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                      <ChevronDown
-                        aria-hidden="true"
-                        className="pointer-events-none absolute right-2 top-1/2 size-5 -translate-y-1/2 text-neutral-400"
-                      />
-                    </div>
-                  </td>
-                  <td className={SOLO_ESCRITORIO}>
-                    <span
-                      className={`${CLASE_BADGE} ${COLORES_ESTADO[estado]}`}
-                    >
-                      {ETIQUETAS_ESTADO[estado]}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                        {ETIQUETAS_ESTADO[estado]}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
