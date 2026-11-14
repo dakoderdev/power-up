@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
@@ -19,11 +18,7 @@ import {
   listarUsuarios,
 } from "@/lib/usuarios/listado";
 import { contar } from "@/lib/texto";
-import {
-  COLORES_ROL,
-  ETIQUETAS_ROL,
-  ROL_ADMINISTRADOR,
-} from "@/lib/usuarios/sesion";
+import { COLORES_ROL, ETIQUETAS_ROL } from "@/lib/usuarios/sesion";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -71,7 +66,7 @@ async function Descripcion() {
 
 async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
   const busqueda = limpiarBusqueda((await parametros).q);
-  const { usuarios, administradoresActivos } = await listarUsuarios(busqueda);
+  const { usuarios } = await listarUsuarios(busqueda);
 
   return (
     <section className="flex flex-col gap-4">
@@ -145,48 +140,33 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
             <tbody>
               {usuarios.map((usuario) => {
                 const estado = usuario.activo ? "activo" : "inactivo";
-                const ultimoAdministrador =
-                  usuario.activo &&
-                  usuario.rol === ROL_ADMINISTRADOR &&
-                  administradoresActivos === 1;
 
                 return (
                   <tr key={usuario.id} className={CLASE_FILA}>
                     <td className="max-w-48 py-2 pr-3 sm:max-w-none sm:pr-6">
-                      <p className="truncate text-white">
-                        {usuario.nombre}
-                        {usuario.esActual ? (
-                          <span className="ml-2 text-sm text-neutral-400">
-                            (vos)
-                          </span>
-                        ) : null}
-                      </p>
-                      <p className="truncate text-sm text-neutral-300">
-                        {usuario.acceso}
-                      </p>
+                      <Link
+                        href={`/usuarios/${usuario.id}/editar`}
+                        className="block hover:underline"
+                      >
+                        <p className="truncate text-white">
+                          {usuario.nombre}
+                          {usuario.esActual ? (
+                            <span className="ml-2 text-sm text-neutral-400">
+                              (vos)
+                            </span>
+                          ) : null}
+                        </p>
+                        <p className="truncate text-sm text-neutral-300">
+                          {usuario.acceso}
+                        </p>
+                      </Link>
                     </td>
                     <td className="sm:pr-6">
-                      <div className="relative inline-flex">
-                        <select
-                          name="rol"
-                          aria-label={`Rol de ${usuario.nombre}`}
-                          defaultValue={usuario.rol}
-                          disabled={usuario.esActual || ultimoAdministrador}
-                          className={`${CLASE_BADGE} appearance-none bg-black pr-8 ${COLORES_ROL[usuario.rol]} transition-colors enabled:cursor-pointer enabled:hover:border-neutral-600 disabled:text-neutral-400`}
-                        >
-                          {Object.entries(ETIQUETAS_ROL).map(
-                            ([valor, etiqueta]) => (
-                              <option key={valor} value={valor}>
-                                {etiqueta}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                        <ChevronDown
-                          aria-hidden="true"
-                          className="pointer-events-none absolute right-2 top-1/2 size-5 -translate-y-1/2 text-neutral-400"
-                        />
-                      </div>
+                      <span
+                        className={`${CLASE_BADGE} ${COLORES_ROL[usuario.rol]}`}
+                      >
+                        {ETIQUETAS_ROL[usuario.rol]}
+                      </span>
                     </td>
                     <td className={SOLO_ESCRITORIO}>
                       <span
