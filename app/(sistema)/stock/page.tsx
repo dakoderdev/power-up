@@ -1,67 +1,45 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Search } from "pixelarticons/react/Search.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
+import {
+  CLASE_BADGE,
+  CLASE_CAMPO,
+  CLASE_FILA,
+  claseBoton,
+} from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
+import { Tapa } from "@/components/tapa";
 import { Vacio } from "@/components/vacio";
+import { limpiarBusqueda } from "@/lib/db/busqueda";
+import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
 import { limpiarPagina } from "@/lib/paginacion";
+import { esStockBajo } from "@/lib/stock/etiquetas";
 import {
   limpiarOrigen,
-  listarMovimientos,
-  type OrigenStock,
+  limpiarProductoId,
+  listarInventario,
 } from "@/lib/stock/listado";
+import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
-import { formatearComprobante } from "@/lib/ventas/comprobante";
+import { CargarStock } from "./cargar-stock";
+import { MovimientosProducto } from "./movimientos-producto";
+import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
 
 export const metadata: Metadata = {
   title: "Stock · Power Up",
 };
 
-const FILTROS: { valor?: OrigenStock; etiqueta: string }[] = [
-  { etiqueta: "Todos" },
-  { valor: "manual", etiqueta: "Ajustes manuales" },
-  { valor: "venta", etiqueta: "Ventas" },
-  { valor: "anulacion", etiqueta: "Anulaciones" },
-];
-
-const ETIQUETAS_ORIGEN: Record<OrigenStock, string> = {
-  manual: "Ajuste manual",
-  venta: "Venta",
-  anulacion: "Anulación",
-};
-
-const FORMATO_FECHA = new Intl.DateTimeFormat("es-AR", {
-  dateStyle: "short",
-  timeStyle: "short",
-  timeZone: "America/Argentina/Buenos_Aires",
-});
+const CLASE_SECUNDARIO =
+  "text-neutral-300 transition-colors group-hover:text-white";
 
 type Parametros = {
+  q?: string | string[];
   pagina?: string | string[];
+  producto?: string | string[];
   origen?: string | string[];
 };
-
-function enlaceStock({
-  origen,
-  pagina,
-}: {
-  origen?: OrigenStock;
-  pagina: number;
-}) {
-  const consulta = new URLSearchParams();
-
-  if (origen) {
-    consulta.set("origen", origen);
-  }
-
-  if (pagina > 1) {
-    consulta.set("pagina", String(pagina));
-  }
-
-  const texto = consulta.toString();
-
-  return texto ? `/stock?${texto}` : "/stock";
-}
 
 export default function Stock({
   searchParams,
@@ -71,119 +49,170 @@ export default function Stock({
   return (
     <div className="flex flex-col gap-8">
       <EncabezadoPagina titulo="Stock">
-        Movimientos de stock, del más reciente al más antiguo.
+        Stock actual de cada producto, de menor a mayor. Entrá a uno para ver
+        sus movimientos.
       </EncabezadoPagina>
 
       <Suspense
         fallback={<div aria-hidden="true" className="esqueleto h-96" />}
       >
-        <Movimientos parametros={searchParams} />
+        <Contenido parametros={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function Movimientos({
-  parametros,
-}: {
-  parametros: Promise<Parametros>;
-}) {
+async function Contenido({ parametros }: { parametros: Promise<Parametros> }) {
   await obtenerUsuarioActual();
-  const { pagina: paginaTexto, origen: origenTexto } = await parametros;
-  const origen = limpiarOrigen(origenTexto);
-  const { movimientos, pagina, paginas } = await listarMovimientos({
-    paginaPedida: limpiarPagina(paginaTexto),
-    origen,
+  const { q, pagina, producto, origen } = await parametros;
+  const productoId = limpiarProductoId(producto);
+  const paginaPedida = limpiarPagina(pagina);
+
+  return productoId ? (
+    <MovimientosProducto
+      productoId={productoId}
+      origen={limpiarOrigen(origen)}
+      paginaPedida={paginaPedida}
+    />
+  ) : (
+    <Inventario busqueda={limpiarBusqueda(q)} paginaPedida={paginaPedida} />
+  );
+}
+
+async function Inventario({
+  busqueda,
+  paginaPedida,
+}: {
+  busqueda: string;
+  paginaPedida: number;
+}) {
+  const { lista, cantidad, pagina, paginas } = await listarInventario({
+    busqueda,
+    paginaPedida,
   });
 
   return (
     <section className="flex flex-col gap-4">
-      <nav aria-label="Filtrar por origen" className="flex flex-wrap gap-2">
-        {FILTROS.map((filtro) => {
-          const activo = filtro.valor === origen;
+      <form
+        role="search"
+        action="/stock"
+        className="flex flex-wrap items-center gap-2"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={busqueda}
+          maxLength={120}
+          placeholder="Buscar por nombre o código"
+          aria-label="Buscar por nombre o código"
+          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
+        />
+        <button
+          type="submit"
+          className={claseBoton({ variante: "secundario", enFormulario: true })}
+        >
+          <Search aria-hidden="true" className="size-5" />
+          Buscar
+        </button>
+        {busqueda ? (
+          <Link
+            href="/stock"
+            className={claseBoton({ variante: "texto", enFormulario: true })}
+          >
+            Limpiar
+          </Link>
+        ) : null}
+      </form>
 
-          return (
-            <Link
-              key={filtro.etiqueta}
-              href={enlaceStock({ origen: filtro.valor, pagina: 1 })}
-              aria-current={activo ? "page" : undefined}
-              className={`border px-3 py-1.5 text-sm transition-colors ${activo ? "border-neutral-800 bg-neutral-950 text-white" : "border-transparent text-neutral-400 hover:text-white"}`}
-            >
-              {filtro.etiqueta}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="flex min-h-10 items-center">
+        <span className={`${CLASE_BADGE} text-neutral-300`}>
+          {contar({ cantidad, singular: "producto", plural: "productos" })}
+        </span>
+      </div>
 
-      {movimientos.length === 0 ? (
+      {lista.length === 0 ? (
         <Vacio>
-          {origen
-            ? "No hay movimientos con este origen."
-            : "Todavía no hay movimientos de stock."}
+          {busqueda
+            ? `No hay productos que coincidan con "${busqueda}". Probá con otro nombre o código.`
+            : "Todavía no hay productos. Cargá el primero con Nuevo producto."}
         </Vacio>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[44rem] text-left text-sm">
-            <thead className="border-b border-neutral-900 text-neutral-500">
-              <tr>
-                <th className="px-3 py-2 font-normal">Fecha</th>
-                <th className="px-3 py-2 font-normal">Producto</th>
-                <th className="px-3 py-2 font-normal">Origen</th>
-                <th className="px-3 py-2 text-right font-normal">Cantidad</th>
-                <th className="px-3 py-2 font-normal">Detalle</th>
-                <th className="px-3 py-2 font-normal">Usuario</th>
+          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
+            <thead>
+              <tr className="border-b border-neutral-900">
+                <th scope="col" className={`${CLASE_COLUMNA} pr-3 sm:pr-6`}>
+                  Producto
+                </th>
+                <th
+                  scope="col"
+                  className={`${CLASE_COLUMNA} w-px pr-6 ${SOLO_ESCRITORIO}`}
+                >
+                  Código
+                </th>
+                <th
+                  scope="col"
+                  className={`${CLASE_COLUMNA} w-px pr-6 ${SOLO_ESCRITORIO}`}
+                >
+                  Estado
+                </th>
+                <th scope="col" className={`${CLASE_COLUMNA} w-px text-right`}>
+                  Stock
+                </th>
+                <th scope="col" className={`${CLASE_COLUMNA} w-px pl-6`}>
+                  <span className="sr-only">Acciones</span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {movimientos.map((movimiento) => (
+              {lista.map((producto) => (
                 <tr
-                  key={movimiento.id}
-                  className="border-b border-neutral-900 align-top"
+                  key={producto.id}
+                  className={`${CLASE_FILA} group relative`}
                 >
-                  <td className="whitespace-nowrap px-3 py-3 tabular-nums text-neutral-400">
-                    {FORMATO_FECHA.format(new Date(movimiento.creadoEn))}
+                  <td className="max-w-48 pr-3 sm:max-w-none sm:pr-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Tapa
+                        url={producto.imagenUrl}
+                        className="h-8 w-6 shrink-0"
+                      />
+                      <Link
+                        href={enlaceStock({ productoId: producto.id })}
+                        className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                      >
+                        {producto.nombre}
+                      </Link>
+                    </div>
                   </td>
-                  <td className="px-3 py-3">
-                    <Link
-                      href={`/productos/${movimiento.productoId}`}
-                      className="text-white hover:underline"
-                    >
-                      {movimiento.productoNombre}
-                    </Link>
-                    <p className="text-xs text-neutral-500">
-                      {movimiento.productoCodigo}
-                    </p>
+                  <td
+                    className={`pr-6 tabular-nums ${CLASE_SECUNDARIO} ${SOLO_ESCRITORIO}`}
+                  >
+                    {producto.codigo}
                   </td>
-                  <td className="px-3 py-3">
+                  <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
                     <span
-                      className={`inline-block border px-2 py-0.5 text-xs ${movimiento.origen === "manual" ? "border-verde text-verde" : "border-neutral-800 text-neutral-400"}`}
+                      className={`${CLASE_BADGE} ${COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]}`}
                     >
-                      {ETIQUETAS_ORIGEN[movimiento.origen]}
+                      {
+                        ETIQUETAS_ESTADO[
+                          producto.activo ? "activo" : "inactivo"
+                        ]
+                      }
                     </span>
                   </td>
                   <td
-                    className={`px-3 py-3 text-right tabular-nums ${movimiento.tipo === "entrada" ? "text-verde" : "text-neutral-300"}`}
+                    className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-white"}`}
                   >
-                    {movimiento.tipo === "entrada" ? "+" : "−"}
-                    {movimiento.cantidad}
+                    {producto.stock}
+                    {esStockBajo(producto) ? (
+                      <span className="sr-only"> (stock bajo)</span>
+                    ) : null}
                   </td>
-                  <td className="px-3 py-3 text-neutral-400">
-                    {movimiento.ventaId ? (
-                      <Link
-                        href={`/ventas/${movimiento.ventaId}`}
-                        className="hover:text-white hover:underline"
-                      >
-                        {formatearComprobante({
-                          puntoVenta: movimiento.puntoVenta ?? 1,
-                          numero: movimiento.numeroVenta ?? 0,
-                        })}
-                      </Link>
-                    ) : (
-                      (movimiento.motivo ?? "—")
-                    )}
-                  </td>
-                  <td className="px-3 py-3 text-neutral-400">
-                    {movimiento.usuarioNombre}
+                  <td className="pl-6">
+                    <CargarStock
+                      productoId={producto.id}
+                      nombre={producto.nombre}
+                    />
                   </td>
                 </tr>
               ))}
@@ -195,7 +224,7 @@ async function Movimientos({
       <Paginacion
         pagina={pagina}
         paginas={paginas}
-        enlace={(numero) => enlaceStock({ origen, pagina: numero })}
+        enlace={(numero) => enlaceStock({ busqueda, pagina: numero })}
       />
     </section>
   );

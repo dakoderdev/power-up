@@ -3,6 +3,9 @@ import { z } from "zod";
 import { movimientosStock } from "@/lib/db/schema";
 import { enteroPositivo, idPositivo } from "@/lib/esquemas-comunes";
 
+export const MOTIVO_MINIMO = 3;
+export const MOTIVO_MAXIMO = 200;
+
 const base = createInsertSchema(movimientosStock, {
   cantidad: () => enteroPositivo,
 });
@@ -11,7 +14,17 @@ export const esquemaAjusteManual = base
   .pick({ productoId: true, tipo: true, cantidad: true })
   .extend({
     productoId: idPositivo,
-    motivo: z.string().trim().min(1, "El motivo es obligatorio."),
+    motivo: z
+      .string()
+      .trim()
+      .min(
+        MOTIVO_MINIMO,
+        `El motivo debe tener al menos ${MOTIVO_MINIMO} caracteres.`,
+      )
+      .max(
+        MOTIVO_MAXIMO,
+        `El motivo puede tener hasta ${MOTIVO_MAXIMO} caracteres.`,
+      ),
   });
 
 export const esquemaMovimientoRegistro = base

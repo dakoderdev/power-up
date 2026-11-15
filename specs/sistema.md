@@ -105,12 +105,17 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - ST-08: un stock inicial mayor que cero al crear el producto se registra como entrada.
 - ST-09: un stock inicial de cero no genera movimiento.
 - ST-10: el stock actual coincide con la suma de entradas menos salidas.
-- ST-11: se consultan los movimientos de stock.
+- ST-11: se consultan los movimientos de stock de cada producto, del más reciente al más antiguo.
 - ST-12: el listado distingue ajustes manuales de movimientos por venta.
 - ST-13: un movimiento registrado no se edita ni se elimina.
 - ST-14: el stock no se edita directamente: solo cambia por movimientos.
+- ST-15: el motivo de un movimiento manual tiene entre 3 y 200 caracteres.
 - ST-16: se permiten ajustes manuales sobre productos inactivos.
 - ST-17: un producto tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero.
+- ST-18: la sección Stock lista todos los productos con su stock actual, de menor a mayor stock, y se busca por nombre o código.
+- ST-19: el listado de stock marca el stock de los productos activos con stock bajo (ST-17).
+- ST-20: al entrar a un producto desde Stock se ven su stock actual y sus movimientos, filtrables por origen.
+- ST-21: el ajuste manual se registra desde el detalle de stock del producto, eligiendo entrada o salida, cantidad y motivo; desde cada fila del listado de stock se registra una entrada sin salir del listado.
 
 ## Clientes
 
@@ -190,7 +195,6 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 
 ## Abierto
 
-- [abierto] ST-15: largo mínimo y máximo del motivo de un movimiento manual (por qué se ajusta el stock, p. ej. "rotura" o "conteo de inventario").
 - [abierto] US-20: si cada usuario puede cambiar su propia contraseña (a revisar al final, opcional).
 - [abierto] US-22: cómo recibe su contraseña inicial un usuario nuevo: la fija el administrador, la genera el sistema al azar y se muestra una sola vez, o llega un enlace de invitación por correo.
 - [abierto] US-23: si el usuario debe cambiar la contraseña inicial en su primer ingreso (requiere un campo nuevo en usuario y una migración).
@@ -217,13 +221,13 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-07: el administrador puede cambiar contraseñas ajenas para recuperar accesos; mínimo de 8 caracteres.
 - 2026-11-07: los productos inactivos se pueden reactivar y ajustar, para poder corregir existencias.
 - 2026-11-07: el rol se verifica en el servidor; ocultar el menú es solo comodidad de UI.
-- 2026-11-07: el origen de un movimiento de stock es manual o venta; el stock inicial se registra como entrada manual, y las ventas solo generan salidas.
+- 2026-11-07: el origen de un movimiento de stock es manual o venta; el stock inicial se registra como entrada manual, y las ventas solo generan salidas. (Reemplazada en parte por la del 2026-11-11: las anulaciones suman el origen anulación, con entradas.)
 - 2026-11-07: reglas de integridad también en la base (checks e índices únicos) además del servidor: motivo manual obligatorio, documento numérico, subtotal = precio × cantidad, un movimiento de deuda por venta.
 - 2026-11-07: sin Neon Auth (login con Better Auth); sin fecha duplicada en movimientos de cuenta, porque la spec no la pide.
 - 2026-11-08: la imagen del producto se guarda como dirección externa y no como archivo subido, para no sumar un servicio de almacenamiento a los planes gratuitos.
 - 2026-11-08: el umbral de stock bajo es un valor fijo de 3 unidades y no un mínimo por producto, para no sumar un campo ni una migración.
 - 2026-11-08: el seed incluye clientes, productos y ventas de demostración, porque no es un proyecto real y sirve para ver las pantallas con contenido.
-- 2026-11-10: el seed genera stock, clientes, ventas, pagos y ajustes manuales de stock al azar en cada corrida, con rangos ajustables en su configuración, para probar las pantallas con datos distintos; el catálogo de juegos queda fijo porque sus tapas están asociadas a mano. Los motivos de los ajustes son cortos y fijos, sin resolver ST-15.
+- 2026-11-10: el seed genera stock, clientes, ventas, pagos y ajustes manuales de stock al azar en cada corrida, con rangos ajustables en su configuración, para probar las pantallas con datos distintos; el catálogo de juegos queda fijo porque sus tapas están asociadas a mano. Los motivos de los ajustes son cortos y fijos, sin resolver ST-15. (ST-15 se resolvió el 2026-11-14; los motivos del seed salen de las mismas sugerencias que la pantalla de ajuste.)
 - 2026-11-10: el seed acepta `--reiniciar`, que borra físicamente los datos de demostración (no los usuarios) para volver a generarlos; es una herramienta de desarrollo y no contradice la baja lógica de la app, que sigue sin borrar productos, usuarios ni clientes.
 - 2026-11-08: el sistema usa siempre modo oscuro, sin versión clara ni selector de tema: una sola paleta (negro, escala neutral y verde de marca) mantiene la identidad y simplifica el diseño.
 - 2026-11-08: el rol es un enum en la base y no texto libre, para que solo existan los dos roles de US-07.
@@ -239,5 +243,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-11: límite de crédito opcional por cliente, porque la consigna lo pregunta; vacío significa sin tope, para que el alta rápida durante una venta siga igual.
 - 2026-11-11: el número de comprobante suma un punto de venta fijo (`0001-00000001`), guardado en cada venta, porque la consigna pide poder cambiarlo; reemplaza el correlativo simple de VE-32. El correlativo se calcula dentro de la transacción (no con un autoincremental) para que no queden números salteados.
 - 2026-11-11: el buscador de la venta se recorre con flechas y se elige con Enter (VE-49), y las pantallas tienen un estado de error con reintento (IU-01), porque la consigna los pregunta en la defensa.
+- 2026-11-14: la sección Stock muestra primero el stock actual de cada producto y los movimientos por producto, en lugar de un historial general, porque la pregunta habitual en el mostrador es cuántas unidades quedan; reemplaza el historial general de ST-11.
+- 2026-11-14: el motivo de un ajuste manual va de 3 a 200 caracteres, para que diga algo útil sin volverse una nota larga; resuelve ST-15.
+- 2026-11-14: el ajuste manual de stock, entrada o salida, lo hacen los dos roles (US-08) y no es una acción solo de administrador como la anulación: recibir mercadería y registrar roturas es tarea diaria del mostrador, y cada movimiento queda con su usuario, su motivo y sin edición ni borrado (ST-13), así que una salida mal usada se rastrea en el historial del producto.
 - 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
 - 2026-11-14: US-22 resuelto: el administrador fija la contraseña inicial al crear el usuario. El alta inserta user y account directo con el hash de Better Auth, para no abrir sesión como el usuario nuevo.
