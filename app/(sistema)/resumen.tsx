@@ -6,6 +6,7 @@ import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { formatearMoneda } from "@/lib/moneda";
 import { contar, pluralizar } from "@/lib/texto";
+import { ANCLA_AJUSTE } from "@/lib/stock/etiquetas";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { TablaVentas } from "./tabla-ventas";
@@ -157,7 +158,7 @@ export async function Resumen() {
                         : `${producto.stock} u.`}
                     </span>
                     <Link
-                      href={`/stock?producto=${producto.id}`}
+                      href={`/stock?producto=${producto.id}#${ANCLA_AJUSTE}`}
                       className="transition-colors hover:text-white"
                     >
                       Cargar stock

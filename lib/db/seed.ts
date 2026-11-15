@@ -11,7 +11,7 @@ import {
 import { auth } from "../auth";
 import { formatearHora } from "../fechas";
 import { aCentavos, deCentavos } from "../moneda";
-import { MOTIVO_STOCK_INICIAL } from "../stock/etiquetas";
+import { MOTIVO_STOCK_INICIAL, MOTIVOS_SUGERIDOS } from "../stock/etiquetas";
 import { PUNTO_VENTA } from "../ventas/comprobante";
 import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
 import { siguienteNumero } from "../ventas/numeracion";
@@ -47,11 +47,6 @@ const CONFIGURACION = {
   ajustesManuales: { min: 3, max: 8 },
   unidadesPorAjuste: { min: 1, max: 5 },
   probabilidadSalida: 0.5,
-};
-
-const MOTIVOS_AJUSTE = {
-  entrada: ["Reposición de proveedor", "Conteo de inventario"],
-  salida: ["Rotura", "Conteo de inventario", "Unidad de exhibición"],
 };
 
 const FLAG_REINICIAR = "--reiniciar";
@@ -556,7 +551,7 @@ async function crearVentas(usuarioId: string) {
           tipo,
           origen: "manual",
           cantidad: unidades,
-          motivo: elegir(MOTIVOS_AJUSTE[tipo]),
+          motivo: elegir(MOTIVOS_SUGERIDOS[tipo]),
           usuarioId,
           creadoEn: fecha,
         });
