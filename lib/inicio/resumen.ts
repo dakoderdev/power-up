@@ -22,10 +22,10 @@ import {
 } from "@/lib/db/schema";
 import { inicioDelDia } from "@/lib/fechas";
 import { aCentavos, deCentavos } from "@/lib/moneda";
+import { UMBRAL_STOCK_BAJO } from "@/lib/stock/etiquetas";
 
 const LIMITE_LISTA = 5;
 const LIMITE_VENTAS = 15;
-const UMBRAL_STOCK_BAJO = 3;
 
 async function obtenerItemsDeVentas(ventaIds: number[]) {
   if (ventaIds.length === 0) {
