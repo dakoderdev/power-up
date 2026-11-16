@@ -14,6 +14,7 @@ import { formatearComprobante, PUNTO_VENTA } from "./comprobante";
 import type { VentaEntrada } from "./esquemas";
 import { CONSUMIDOR_FINAL } from "./etiquetas";
 import { siguienteNumero } from "./numeracion";
+import { calcularVuelto } from "./vuelto";
 
 export type CodigoErrorVenta =
   | "CLIENTE_INEXISTENTE"
@@ -21,7 +22,8 @@ export type CodigoErrorVenta =
   | "PRODUCTO_INEXISTENTE"
   | "PRODUCTO_INACTIVO"
   | "STOCK_INSUFICIENTE"
-  | "LIMITE_CREDITO_EXCEDIDO";
+  | "LIMITE_CREDITO_EXCEDIDO"
+  | "MONTO_INSUFICIENTE";
 
 export type ErrorVenta = {
   codigo: CodigoErrorVenta;
@@ -37,7 +39,12 @@ export type ErrorVenta = {
 type Cliente = typeof clientes.$inferSelect;
 
 type ResultadoConfirmar =
-  | { confirmada: true; ventaId: number; comprobante: string }
+  | {
+      confirmada: true;
+      ventaId: number;
+      comprobante: string;
+      vuelto: string | null;
+    }
   | { confirmada: false; errores: ErrorVenta[] };
 
 class StockAgotado extends Error {
@@ -212,6 +219,23 @@ export async function confirmarVenta({
         return { confirmada: false, errores: [sinCredito] };
       }
 
+      const recibido =
+        entrada.formaPago === "contado"
+          ? (entrada.montoRecibido ?? total)
+          : null;
+
+      if (recibido !== null && aCentavos(recibido) < centavos) {
+        return {
+          confirmada: false,
+          errores: [
+            {
+              codigo: "MONTO_INSUFICIENTE",
+              mensaje: `El monto recibido no cubre el total de ${formatearMoneda(total)}.`,
+            },
+          ],
+        };
+      }
+
       const [{ ventaId, numero }] = await tx
         .insert(ventas)
         .values({
@@ -222,6 +246,10 @@ export async function confirmarVenta({
           clienteDocumento: cliente?.documento ?? null,
           formaPago: entrada.formaPago,
           total,
+          montoRecibido: recibido,
+          tarjetaTipo: entrada.tarjeta?.tipo ?? null,
+          tarjetaMarca: entrada.tarjeta?.marca ?? null,
+          tarjetaUltimos4: entrada.tarjeta?.ultimos4 ?? null,
           usuarioId,
         })
         .returning({ ventaId: ventas.id, numero: ventas.numero });
@@ -287,6 +315,7 @@ export async function confirmarVenta({
           puntoVenta: PUNTO_VENTA,
           numero,
         }),
+        vuelto: recibido === null ? null : calcularVuelto({ recibido, total }),
       };
     });
   } catch (error) {
