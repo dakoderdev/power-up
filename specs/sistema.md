@@ -205,7 +205,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 
 ## Consulta, filtros e impresión
 
-- CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número (RF-V8). Disponible en `GET /api/facturas`; `[pendiente]` en la pantalla.
+- CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número o nombre del cliente (RF-V8). Disponible en `GET /api/facturas` y en la pantalla de ventas.
 - CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). `[pendiente]`
 - CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). `[pendiente]`
 - CO-04: hay una pantalla de saldos con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible en `GET /api/clientes?conDeuda=true&orden=saldo`; `[pendiente]` la pantalla.
@@ -294,3 +294,4 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-14: la venta y el ajuste de stock descuentan con condición (`stock >= cantidad`) y abortan si no se modificó la fila, como pide la consigna (sección 10.2), además del check de la base.
 - 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
 - 2026-11-14: US-22 resuelto: el administrador fija la contraseña inicial al crear el usuario. El alta inserta user y account directo con el hash de Better Auth, para no abrir sesión como el usuario nuevo.
+- 2026-11-16: los filtros del listado de ventas viajan en la URL (formulario GET), para paginar y compartir con ellos; la cantidad y el total de cada día respetan el filtro, y con el estado "anuladas" el día muestra solo la cantidad, porque las anuladas no suman en los totales (VE-45). Los selectores de cliente y vendedor ofrecen solo quienes tienen ventas.

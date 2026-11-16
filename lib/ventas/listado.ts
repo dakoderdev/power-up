@@ -12,6 +12,7 @@ import {
   or,
   sql,
   sum,
+  type SQL,
 } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
@@ -35,6 +36,16 @@ export const ESTADOS_VENTA = ["emitida", "anulada"] as const;
 
 export type EstadoVenta = (typeof ESTADOS_VENTA)[number];
 
+export type FiltrosListado = {
+  busqueda?: string;
+  desde?: Date;
+  hasta?: Date;
+  clienteId?: number;
+  vendedorId?: string;
+  formaPago?: (typeof FORMAS_PAGO)[number];
+  estado?: EstadoVenta;
+};
+
 function filtroNumero(busqueda: string) {
   const parte = busqueda.includes("-")
     ? busqueda.slice(busqueda.lastIndexOf("-") + 1)
@@ -46,9 +57,7 @@ function filtroNumero(busqueda: string) {
     : undefined;
 }
 
-// RF-V8: facturas con filtros por fecha, cliente, forma de pago, vendedor,
-// estado y número, de la más nueva a la más vieja, con el total emitido.
-export async function buscarVentas({
+function armarFiltro({
   busqueda,
   desde,
   hasta,
@@ -56,20 +65,8 @@ export async function buscarVentas({
   vendedorId,
   formaPago,
   estado,
-  paginaPedida,
-  porPagina = VENTAS_POR_PAGINA,
-}: {
-  busqueda: string;
-  desde?: Date;
-  hasta?: Date;
-  clienteId?: number;
-  vendedorId?: string;
-  formaPago?: (typeof FORMAS_PAGO)[number];
-  estado?: EstadoVenta;
-  paginaPedida: number;
-  porPagina?: number;
-}) {
-  const filtro = and(
+}: FiltrosListado) {
+  return and(
     busqueda
       ? or(
           coincideBusqueda({ columnas: [ventas.clienteNombre], busqueda }),
@@ -84,7 +81,9 @@ export async function buscarVentas({
     estado === "emitida" ? isNull(ventas.anuladaEn) : undefined,
     estado === "anulada" ? isNotNull(ventas.anuladaEn) : undefined,
   );
+}
 
+async function resumirFiltro(filtro: SQL | undefined) {
   const [[{ cantidad }], [{ totalEmitido }]] = await Promise.all([
     db.select({ cantidad: count() }).from(ventas).where(filtro),
     db
@@ -92,6 +91,38 @@ export async function buscarVentas({
       .from(ventas)
       .where(and(filtro, isNull(ventas.anuladaEn))),
   ]);
+
+  return { cantidad, totalEmitido: totalEmitido ?? deCentavos(0) };
+}
+
+// RF-V8: facturas con filtros por fecha, cliente, forma de pago, vendedor,
+// estado y número, de la más nueva a la más vieja, con el total emitido.
+export async function buscarVentas({
+  busqueda,
+  desde,
+  hasta,
+  clienteId,
+  vendedorId,
+  formaPago,
+  estado,
+  paginaPedida,
+  porPagina = VENTAS_POR_PAGINA,
+}: FiltrosListado & {
+  busqueda: string;
+  paginaPedida: number;
+  porPagina?: number;
+}) {
+  const filtro = armarFiltro({
+    busqueda,
+    desde,
+    hasta,
+    clienteId,
+    vendedorId,
+    formaPago,
+    estado,
+  });
+
+  const { cantidad, totalEmitido } = await resumirFiltro(filtro);
 
   const {
     pagina,
@@ -121,13 +152,7 @@ export async function buscarVentas({
     .limit(porPagina)
     .offset(salto);
 
-  return {
-    lista,
-    cantidad,
-    totalEmitido: totalEmitido ?? deCentavos(0),
-    pagina,
-    paginas,
-  };
+  return { lista, cantidad, totalEmitido, pagina, paginas };
 }
 
 export type VentaFila = Awaited<
@@ -148,7 +173,15 @@ async function obtenerItems(ventaIds: number[]) {
     .orderBy(asc(itemsVenta.id));
 }
 
-async function obtenerTotalesPorDia(dias: string[]) {
+async function obtenerTotalesPorDia({
+  dias,
+  filtro,
+  estado,
+}: {
+  dias: string[];
+  filtro: SQL | undefined;
+  estado?: EstadoVenta;
+}) {
   return db
     .select({
       dia: DIA,
@@ -156,12 +189,26 @@ async function obtenerTotalesPorDia(dias: string[]) {
       total: sum(ventas.total).mapWith(ventas.total),
     })
     .from(ventas)
-    .where(and(inArray(DIA, dias), isNull(ventas.anuladaEn)))
+    .where(
+      and(
+        inArray(DIA, dias),
+        estado === "anulada"
+          ? isNotNull(ventas.anuladaEn)
+          : isNull(ventas.anuladaEn),
+        filtro,
+      ),
+    )
     .groupBy(DIA);
 }
 
-export async function listarVentas(paginaPedida: number) {
-  const [{ cantidad }] = await db.select({ cantidad: count() }).from(ventas);
+// RF-V8, VE-35 y VE-36: listado agrupado por día; los filtros valen también
+// para la cantidad y el total de cada día.
+export async function listarVentas(
+  paginaPedida: number,
+  filtros: FiltrosListado = {},
+) {
+  const filtro = armarFiltro(filtros);
+  const { cantidad, totalEmitido } = await resumirFiltro(filtro);
   const { pagina, paginas, desde } = ubicarPagina({
     cantidad,
     porPagina: VENTAS_POR_PAGINA,
@@ -180,18 +227,19 @@ export async function listarVentas(paginaPedida: number) {
       total: ventas.total,
     })
     .from(ventas)
+    .where(filtro)
     .orderBy(desc(ventas.creadoEn), desc(ventas.id))
     .limit(VENTAS_POR_PAGINA)
     .offset(desde);
 
   if (lista.length === 0) {
-    return { grupos: [], pagina, paginas };
+    return { grupos: [], pagina, paginas, cantidad, totalEmitido };
   }
 
   const dias = [...new Set(lista.map((venta) => claveDia(venta.creadoEn)))];
   const [items, totales] = await Promise.all([
     obtenerItems(lista.map((venta) => venta.id)),
-    obtenerTotalesPorDia(dias),
+    obtenerTotalesPorDia({ dias, filtro, estado: filtros.estado }),
   ]);
 
   const grupos = dias.map((dia) => {
@@ -210,5 +258,31 @@ export async function listarVentas(paginaPedida: number) {
     };
   });
 
-  return { grupos, pagina, paginas };
+  return { grupos, pagina, paginas, cantidad, totalEmitido };
+}
+
+const NOMBRE_CLIENTE = sql<string>`max(${ventas.clienteNombre})`;
+
+// RF-V8: opciones de los selectores de vendedor y cliente del listado.
+export async function listarOpcionesFiltro() {
+  const [vendedores, clientes] = await Promise.all([
+    db
+      .selectDistinct({ id: user.id, nombre: user.name })
+      .from(ventas)
+      .innerJoin(user, eq(user.id, ventas.usuarioId))
+      .orderBy(asc(user.name)),
+    db
+      .select({ id: ventas.clienteId, nombre: NOMBRE_CLIENTE })
+      .from(ventas)
+      .where(isNotNull(ventas.clienteId))
+      .groupBy(ventas.clienteId)
+      .orderBy(asc(NOMBRE_CLIENTE)),
+  ]);
+
+  return {
+    vendedores,
+    clientes: clientes.flatMap((cliente) =>
+      cliente.id === null ? [] : [{ id: cliente.id, nombre: cliente.nombre }],
+    ),
+  };
 }
