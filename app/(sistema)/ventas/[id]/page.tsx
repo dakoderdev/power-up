@@ -13,7 +13,9 @@ import {
   COLORES_FORMA_PAGO,
   ETIQUETA_ANULADA,
   ETIQUETAS_FORMA_PAGO,
+  ETIQUETAS_TIPO_TARJETA,
 } from "@/lib/ventas/etiquetas";
+import { calcularVuelto } from "@/lib/ventas/vuelto";
 import { AnularVenta } from "./anular-venta";
 
 export const metadata: Metadata = {
@@ -79,6 +81,22 @@ function Datos({ venta }: { venta: VentaDetalle }) {
         ? `${venta.clienteNombre} · ${venta.clienteDocumento}`
         : venta.clienteNombre,
     },
+    ...(venta.tarjetaTipo
+      ? [
+          {
+            termino: "Tarjeta",
+            valor: `${ETIQUETAS_TIPO_TARJETA[venta.tarjetaTipo]} ${venta.tarjetaMarca} · terminada en ${venta.tarjetaUltimos4}`,
+          },
+        ]
+      : []),
+    ...(venta.montoRecibido
+      ? [
+          {
+            termino: "Monto recibido",
+            valor: `${formatearMoneda(venta.montoRecibido)} · vuelto ${formatearMoneda(calcularVuelto({ recibido: venta.montoRecibido, total: venta.total }))}`,
+          },
+        ]
+      : []),
   ];
 
   return (
