@@ -14,6 +14,7 @@ import { AHORA, booleano, enLista, fecha, user } from "./auth-schema";
 export * from "./auth-schema";
 
 export const FORMAS_PAGO = ["contado", "tarjeta", "cuenta_corriente"] as const;
+export const TIPOS_TARJETA = ["debito", "credito"] as const;
 export const TIPOS_STOCK = ["entrada", "salida"] as const;
 export const ORIGENES_STOCK = ["manual", "venta", "anulacion"] as const;
 export const TIPOS_CUENTA = ["venta", "pago", "anulacion"] as const;
@@ -90,6 +91,10 @@ export const ventas = sqliteTable(
     clienteDocumento: text("cliente_documento"),
     formaPago: text("forma_pago", { enum: FORMAS_PAGO }).notNull(),
     total: dinero("total").notNull(),
+    montoRecibido: dinero("monto_recibido"),
+    tarjetaTipo: text("tarjeta_tipo", { enum: TIPOS_TARJETA }),
+    tarjetaMarca: text("tarjeta_marca", { length: 30 }),
+    tarjetaUltimos4: text("tarjeta_ultimos4", { length: 4 }),
     usuarioId: text("usuario_id")
       .notNull()
       .references(() => user.id),
@@ -117,6 +122,18 @@ export const ventas = sqliteTable(
     check(
       "ventas_cuenta_requiere_cliente",
       sql`${t.formaPago} <> 'cuenta_corriente' OR ${t.clienteId} IS NOT NULL`,
+    ),
+    check(
+      "ventas_tarjeta_solo_con_tarjeta",
+      sql`${t.formaPago} = 'tarjeta' OR (${t.tarjetaTipo} IS NULL AND ${t.tarjetaMarca} IS NULL AND ${t.tarjetaUltimos4} IS NULL)`,
+    ),
+    check(
+      "ventas_tarjeta_ultimos4_validos",
+      sql`${t.tarjetaUltimos4} IS NULL OR (length(${t.tarjetaUltimos4}) = 4 AND ${t.tarjetaUltimos4} NOT GLOB '*[^0-9]*')`,
+    ),
+    check(
+      "ventas_monto_recibido_valido",
+      sql`${t.montoRecibido} IS NULL OR (${t.formaPago} = 'contado' AND ${t.montoRecibido} >= ${t.total})`,
     ),
     index("ventas_creado_en_idx").on(t.creadoEn),
     index("ventas_cliente_idx").on(t.clienteId),
