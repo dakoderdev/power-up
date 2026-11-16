@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { idPositivo } from "@/lib/esquemas-comunes";
-import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { esquemaProductoEdicion, esquemaProductoNuevo } from "./esquemas";
 import {
   crearProducto,
@@ -20,7 +20,7 @@ function revalidarProductos(id: number) {
 export async function crearProductoAccion(
   datos: unknown,
 ): Promise<ResultadoGuardar> {
-  const usuario = await obtenerUsuarioActual();
+  const usuario = await requerirAdministrador();
   const validacion = esquemaProductoNuevo.safeParse(datos);
 
   if (!validacion.success) {
@@ -49,7 +49,7 @@ export async function editarProductoAccion({
   id: unknown;
   datos: unknown;
 }): Promise<ResultadoGuardar> {
-  await obtenerUsuarioActual();
+  await requerirAdministrador();
   const idValido = idPositivo.safeParse(id);
 
   if (!idValido.success) {

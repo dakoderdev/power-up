@@ -63,7 +63,7 @@ export default function Stock({
 }
 
 async function Contenido({ parametros }: { parametros: Promise<Parametros> }) {
-  await obtenerUsuarioActual();
+  const { esAdministrador } = await obtenerUsuarioActual();
   const { q, pagina, producto, origen } = await parametros;
   const productoId = limpiarProductoId(producto);
   const paginaPedida = limpiarPagina(pagina);
@@ -73,18 +73,25 @@ async function Contenido({ parametros }: { parametros: Promise<Parametros> }) {
       productoId={productoId}
       origen={limpiarOrigen(origen)}
       paginaPedida={paginaPedida}
+      puedeAjustar={esAdministrador}
     />
   ) : (
-    <Inventario busqueda={limpiarBusqueda(q)} paginaPedida={paginaPedida} />
+    <Inventario
+      busqueda={limpiarBusqueda(q)}
+      paginaPedida={paginaPedida}
+      puedeAjustar={esAdministrador}
+    />
   );
 }
 
 async function Inventario({
   busqueda,
   paginaPedida,
+  puedeAjustar,
 }: {
   busqueda: string;
   paginaPedida: number;
+  puedeAjustar: boolean;
 }) {
   const { lista, cantidad, pagina, paginas } = await listarInventario({
     busqueda,
@@ -159,9 +166,11 @@ async function Inventario({
                 <th scope="col" className={`${CLASE_COLUMNA} w-px text-right`}>
                   Stock
                 </th>
-                <th scope="col" className={`${CLASE_COLUMNA} w-px pl-6`}>
-                  <span className="sr-only">Acciones</span>
-                </th>
+                {puedeAjustar ? (
+                  <th scope="col" className={`${CLASE_COLUMNA} w-px pl-6`}>
+                    <span className="sr-only">Acciones</span>
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -208,12 +217,14 @@ async function Inventario({
                       <span className="sr-only"> (stock bajo)</span>
                     ) : null}
                   </td>
-                  <td className="pl-6">
-                    <CargarStock
-                      productoId={producto.id}
-                      nombre={producto.nombre}
-                    />
-                  </td>
+                  {puedeAjustar ? (
+                    <td className="pl-6">
+                      <CargarStock
+                        productoId={producto.id}
+                        nombre={producto.nombre}
+                      />
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>

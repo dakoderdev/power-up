@@ -5,40 +5,60 @@ import { coincideBusqueda } from "@/lib/db/busqueda";
 import { user } from "@/lib/db/schema";
 import { ROL_ADMINISTRADOR, requerirAdministrador } from "./sesion";
 
-export const contarAdministradoresActivos = cache(async () => {
-  await requerirAdministrador();
-
+async function contarAdministradores() {
   const [{ cantidad }] = await db
     .select({ cantidad: count() })
     .from(user)
     .where(and(eq(user.active, true), eq(user.role, ROL_ADMINISTRADOR)));
 
   return cantidad;
+}
+
+export const contarAdministradoresActivos = cache(async () => {
+  await requerirAdministrador();
+
+  return contarAdministradores();
 });
 
-export const listarUsuarios = cache(async (busqueda: string) => {
-  const actual = await requerirAdministrador();
-
-  const [lista, administradoresActivos] = await Promise.all([
-    db
-      .select({
-        id: user.id,
-        nombre: user.name,
-        correo: user.email,
-        acceso: user.displayUsername,
-        rol: user.role,
-        activo: user.active,
-      })
-      .from(user)
-      .where(
+// RF-U4 y US-26: usuarios sin el hash, primero los activos, por nombre;
+// con filtro por búsqueda y estado.
+export async function consultarUsuarios({
+  busqueda,
+  activo,
+}: {
+  busqueda: string;
+  activo?: boolean;
+}) {
+  return db
+    .select({
+      id: user.id,
+      nombre: user.name,
+      correo: user.email,
+      acceso: user.displayUsername,
+      rol: user.role,
+      activo: user.active,
+      creadoEn: user.createdAt,
+    })
+    .from(user)
+    .where(
+      and(
         busqueda
           ? coincideBusqueda({
               columnas: [user.name, user.email, user.displayUsername],
               busqueda,
             })
           : undefined,
-      )
-      .orderBy(desc(user.active), asc(user.name), asc(user.id)),
+        activo === undefined ? undefined : eq(user.active, activo),
+      ),
+    )
+    .orderBy(desc(user.active), asc(user.name), asc(user.id));
+}
+
+export const listarUsuarios = cache(async (busqueda: string) => {
+  const actual = await requerirAdministrador();
+
+  const [lista, administradoresActivos] = await Promise.all([
+    consultarUsuarios({ busqueda }),
     contarAdministradoresActivos(),
   ]);
 

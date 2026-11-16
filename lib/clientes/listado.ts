@@ -1,4 +1,4 @@
-import { asc, count, eq } from "drizzle-orm";
+import { asc, count, desc, eq, sql } from "drizzle-orm";
 import { SALDO } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
@@ -7,6 +7,10 @@ import { ubicarPagina } from "@/lib/paginacion";
 
 const LIMITE_BUSQUEDA = 8;
 const CLIENTES_POR_PAGINA = 30;
+
+export const ORDENES_CLIENTES = ["nombre", "saldo"] as const;
+
+export type OrdenClientes = (typeof ORDENES_CLIENTES)[number];
 
 function filtrar(busqueda: string) {
   return busqueda
@@ -17,6 +21,7 @@ function filtrar(busqueda: string) {
     : undefined;
 }
 
+// RF-V2 y CL-05: búsqueda rápida por nombre o documento para la venta.
 export async function buscarClientes(busqueda: string) {
   return db
     .select({
@@ -30,21 +35,44 @@ export async function buscarClientes(busqueda: string) {
     .limit(LIMITE_BUSQUEDA);
 }
 
+// RF-C1 y RF-C6: listado con el saldo de cada cliente; con conDeuda, solo
+// los que deben, con el total adeudado.
 export async function listarClientes({
   busqueda,
   paginaPedida,
+  porPagina = CLIENTES_POR_PAGINA,
+  conDeuda = false,
+  orden = "nombre",
 }: {
   busqueda: string;
   paginaPedida: number;
+  porPagina?: number;
+  conDeuda?: boolean;
+  orden?: OrdenClientes;
 }) {
-  const filtro = filtrar(busqueda);
-  const [{ cantidad }] = await db
-    .select({ cantidad: count() })
+  const saldos = db
+    .select({ id: clientes.id, saldo: SALDO.as("saldo") })
     .from(clientes)
-    .where(filtro);
+    .leftJoin(movimientosCuenta, eq(movimientosCuenta.clienteId, clientes.id))
+    .where(filtrar(busqueda))
+    .groupBy(clientes.id)
+    .having(conDeuda ? sql`${SALDO} > 0` : undefined)
+    .as("saldos");
+
+  const saldo = sql<string>`${saldos.saldo}`.mapWith(movimientosCuenta.importe);
+
+  const [{ cantidad, totalAdeudado }] = await db
+    .select({
+      cantidad: count(),
+      totalAdeudado: sql<string>`coalesce(sum(${saldos.saldo}), 0)`.mapWith(
+        movimientosCuenta.importe,
+      ),
+    })
+    .from(saldos);
+
   const { pagina, paginas, desde } = ubicarPagina({
     cantidad,
-    porPagina: CLIENTES_POR_PAGINA,
+    porPagina,
     pedida: paginaPedida,
   });
 
@@ -55,17 +83,24 @@ export async function listarClientes({
       documento: clientes.documento,
       telefono: clientes.telefono,
       email: clientes.email,
-      saldo: SALDO,
+      limiteCredito: clientes.limiteCredito,
+      creadoEn: clientes.creadoEn,
+      saldo,
     })
     .from(clientes)
-    .leftJoin(movimientosCuenta, eq(movimientosCuenta.clienteId, clientes.id))
-    .where(filtro)
-    .groupBy(clientes.id)
-    .orderBy(asc(clientes.nombre), asc(clientes.id))
-    .limit(CLIENTES_POR_PAGINA)
+    .innerJoin(saldos, eq(saldos.id, clientes.id))
+    .orderBy(
+      ...(orden === "saldo" ? [desc(saldo)] : []),
+      asc(clientes.nombre),
+      asc(clientes.id),
+    )
+    .limit(porPagina)
     .offset(desde);
 
-  return { lista, cantidad, pagina, paginas };
+  return { lista, cantidad, totalAdeudado, pagina, paginas };
 }
 
 export type ClienteVenta = Awaited<ReturnType<typeof buscarClientes>>[number];
+export type ClienteFilaSaldo = Awaited<
+  ReturnType<typeof listarClientes>
+>["lista"][number];

@@ -1,8 +1,9 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import { itemsVenta, productos, ventas } from "@/lib/db/schema";
 import { ubicarPagina } from "@/lib/paginacion";
+import { UMBRAL_STOCK_BAJO } from "@/lib/stock/etiquetas";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
 const PRODUCTOS_POR_PAGINA = 36;
@@ -38,21 +39,34 @@ export function limpiarVista(texto: string | string[] | undefined) {
   return valor === "grilla" ? "grilla" : "lista";
 }
 
+// RF-P1: catálogo paginado con búsqueda por código o descripción y marca de stock bajo.
 export async function listarProductos({
   busqueda,
   orden,
   paginaPedida,
+  porPagina = PRODUCTOS_POR_PAGINA,
+  activo,
+  bajoMinimo = false,
 }: {
   busqueda: string;
   orden: Orden;
   paginaPedida: number;
+  porPagina?: number;
+  activo?: boolean;
+  bajoMinimo?: boolean;
 }) {
-  const filtro = busqueda
-    ? coincideBusqueda({
-        columnas: [productos.nombre, productos.codigo],
-        busqueda,
-      })
-    : undefined;
+  const filtro = and(
+    busqueda
+      ? coincideBusqueda({
+          columnas: [productos.nombre, productos.codigo],
+          busqueda,
+        })
+      : undefined,
+    activo === undefined ? undefined : eq(productos.activo, activo),
+    bajoMinimo
+      ? and(eq(productos.activo, true), lte(productos.stock, UMBRAL_STOCK_BAJO))
+      : undefined,
+  );
 
   const [{ cantidad }] = await db
     .select({ cantidad: count() })
@@ -60,7 +74,7 @@ export async function listarProductos({
     .where(filtro);
   const { pagina, paginas, desde } = ubicarPagina({
     cantidad,
-    porPagina: PRODUCTOS_POR_PAGINA,
+    porPagina,
     pedida: paginaPedida,
   });
 
@@ -77,10 +91,10 @@ export async function listarProductos({
     .from(productos)
     .where(filtro)
     .orderBy(...CRITERIOS[orden], asc(productos.id))
-    .limit(PRODUCTOS_POR_PAGINA)
+    .limit(porPagina)
     .offset(desde);
 
-  return { lista, pagina, paginas };
+  return { lista, cantidad, pagina, paginas };
 }
 
 const LIMITE_BUSQUEDA_VENTA = 8;

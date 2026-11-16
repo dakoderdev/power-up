@@ -1,10 +1,11 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import {
   movimientosStock,
   ORIGENES_STOCK,
   productos,
+  TIPOS_STOCK,
   user,
   ventas,
 } from "@/lib/db/schema";
@@ -87,18 +88,33 @@ export async function obtenerProductoStock(id: number) {
   return producto;
 }
 
+export type TipoStock = (typeof TIPOS_STOCK)[number];
+
+// RF-P6 y ST-11: movimientos del más nuevo al más viejo, con usuario y
+// referencia a la venta; filtrables por producto, origen, tipo y fechas.
 export async function listarMovimientos({
   productoId,
   paginaPedida,
   origen,
+  tipo,
+  desde,
+  hasta,
+  porPagina = MOVIMIENTOS_POR_PAGINA,
 }: {
-  productoId: number;
+  productoId?: number;
   paginaPedida: number;
   origen?: OrigenStock;
+  tipo?: TipoStock;
+  desde?: Date;
+  hasta?: Date;
+  porPagina?: number;
 }) {
   const filtro = and(
-    eq(movimientosStock.productoId, productoId),
+    productoId ? eq(movimientosStock.productoId, productoId) : undefined,
     origen ? eq(movimientosStock.origen, origen) : undefined,
+    tipo ? eq(movimientosStock.tipo, tipo) : undefined,
+    desde ? gte(movimientosStock.creadoEn, desde) : undefined,
+    hasta ? lt(movimientosStock.creadoEn, hasta) : undefined,
   );
 
   const [{ cantidad }] = await db
@@ -106,32 +122,73 @@ export async function listarMovimientos({
     .from(movimientosStock)
     .where(filtro);
 
-  const { pagina, paginas, desde } = ubicarPagina({
+  const {
+    pagina,
+    paginas,
+    desde: salto,
+  } = ubicarPagina({
     cantidad,
-    porPagina: MOVIMIENTOS_POR_PAGINA,
+    porPagina,
     pedida: paginaPedida,
   });
 
   const movimientos = await db
     .select({
       id: movimientosStock.id,
+      productoId: movimientosStock.productoId,
+      productoCodigo: productos.codigo,
+      productoNombre: productos.nombre,
       tipo: movimientosStock.tipo,
       origen: movimientosStock.origen,
       cantidad: movimientosStock.cantidad,
       motivo: movimientosStock.motivo,
       creadoEn: movimientosStock.creadoEn,
+      usuarioId: user.id,
       usuarioNombre: user.name,
       ventaId: ventas.id,
       puntoVenta: ventas.puntoVenta,
       numeroVenta: ventas.numero,
     })
     .from(movimientosStock)
+    .innerJoin(productos, eq(productos.id, movimientosStock.productoId))
     .innerJoin(user, eq(user.id, movimientosStock.usuarioId))
     .leftJoin(ventas, eq(ventas.id, movimientosStock.ventaId))
     .where(filtro)
     .orderBy(desc(movimientosStock.creadoEn), desc(movimientosStock.id))
-    .limit(MOVIMIENTOS_POR_PAGINA)
-    .offset(desde);
+    .limit(porPagina)
+    .offset(salto);
 
-  return { movimientos, pagina, paginas };
+  return { movimientos, cantidad, pagina, paginas };
+}
+
+export type MovimientoStockFila = Awaited<
+  ReturnType<typeof listarMovimientos>
+>["movimientos"][number];
+
+// RF-P4 y RF-P5: un movimiento recién registrado, para devolverlo con su existencia resultante.
+export async function obtenerMovimiento(id: number) {
+  const [movimiento] = await db
+    .select({
+      id: movimientosStock.id,
+      productoId: movimientosStock.productoId,
+      productoCodigo: productos.codigo,
+      productoNombre: productos.nombre,
+      tipo: movimientosStock.tipo,
+      origen: movimientosStock.origen,
+      cantidad: movimientosStock.cantidad,
+      motivo: movimientosStock.motivo,
+      creadoEn: movimientosStock.creadoEn,
+      usuarioId: user.id,
+      usuarioNombre: user.name,
+      ventaId: ventas.id,
+      puntoVenta: ventas.puntoVenta,
+      numeroVenta: ventas.numero,
+    })
+    .from(movimientosStock)
+    .innerJoin(productos, eq(productos.id, movimientosStock.productoId))
+    .innerJoin(user, eq(user.id, movimientosStock.usuarioId))
+    .leftJoin(ventas, eq(ventas.id, movimientosStock.ventaId))
+    .where(eq(movimientosStock.id, id));
+
+  return movimiento ?? null;
 }
