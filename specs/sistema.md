@@ -19,9 +19,9 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - VE-09: la forma de pago es una sola por venta: contado, tarjeta o cuenta corriente.
 - VE-10: se puede dar de alta un cliente durante la venta sin perder lo ya cargado.
 - VE-11: el cliente recién creado queda seleccionado en la venta.
-- VE-12: del pago con tarjeta se guardan solo tipo (débito o crédito), marca y últimos 4 dígitos; nunca se pide ni se guarda el número completo, y un cuerpo que lo traiga se rechaza (RF-V5, regla 9). `[pendiente]`: hoy no se guarda ningún dato de tarjeta.
+- VE-12: del pago con tarjeta se guardan solo tipo (débito o crédito), marca y últimos 4 dígitos; nunca se pide ni se guarda el número completo, y un cuerpo que lo traiga se rechaza (RF-V5, regla 9).
 - VE-49: se puede agregar un producto a la venta solo con teclado: escribir en el buscador, recorrer los resultados con las flechas y elegir con Enter.
-- VE-50: en el pago de contado se ingresa el monto recibido y se muestra el vuelto; el monto recibido cubre el total, validado en el servidor (RF-V5). `[pendiente]`
+- VE-50: en el pago de contado se ingresa el monto recibido y se muestra el vuelto; el monto recibido cubre el total, validado en el servidor (RF-V5); si falta, se toma el total, y el comprobante guarda monto y vuelto.
 - VE-51: al agregar o cambiar una cantidad se muestra la existencia disponible y no se permite superarla (RF-V4).
 - VE-52: el comprador por defecto es consumidor final; un cliente registrado se busca por nombre o documento (RF-V2).
 
@@ -288,7 +288,7 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-15: alta y edición de productos pasan a ser solo del administrador (US-08), por la tabla de permisos de la consigna; el operador consulta catálogo y stock, y no ve el botón Nuevo producto ni la ficha de edición.
 - 2026-11-14: la consigna del profesor tiene prioridad sobre las decisiones propias; donde choquen, se adapta la spec y se anota acá.
 - 2026-11-14: gráficos, filtros del listado de ventas e impresión de comprobantes y recibos dejan de estar descartados (CO-01 a CO-03, IN-06), porque la consigna los pide (RF-V7, RF-V8, RF-C5, RF-T2).
-- 2026-11-14: el pago con tarjeta guarda tipo, marca y últimos 4 dígitos (VE-12), y el de contado el monto recibido y el vuelto (VE-50), porque la consigna lo pide (RF-V5, regla 9); reemplaza la tarjeta sin datos. Se implementa junto con el resto de los cambios de esquema.
+- 2026-11-14: el pago con tarjeta guarda tipo, marca y últimos 4 dígitos (VE-12), y el de contado el monto recibido y el vuelto (VE-50), porque la consigna lo pide (RF-V5, regla 9); reemplaza la tarjeta sin datos. Implementado el 2026-11-16 (migración `0002`); las ventas anteriores a la migración quedan con esos campos vacíos.
 - 2026-11-14: se suma la API REST de la consigna (sección 11) en `app/api`, como adaptador sobre los servicios existentes; las pantallas siguen usando server actions, que llaman a los mismos servicios.
 - 2026-11-14: US-20 resuelto: cada usuario cambia su propia contraseña, porque la consigna lo pide (RF-U5).
 - 2026-11-14: la venta y el ajuste de stock descuentan con condición (`stock >= cantidad`) y abortan si no se modificó la fila, como pide la consigna (sección 10.2), además del check de la base.
