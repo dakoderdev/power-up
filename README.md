@@ -124,7 +124,7 @@ curl -c cookie.txt -H "Content-Type: application/json" -d '{"email":"admin@ejemp
 curl -b cookie.txt http://localhost:3000/api/tablero
 ```
 
-Las rutas de categorías y los campos que dependen de cambios de esquema (stock mínimo, datos de tarjeta, medio de pago, recibo numerado) están pendientes; ver `specs/sistema.md`.
+Las rutas de categorías y los campos que dependen de cambios de esquema (stock mínimo, medio de pago, recibo numerado) están pendientes; ver `specs/sistema.md`.
 
 ## Scripts
 

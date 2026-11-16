@@ -4,6 +4,7 @@ import { aCentavos } from "@/lib/moneda";
 import { esStockBajo } from "@/lib/stock/etiquetas";
 import type { MovimientoStockFila } from "@/lib/stock/listado";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
+import { calcularVuelto } from "@/lib/ventas/vuelto";
 import type { VentaDetalle } from "@/lib/ventas/detalle";
 import type { VentaFila } from "@/lib/ventas/listado";
 
@@ -169,6 +170,29 @@ export function formatearFacturaApi({
 }) {
   return {
     ...cabeceraFactura(venta),
+    pago: {
+      forma: venta.formaPago,
+      ...(venta.montoRecibido === null
+        ? {}
+        : {
+            montoRecibido: enCentavos(venta.montoRecibido),
+            vuelto: enCentavos(
+              calcularVuelto({
+                recibido: venta.montoRecibido,
+                total: venta.total,
+              }),
+            ),
+          }),
+      ...(venta.tarjetaTipo === null
+        ? {}
+        : {
+            tarjeta: {
+              tipo: venta.tarjetaTipo,
+              marca: venta.tarjetaMarca,
+              ultimos4: venta.tarjetaUltimos4,
+            },
+          }),
+    },
     items: venta.items.map((item) => ({
       productoId: item.productoId,
       codigo: item.codigo,

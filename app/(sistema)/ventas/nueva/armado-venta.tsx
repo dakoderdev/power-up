@@ -9,19 +9,31 @@ import { confirmarVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaVentaEntrada } from "@/lib/ventas/esquemas";
 import { BuscadorProductos } from "./buscador-productos";
 import { COLUMNAS_LINEA, FilaLinea, subtotal, type Linea } from "./linea-venta";
-import { ResumenVenta, type FormaPago } from "./resumen-venta";
+import {
+  ResumenVenta,
+  type DatosTarjeta,
+  type FormaPago,
+  type VentaConfirmada,
+} from "./resumen-venta";
 import { SeccionCliente } from "./seccion-cliente";
 import { Seccion } from "./seccion-venta";
 
 const FORMA_INICIAL: FormaPago = "contado";
 const SEPARADOR = "border-t border-neutral-900 pt-10";
+const TARJETA_INICIAL: DatosTarjeta = {
+  tipo: "debito",
+  marca: "",
+  ultimos4: "",
+};
 
 export function ArmadoVenta() {
   const [cliente, setCliente] = useState<ClienteVenta | null>(null);
   const [lineas, setLineas] = useState<Linea[]>([]);
   const [formaPago, setFormaPago] = useState<FormaPago>(FORMA_INICIAL);
+  const [montoRecibido, setMontoRecibido] = useState("");
+  const [tarjeta, setTarjeta] = useState<DatosTarjeta>(TARJETA_INICIAL);
   const [errores, setErrores] = useState<string[]>([]);
-  const [confirmada, setConfirmada] = useState<string | null>(null);
+  const [confirmada, setConfirmada] = useState<VentaConfirmada | null>(null);
   const [confirmando, iniciarConfirmacion] = useTransition();
 
   const total = lineas.reduce((suma, linea) => suma + subtotal(linea), 0);
@@ -88,6 +100,11 @@ export function ArmadoVenta() {
         productoId: linea.producto.id,
         cantidad: linea.cantidad,
       })),
+      tarjeta: formaPago === "tarjeta" ? tarjeta : undefined,
+      montoRecibido:
+        formaPago === "contado" && montoRecibido.trim() !== ""
+          ? montoRecibido
+          : undefined,
     });
 
     if (!validacion.success) {
@@ -110,10 +127,15 @@ export function ArmadoVenta() {
       const respuesta = await confirmarVentaAccion(validacion.data);
 
       if (respuesta.confirmada) {
-        setConfirmada(respuesta.comprobante);
+        setConfirmada({
+          comprobante: respuesta.comprobante,
+          vuelto: respuesta.vuelto,
+        });
         setLineas([]);
         setCliente(null);
         setFormaPago(FORMA_INICIAL);
+        setMontoRecibido("");
+        setTarjeta(TARJETA_INICIAL);
         return;
       }
 
@@ -187,10 +209,14 @@ export function ArmadoVenta() {
         total={total}
         formaPago={formaPago}
         conCliente={cliente !== null}
+        montoRecibido={montoRecibido}
+        tarjeta={tarjeta}
         errores={errores}
         confirmada={confirmada}
         confirmando={confirmando}
         onFormaPago={setFormaPago}
+        onMontoRecibido={setMontoRecibido}
+        onTarjeta={setTarjeta}
         onConfirmar={confirmar}
         className={`lg:border-t-0 lg:pt-0 ${SEPARADOR}`}
       />

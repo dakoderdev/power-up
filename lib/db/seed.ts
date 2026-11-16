@@ -13,7 +13,7 @@ import { formatearHora } from "../fechas";
 import { aCentavos, deCentavos } from "../moneda";
 import { MOTIVO_STOCK_INICIAL, MOTIVOS_SUGERIDOS } from "../stock/etiquetas";
 import { PUNTO_VENTA } from "../ventas/comprobante";
-import { CONSUMIDOR_FINAL } from "../ventas/etiquetas";
+import { CONSUMIDOR_FINAL, MARCAS_TARJETA } from "../ventas/etiquetas";
 import { siguienteNumero } from "../ventas/numeracion";
 import { db } from "./index";
 import {
@@ -23,6 +23,7 @@ import {
   movimientosCuenta,
   movimientosStock,
   productos,
+  TIPOS_TARJETA,
   user,
   ventas,
 } from "./schema";
@@ -604,6 +605,15 @@ async function crearVentas(usuarioId: string) {
           clienteDocumento: cliente?.documento ?? null,
           formaPago,
           total,
+          montoRecibido: formaPago === "contado" ? total : null,
+          tarjetaTipo:
+            formaPago === "tarjeta" ? elegir([...TIPOS_TARJETA]) : null,
+          tarjetaMarca:
+            formaPago === "tarjeta" ? elegir([...MARCAS_TARJETA]) : null,
+          tarjetaUltimos4:
+            formaPago === "tarjeta"
+              ? String(Math.floor(Math.random() * 10000)).padStart(4, "0")
+              : null,
           usuarioId,
         })
         .returning({ ventaId: ventas.id });

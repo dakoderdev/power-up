@@ -15,6 +15,13 @@
       "when": 1794416891686,
       "tag": "0001_anulacion_credito_numeracion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794828707562,
+      "tag": "0002_venta_tarjeta_monto",
+      "breakpoints": true
     }
   ]
 }

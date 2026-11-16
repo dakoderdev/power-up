@@ -1,6 +1,6 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { itemsVenta, ventas } from "@/lib/db/schema";
+import { itemsVenta, TIPOS_TARJETA, ventas } from "@/lib/db/schema";
 import {
   enteroPositivo,
   idPositivo,
@@ -18,17 +18,46 @@ export const esquemaItemEntrada = z.object({
   cantidad: enteroPositivo,
 });
 
+// VE-12 y regla 9: de la tarjeta solo tipo, marca y últimos 4; cualquier otro
+// campo (como un número completo) se rechaza.
+export const esquemaTarjeta = z.strictObject({
+  tipo: z.enum(TIPOS_TARJETA, "Elegí débito o crédito."),
+  marca: z
+    .string("Indicá la marca.")
+    .trim()
+    .min(1, "Indicá la marca.")
+    .max(30, "La marca es demasiado larga."),
+  ultimos4: z
+    .string("Ingresá los últimos 4 dígitos.")
+    .trim()
+    .regex(/^\d{4}$/, "Ingresá exactamente los últimos 4 dígitos."),
+});
+
 export const esquemaVentaEntrada = baseVenta
   .pick({ clienteId: true, formaPago: true })
   .extend({
     clienteId: idPositivo.nullable(),
     items: z.array(esquemaItemEntrada).min(1, "Agregá al menos un producto."),
+    tarjeta: esquemaTarjeta.nullish(),
+    montoRecibido: importePositivo.nullish(),
   })
   .refine(
     (venta) =>
       venta.formaPago !== "cuenta_corriente" || venta.clienteId !== null,
     { message: MENSAJE_CUENTA, path: ["formaPago"] },
-  );
+  )
+  .refine((venta) => venta.formaPago !== "tarjeta" || venta.tarjeta, {
+    message: "Completá los datos de la tarjeta.",
+    path: ["tarjeta"],
+  })
+  .refine((venta) => venta.formaPago === "tarjeta" || !venta.tarjeta, {
+    message: "Los datos de tarjeta solo van con pago con tarjeta.",
+    path: ["tarjeta"],
+  })
+  .refine((venta) => venta.formaPago === "contado" || !venta.montoRecibido, {
+    message: "El monto recibido solo va con pago de contado.",
+    path: ["montoRecibido"],
+  });
 
 export const esquemaVentaRegistro = createInsertSchema(ventas, {
   clienteNombre: (esquema) =>

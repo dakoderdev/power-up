@@ -13,7 +13,11 @@ import {
   esquemaUsuarioEdicion,
   esquemaUsuarioNuevo,
 } from "@/lib/usuarios/esquemas";
-import { esquemaAnulacion, esquemaVentaEntrada } from "@/lib/ventas/esquemas";
+import {
+  esquemaAnulacion,
+  esquemaTarjeta,
+  esquemaVentaEntrada,
+} from "@/lib/ventas/esquemas";
 
 // Sección 10.4: la API habla en centavos y camelCase; estos esquemas son
 // estrictos (rechazan campos no previstos) y se encadenan con los esquemas
@@ -251,12 +255,19 @@ export const esquemaFacturaApi = z
       ),
     pago: z.strictObject({
       forma: z.enum(FORMAS_PAGO, "Forma de pago inválida."),
+      montoRecibido: centavos.nullish(),
+      tarjeta: esquemaTarjeta.nullish(),
     }),
   })
-  .transform((factura) => ({
+  .transform((factura): z.input<typeof esquemaVentaEntrada> => ({
     clienteId: factura.clienteId,
     formaPago: factura.pago.forma,
     items: factura.items,
+    tarjeta: factura.pago.tarjeta,
+    montoRecibido:
+      factura.pago.montoRecibido == null
+        ? factura.pago.montoRecibido
+        : deCentavos(factura.pago.montoRecibido),
   }))
   .pipe(esquemaVentaEntrada);
 
