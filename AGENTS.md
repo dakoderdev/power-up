@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, deploy en Vercel. El resto de las librerías de UI se decide más adelante. Moneda única: pesos argentinos.
+Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, API REST con Route Handlers, deploy en Vercel. La consigna del parcial exige además shadcn/ui y Chart.js; la UI usa componentes propios sobre Tailwind, Chart.js se incorpora en el hito de cierre y shadcn/ui no se usa por decisión del equipo (ver README). Moneda única: pesos argentinos.
 
 ## Reglas
 
@@ -17,7 +17,7 @@ Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cu
 
 ## No construir
 
-Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se piden ni guardan números de tarjeta), impuestos, descuentos, cuotas, intereses, pagos combinados, devoluciones, edición de ventas confirmadas, anulación o edición de pagos, asignación de pagos a facturas concretas, multiempresa, multidepósito, multimoneda, borrado físico de productos, usuarios o clientes. Gráficos, impresión, filtros y roles configurables solo cuando lo obligatorio esté terminado.
+Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (de la tarjeta solo se guardan tipo, marca y últimos 4 dígitos; nunca el número completo), impuestos, descuentos, cuotas, intereses, pagos combinados, devoluciones, edición de ventas confirmadas, anulación o edición de pagos, asignación de pagos a facturas concretas, multiempresa, multidepósito, multimoneda, roles configurables, borrado físico de productos, usuarios o clientes. Gráficos (Chart.js), impresión de comprobante y recibo, y filtros del listado de ventas son obligatorios por la consigna y van en el hito de cierre, después del flujo de venta.
 
 ## Dominio en corto
 
@@ -32,7 +32,7 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 - Envolvé la lógica en funciones.
 - Llaves siempre en if/else/for/while, aunque sea una línea.
 - `const` antes que `let`; ternario en vez de reasignar.
-- Sin comentarios salvo código genuinamente no obvio.
+- Cada función exportada de la capa de servicios (`lib/`) y cada Route Handler lleva un comentario de una o dos líneas que cita el requerimiento o la regla de la consigna que implementa (`// RF-V6 y regla 2: ...`), como pide la sección 10.2 de la consigna. Fuera de eso, sin comentarios salvo código genuinamente no obvio.
 - Más de 2 argumentos: un objeto como parámetro.
 - Constantes que nunca cambian en UPPER_SNAKE_CASE.
 - Nombres de 1 a 3 palabras, máximo 5.
@@ -45,6 +45,7 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 ## Dónde vive cada cosa
 
 - Separación en capas: UI en `app/` y `components/`; lógica de aplicación (casos de uso como `confirmarVenta`, `registrarPago`, `ajustarStock`) en `lib/<modulo>/`; acceso a datos con Drizzle solo desde esa capa, nunca desde componentes. Esquema en `lib/db/schema.ts`, cliente en `lib/db/index.ts`, seed en `lib/db/seed.ts`.
+- API REST en `app/api/**/route.ts`, según la sección 11 de la consigna. Cada ruta es un adaptador fino: usa el envoltorio `ruta`/`rutaPublica` de `lib/api/ruta.ts` (sesión, rol, JSON, errores), valida con los esquemas de `lib/api/esquemas.ts` (estrictos, en centavos y camelCase, encadenados a los esquemas compartidos de `lib/`), llama a un servicio de `lib/<modulo>/` y responde con los formateadores de `lib/api/formato.ts`. Una ruta no contiene reglas de negocio; si hace falta una, va al servicio. Los errores son `ApiError` con los códigos de `lib/api/errores.ts`.
 - Antes de crear una constante, etiqueta o helper, buscá en `lib/` si ya existe (formato de moneda y fechas, etiquetas de forma de pago y de tipo de movimiento, colores de badges).
 - Una regla de dominio (precio positivo, cantidades enteras, largo de motivo, saldo máximo de pago) se escribe una vez en `lib/` (esquema compartido) y la usan el formulario y la server action.
 - Piezas compartidas entre diálogos de una sección van a un archivo propio (p. ej. `clientes/_comun/campos-cliente.tsx`); un diálogo no importa de otro.
@@ -52,7 +53,9 @@ Integración con ARCA o comprobantes fiscales, cobro real con tarjeta (no se pid
 
 ## Specs: quién gana ante un conflicto
 
-`specs/sistema.md` es la fuente de verdad de las reglas de negocio. Es un único archivo para todo el sistema, con una sección por módulo (ventas, productos, stock, clientes, cuentas corrientes, usuarios) y, al final, las secciones Abierto, Descartado y Decisiones. No crees un archivo de spec por módulo ni otros archivos en `specs/`: agregá o editá secciones de ese archivo. Usala para desempatar: si lo que te pido, lo que encontraste en el código o una "buena práctica" contradicen la spec, no elijas vos. Frená, mostrame el choque y esperá. Si decido cambiar la regla, actualizá la spec en el mismo cambio que el código.
+La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre todo lo demás: si una regla de la spec, un pedido mío o el código lo contradicen, gana la consigna; actualizá la spec para que lo refleje y dejá la decisión fechada. Solo si la consigna no dice nada sobre el punto, vale lo que sigue.
+
+`specs/sistema.md` es la fuente de verdad de las reglas de negocio. Es un único archivo para todo el sistema, con una sección por módulo (ventas, productos, stock, clientes, cuentas corrientes, usuarios, inicio, API) y, al final, las secciones Abierto, Descartado y Decisiones. No crees un archivo de spec por módulo ni otros archivos en `specs/`: agregá o editá secciones de ese archivo. Usala para desempatar: si lo que te pido, lo que encontraste en el código o una "buena práctica" contradicen la spec, no elijas vos. Frená, mostrame el choque y esperá. Si decido cambiar la regla, actualizá la spec en el mismo cambio que el código. Una regla marcada `[pendiente]` ya está decidida pero todavía no implementada.
 
 - Cada hecho vive en un solo lugar: reglas en la spec, datos en `lib/db/schema.ts`, estilo de código en este archivo, diseño visual en `DESIGN.md`. No los copies entre sí.
 - Antes de tocar UI, leé `DESIGN.md` y usá los componentes y valores que nombra; no inventes colores, tamaños ni espaciados fuera de él.

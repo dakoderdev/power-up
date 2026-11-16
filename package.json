@@ -2,6 +2,7 @@
   "name": "power-up",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,8 +10,9 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env lib/db/seed.ts",
-    "db:demo-hoy": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env lib/db/demo-hoy.ts"
+    "db:seed": "tsx --env-file-if-exists=.env lib/db/seed.ts",
+    "db:demo-hoy": "tsx --env-file-if-exists=.env lib/db/demo-hoy.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

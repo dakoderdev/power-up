@@ -1,14 +1,28 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { obtenerSaldo } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import { clientes, movimientosCuenta, ventas } from "@/lib/db/schema";
 import { aCentavos, deCentavos } from "@/lib/moneda";
+
+const ULTIMAS_VENTAS = 6;
 
 export async function obtenerCliente(id: number) {
   const [cliente] = await db.select().from(clientes).where(eq(clientes.id, id));
 
   return cliente ?? null;
 }
+
+type MovimientoConSaldo = {
+  id: number;
+  tipo: "venta" | "pago" | "anulacion";
+  importe: string;
+  observacion: string | null;
+  fecha: Date;
+  ventaId: number | null;
+  puntoVenta: number | null;
+  numero: number | null;
+  saldo: string;
+};
 
 async function obtenerMovimientos(clienteId: number) {
   const filas = await db
@@ -41,25 +55,45 @@ async function obtenerMovimientos(clienteId: number) {
   ).lista;
 }
 
-type MovimientoConSaldo = {
-  id: number;
-  tipo: "venta" | "pago" | "anulacion";
-  importe: string;
-  observacion: string | null;
-  fecha: Date;
-  ventaId: number | null;
-  puntoVenta: number | null;
-  numero: number | null;
-  saldo: string;
-};
-
-export async function obtenerCuenta(clienteId: number) {
-  const [saldo, movimientos] = await Promise.all([
+// RF-C4 y CC-06: movimientos en orden cronológico con saldo acumulado; con
+// desde, saldoAnterior trae lo acumulado hasta ese día.
+export async function obtenerCuenta(
+  clienteId: number,
+  { desde, hasta }: { desde?: Date; hasta?: Date } = {},
+) {
+  const [saldo, todos] = await Promise.all([
     obtenerSaldo({ consulta: db, clienteId }),
     obtenerMovimientos(clienteId),
   ]);
 
-  return { saldo, movimientos };
+  const previos = desde ? todos.filter((m) => m.fecha < desde) : [];
+  const movimientos = todos.filter(
+    (m) => (!desde || m.fecha >= desde) && (!hasta || m.fecha < hasta),
+  );
+
+  return {
+    saldo,
+    saldoAnterior: previos.at(-1)?.saldo ?? deCentavos(0),
+    movimientos,
+  };
+}
+
+// RF-C3: últimas facturas del cliente para su ficha.
+export async function obtenerUltimasVentas(clienteId: number) {
+  return db
+    .select({
+      id: ventas.id,
+      puntoVenta: ventas.puntoVenta,
+      numero: ventas.numero,
+      creadoEn: ventas.creadoEn,
+      formaPago: ventas.formaPago,
+      total: ventas.total,
+      anuladaEn: ventas.anuladaEn,
+    })
+    .from(ventas)
+    .where(eq(ventas.clienteId, clienteId))
+    .orderBy(desc(ventas.creadoEn), desc(ventas.id))
+    .limit(ULTIMAS_VENTAS);
 }
 
 export type ClienteDetalle = NonNullable<

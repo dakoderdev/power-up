@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
 import type { ROLES } from "@/lib/db/schema";
+import type { CambioContrasena } from "./esquemas";
 
 type Rol = (typeof ROLES)[number];
 
@@ -44,4 +46,32 @@ export async function requerirAdministrador() {
 
 export async function cerrarSesionActual() {
   await auth.api.signOut({ headers: await headers() });
+}
+
+// RF-U5 y US-20: cambio de la propia contraseña; Better Auth verifica la actual.
+export async function cambiarContrasena({
+  entrada,
+  headers: cabeceras,
+}: {
+  entrada: CambioContrasena;
+  headers: Headers;
+}) {
+  try {
+    await auth.api.changePassword({
+      body: {
+        currentPassword: entrada.actual,
+        newPassword: entrada.nueva,
+        revokeOtherSessions: true,
+      },
+      headers: cabeceras,
+    });
+
+    return { cambiada: true as const };
+  } catch (error) {
+    if (error instanceof APIError) {
+      return { cambiada: false as const };
+    }
+
+    throw error;
+  }
 }

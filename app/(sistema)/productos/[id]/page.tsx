@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { obtenerProducto } from "@/lib/productos/guardar";
-import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { FormularioProducto } from "../_comun/formulario-producto";
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function EditarProducto({
 
 async function Edicion({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await obtenerUsuarioActual();
+  await requerirAdministrador();
   const idValido = idPositivo.safeParse(Number(id));
   const producto = idValido.success
     ? await obtenerProducto(idValido.data)

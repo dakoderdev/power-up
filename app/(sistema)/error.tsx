@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { claseBoton } from "@/components/estilos";
-import { EncabezadoPagina } from "@/components/encabezado-pagina";
 
 export default function ErrorPantalla({
   error,
@@ -17,7 +16,9 @@ export default function ErrorPantalla({
 
   return (
     <div className="flex flex-col gap-8">
-      <EncabezadoPagina titulo="Error" />
+      <h1 className="py-3 font-pixel text-5xl uppercase leading-none tracking-[-0.01em]">
+        Error
+      </h1>
       <div className="flex max-w-2xl flex-col gap-4 border border-neutral-800 px-6 py-8">
         <p role="alert" className="text-[0.9375rem] text-red-400">
           No se pudo cargar esta pantalla.

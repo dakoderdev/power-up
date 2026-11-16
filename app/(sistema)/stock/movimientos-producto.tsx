@@ -29,10 +29,12 @@ export async function MovimientosProducto({
   productoId,
   origen,
   paginaPedida,
+  puedeAjustar,
 }: {
   productoId: number;
   origen?: OrigenStock;
   paginaPedida: number;
+  puedeAjustar: boolean;
 }) {
   const producto = await obtenerProductoStock(productoId);
 
@@ -95,9 +97,11 @@ export async function MovimientosProducto({
         </Link>
       </div>
 
-      <div className="border-t border-neutral-900 pt-10">
-        <AjustarStock productoId={producto.id} stock={producto.stock} />
-      </div>
+      {puedeAjustar ? (
+        <div className="border-t border-neutral-900 pt-10">
+          <AjustarStock productoId={producto.id} stock={producto.stock} />
+        </div>
+      ) : null}
 
       <h3 className="border-t border-neutral-900 pt-10 text-[0.9375rem] font-medium text-white">
         Movimientos

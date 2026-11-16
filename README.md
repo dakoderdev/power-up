@@ -2,7 +2,18 @@
 
 Sistema de ventas y gestión comercial: ventas con comprobante, productos y stock, clientes, cuentas corrientes y pagos, y usuarios con roles. Moneda única: pesos argentinos.
 
-Stack: Next.js, Tailwind, Drizzle ORM sobre Turso (libSQL/SQLite), Better Auth, Zod con drizzle-zod, deploy en Vercel.
+Stack: Next.js (App Router), Tailwind, Drizzle ORM sobre Turso (libSQL/SQLite), Better Auth, Zod con drizzle-zod, API REST con Route Handlers, deploy en Vercel.
+
+## Nota sobre shadcn/ui y Chart.js
+
+La consigna final del parcial (29/10/2026) lista shadcn/ui y Chart.js (`react-chartjs-2`) como tecnologías obligatorias. En el material "segundo-parcial-enunciado-y-mockup.html", Chart.js figuraba como opcional y shadcn/ui no se mencionaba, y el proyecto arrancó con esa lectura: la interfaz se construyó con componentes propios sobre Tailwind (`components/`, valores en `DESIGN.md`) y sin gráficos.
+
+Ninguna de las dos ausencias es un descuido:
+
+- **Chart.js** se va a incorporar para los gráficos del tablero (RF-T2). Los datos ya los calcula `GET /api/tablero`.
+- **shadcn/ui** no se va a usar, por decisión del equipo. La interfaz tiene un diseño propio, unico, y consistente, y adoptar la librería implicaría reemplazar o reestilizar componentes que ya funcionan, sin aportar nada al resultado. Además, el equipo ya trabajó con shadcn/ui en su proyecto final de la carrera, por lo que conoce la librería y su funcionamiento, asi que no hay problema en cuanto el aprendizaje de la herramienta en si.
+
+El estado de cada requerimiento está en [`specs/sistema.md`](specs/sistema.md); lo que falta está marcado `[pendiente]`.
 
 Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El diseño visual está en [`DESIGN.md`](DESIGN.md).
 
@@ -14,46 +25,29 @@ Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El dise�
 
 Son credenciales de demostración de un proyecto de evaluación. No se usan en ningún entorno real.
 
-Hoy el seed solo crea el administrador. El usuario operador de prueba está pendiente de la definición de las reglas abiertas US-22 a US-24 de la spec.
+Hoy el seed solo crea el administrador. El usuario operador (vendedor) de prueba está pendiente (PE-04 en la spec); mientras tanto, el administrador puede crearlo desde Usuarios.
 
 ## Requisitos
 
 - Node.js 20 o superior
+- pnpm (`npm install -g pnpm` o `corepack enable`)
 - Una base en Turso (plan gratuito). En desarrollo también sirve un archivo local: `TURSO_DATABASE_URL=file:local.db`, sin token
 
 ## Puesta en marcha
 
-1. Instalar dependencias:
+```bash
+pnpm install
+cp .env.example .env
+pnpm run db:migrate
+pnpm run db:seed
+pnpm run dev
+```
 
-   ```bash
-   npm install
-   ```
-
-2. Crear `.env.local` a partir de `.env.example` y completar las variables (ver tabla abajo).
-
-3. Aplicar las migraciones:
-
-   ```bash
-   npm run db:migrate
-   ```
-
-4. Cargar el administrador y los datos de demostración:
-
-   ```bash
-   npm run db:seed
-   ```
-
-5. Levantar el sistema:
-
-   ```bash
-   npm run dev
-   ```
-
-   Abrir [http://localhost:3000](http://localhost:3000) e iniciar sesión con las credenciales de evaluación.
+Después de copiar `.env.example`, completar las variables de `.env` (ver tabla abajo). Para desarrollo alcanza con `TURSO_DATABASE_URL=file:local.db`. Abrir [http://localhost:3000](http://localhost:3000) e iniciar sesión con las credenciales de evaluación.
 
 ## Variables de entorno
 
-Las credenciales y claves van solo en variables de entorno (`.env.local` o `.env`, ignorados por git). Nunca en el código.
+Las credenciales y claves van solo en variables de entorno (`.env`, ignorado por git). Nunca en el código.
 
 | Variable              | Descripción                                                                               |
 | --------------------- | ----------------------------------------------------------------------------------------- |
@@ -76,13 +70,13 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 
 ## Seed
 
-`npm run db:seed` hace lo siguiente:
+`pnpm run db:seed` hace lo siguiente:
 
 - Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
 - Crea 25 productos de demostración con stock al azar (siempre algunos sin stock y otros con stock bajo), con su movimiento de stock inicial.
 - Crea clientes (algunos con límite de crédito), ventas (la mayoría de hoy, el resto de los días anteriores) (contado, tarjeta y cuenta corriente), pagos parciales y ajustes manuales de stock, todo al azar en cada corrida. Las cantidades y rangos se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
 - Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
-- `npm run db:seed -- --reiniciar` borra productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
+- `pnpm run db:seed --reiniciar` borra productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
 
 ## Uso de inteligencia artificial
 
@@ -105,22 +99,43 @@ Errores del agente que se detectaron y corrigieron:
 
 ## Roles
 
-| Rol           | Valor interno | Alcance                                                                 |
-| ------------- | ------------- | ----------------------------------------------------------------------- |
-| Administrador | `admin`       | Opera ventas, productos, clientes, stock y pagos, y administra usuarios |
-| Operador      | `operator`    | Opera ventas, productos, clientes, stock y pagos                        |
+| Rol           | Valor interno | Alcance                                                                                                      |
+| ------------- | ------------- | ------------------------------------------------------------------------------------------------------------ |
+| Administrador | `admin`       | Todo: además anula ventas, da de alta y edita productos, registra ajustes de stock y administra usuarios     |
+| Operador      | `operator`    | El "vendedor" de la consigna: emite y consulta ventas, consulta productos y stock, gestiona clientes y pagos |
 
-El rol y el estado activo se verifican en el servidor. Un usuario inactivo no puede iniciar sesión.
+El rol y el estado activo se verifican en el servidor en cada pedido. Un usuario inactivo no puede iniciar sesión.
+
+## API REST
+
+Las operaciones están expuestas bajo `/api` según la sección 11 de la consigna (31 rutas en `app/api/**/route.ts`). Importes en centavos enteros, fechas ISO 8601 en UTC, errores con la forma `{ "error": { "code", "message", "details" } }`.
+
+Cada ruta es un adaptador fino sobre los mismos servicios de `lib/` que usan las pantallas:
+
+- `lib/api/ruta.ts`: envoltorio común (sesión, rol, lectura de JSON y traducción de errores).
+- `lib/api/esquemas.ts`: esquemas de entrada estrictos, encadenados a los esquemas Zod compartidos.
+- `lib/api/errores.ts`: `ApiError` y los códigos de la sección 11.8.
+- `lib/api/formato.ts`: forma pública de cada recurso.
+
+Para probarla, iniciar sesión con `POST /api/auth/login` y reusar la cookie que devuelve:
+
+```bash
+curl -c cookie.txt -H "Content-Type: application/json" -d '{"email":"admin@ejemplo.com","password":"PowerUp2026!"}' http://localhost:3000/api/auth/login
+curl -b cookie.txt http://localhost:3000/api/tablero
+```
+
+Las rutas de categorías y los campos que dependen de cambios de esquema (stock mínimo, datos de tarjeta, medio de pago, recibo numerado) están pendientes; ver `specs/sistema.md`.
 
 ## Scripts
 
-| Comando               | Qué hace                                    |
-| --------------------- | ------------------------------------------- |
-| `npm run dev`         | Servidor de desarrollo                      |
-| `npm run build`       | Build de producción                         |
-| `npm run start`       | Sirve el build de producción                |
-| `npm run lint`        | ESLint                                      |
-| `npm run db:generate` | Genera una migración desde el esquema       |
-| `npm run db:migrate`  | Aplica las migraciones                      |
-| `npm run db:seed`     | Carga administrador y datos de demostración |
-| `npm run db:demo-hoy` | Mueve las ventas de demostración a hoy      |
+| Comando                | Qué hace                                    |
+| ---------------------- | ------------------------------------------- |
+| `pnpm run dev`         | Servidor de desarrollo                      |
+| `pnpm run build`       | Build de producción                         |
+| `pnpm run start`       | Sirve el build de producción                |
+| `pnpm run lint`        | ESLint                                      |
+| `pnpm run db:generate` | Genera una migración desde el esquema       |
+| `pnpm run db:migrate`  | Aplica las migraciones                      |
+| `pnpm run db:seed`     | Carga administrador y datos de demostración |
+| `pnpm run db:demo-hoy` | Mueve las ventas de demostración a hoy      |
+| `pnpm run typecheck`   | Chequeo de tipos de TypeScript              |

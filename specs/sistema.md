@@ -2,6 +2,8 @@
 
 Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por módulo. Los campos de las tablas viven en `lib/db/schema.ts`.
 
+La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta spec: cuando una regla de acá la contradice, se cambia acá y queda anotado en Decisiones. Entre paréntesis se cita el requerimiento de la consigna (RF-xx) o la regla de negocio (regla n) que cada línea cumple. `[pendiente]` marca una regla ya decidida que todavía no está implementada.
+
 ## Ventas y comprobantes
 
 ### Armado de la venta
@@ -17,8 +19,11 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - VE-09: la forma de pago es una sola por venta: contado, tarjeta o cuenta corriente.
 - VE-10: se puede dar de alta un cliente durante la venta sin perder lo ya cargado.
 - VE-11: el cliente recién creado queda seleccionado en la venta.
-- VE-12: el pago con tarjeta es simulado; no se piden ni guardan datos de tarjeta.
+- VE-12: del pago con tarjeta se guardan solo tipo (débito o crédito), marca y últimos 4 dígitos; nunca se pide ni se guarda el número completo, y un cuerpo que lo traiga se rechaza (RF-V5, regla 9). `[pendiente]`: hoy no se guarda ningún dato de tarjeta.
 - VE-49: se puede agregar un producto a la venta solo con teclado: escribir en el buscador, recorrer los resultados con las flechas y elegir con Enter.
+- VE-50: en el pago de contado se ingresa el monto recibido y se muestra el vuelto; el monto recibido cubre el total, validado en el servidor (RF-V5). `[pendiente]`
+- VE-51: al agregar o cambiar una cantidad se muestra la existencia disponible y no se permite superarla (RF-V4).
+- VE-52: el comprador por defecto es consumidor final; un cliente registrado se busca por nombre o documento (RF-V2).
 
 ### Confirmación
 
@@ -116,6 +121,9 @@ Fuente de verdad de las reglas de negocio. Un solo archivo, una sección por mó
 - ST-19: el listado de stock marca el stock de los productos activos con stock bajo (ST-17).
 - ST-20: al entrar a un producto desde Stock se ven su stock actual y sus movimientos, filtrables por origen.
 - ST-21: el ajuste manual se registra desde el detalle de stock del producto, eligiendo entrada o salida, cantidad y motivo; desde cada fila del listado de stock se registra una entrada sin salir del listado.
+- ST-22: solo el administrador registra ajustes manuales de stock (ingresos y egresos), verificado en el servidor; el operador consulta el stock y sus movimientos pero no ve los controles de ajuste (RF-P4, RF-P5, sección 3).
+- ST-23: cada producto tiene un stock mínimo propio; está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1). `[pendiente]`: hoy el umbral es fijo (ST-17).
+- ST-24: cada movimiento muestra la existencia resultante (RF-P6). `[pendiente]`
 
 ## Clientes
 
@@ -163,7 +171,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-05: desactivar un usuario cierra sus sesiones abiertas.
 - US-06: las contraseñas se guardan hasheadas, nunca en texto plano.
 - US-07: hay dos roles: administrador y operador.
-- US-08: ambos roles operan ventas, productos, clientes, stock y pagos.
+- US-08: ambos roles emiten y consultan ventas, consultan productos y stock, dan de alta y editan clientes y registran pagos. Solo el administrador anula ventas, da de alta, edita y da de baja productos, registra ajustes de stock y administra usuarios (sección 3).
+- US-30: el operador corresponde al rol "vendedor" de la consigna; en la API el rol se llama `operator`.
 - US-09: la administración de usuarios es solo del administrador.
 - US-10: rol y estado activo se verifican en el servidor en cada server action que lo requiera.
 - US-11: el menú no muestra la sección de usuarios a un operador.
@@ -181,6 +190,8 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-27: el administrador puede cambiar el rol de otro usuario.
 - US-28: no se puede pasar a operador ni desactivar al último administrador activo (US-16).
 - US-29: un administrador no puede cambiar su propio rol ni desactivarse a sí mismo.
+- US-20: cada usuario cambia su propia contraseña desde `/perfil`, indicando la actual (RF-U5). Disponible en la API (`PUT /api/auth/password`); `[pendiente]` la pantalla.
+- US-31: el administrador restablece la contraseña de otro usuario con una temporal generada al azar que se muestra una sola vez (RF-U5).
 
 ## Inicio
 
@@ -188,6 +199,34 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-02: se muestran hasta 15 ventas de hoy, de la más reciente a la más antigua.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
+- IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero`; `[pendiente]` la pantalla.
+- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2). `[pendiente]`
+- IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API; `[pendiente]` la pantalla.
+
+## Consulta, filtros e impresión
+
+- CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número (RF-V8). Disponible en `GET /api/facturas`; `[pendiente]` en la pantalla.
+- CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). `[pendiente]`
+- CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). `[pendiente]`
+- CO-04: hay una pantalla de saldos con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible en `GET /api/clientes?conDeuda=true&orden=saldo`; `[pendiente]` la pantalla.
+
+## Pendientes de la consigna
+
+Decididos por la consigna y no implementados todavía; cada uno requiere cambio de esquema con migración.
+
+- PE-01: categorías de productos con alta, edición y baja (RF-P7). Reemplaza la decisión del 2026-11-09 que las descartaba.
+- PE-02: cliente con tipo de documento (DNI o CUIT), domicilio, habilitación de cuenta corriente y baja lógica (RF-C2, RF-C7, regla 6).
+- PE-03: el pago registra su medio: efectivo, transferencia o tarjeta (RF-C5).
+- PE-04: el seed carga al menos 2 usuarios (uno por rol), 5 categorías, 30 productos, 10 clientes y 50 facturas en los últimos 30 días, usando los mismos servicios que la app (sección 8 y 10.7).
+
+## API REST
+
+- AP-01: las operaciones del sistema se exponen bajo `/api` con Route Handlers, según la sección 11 de la consigna.
+- AP-02: toda ruta exige sesión salvo `POST /api/auth/login`; sin sesión responde 401 y una ruta de administrador responde 403 a un operador.
+- AP-03: importes en centavos enteros, fechas ISO 8601 en UTC y filtros de día interpretados en hora de Argentina.
+- AP-04: los cuerpos se validan con esquemas estrictos: un campo no previsto (por ejemplo `existencia` o el número completo de tarjeta) responde 422.
+- AP-05: todo error tiene la forma `{ error: { code, message, details? } }`; un error inesperado responde 500 sin detalle.
+- AP-06: las rutas no contienen reglas: llaman a los mismos servicios de `lib/` que las server actions.
 
 ## Interfaz
 
@@ -195,7 +234,6 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 
 ## Abierto
 
-- [abierto] US-20: si cada usuario puede cambiar su propia contraseña (a revisar al final, opcional).
 - [abierto] US-22: cómo recibe su contraseña inicial un usuario nuevo: la fija el administrador, la genera el sistema al azar y se muestra una sola vez, o llega un enlace de invitación por correo.
 - [abierto] US-23: si el usuario debe cambiar la contraseña inicial en su primer ingreso (requiere un campo nuevo en usuario y una migración).
 - [abierto] US-25: si se suma un servicio de correo para invitaciones y avisos (puede tener costo; el proyecto se publica en planes gratuitos).
@@ -208,7 +246,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - Asignación de pagos a facturas concretas (2026-11-07: los pagos reducen el saldo global).
 - Borrado físico de productos y usuarios (2026-11-07: el enunciado exige baja lógica).
 - Multiempresa, multidepósito, multimoneda, cantidades decimales (2026-11-07: una empresa, un depósito, pesos, unidades enteras).
-- Roles y permisos configurables, gráficos, filtros de ventas e impresión (2026-11-07: opcionales, solo con lo obligatorio terminado).
+- Roles y permisos configurables (2026-11-07: fuera del alcance del enunciado).
 - Auth propia (2026-11-07: la maneja Better Auth).
 
 ## Decisiones
@@ -245,6 +283,14 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-11: el buscador de la venta se recorre con flechas y se elige con Enter (VE-49), y las pantallas tienen un estado de error con reintento (IU-01), porque la consigna los pregunta en la defensa.
 - 2026-11-14: la sección Stock muestra primero el stock actual de cada producto y los movimientos por producto, en lugar de un historial general, porque la pregunta habitual en el mostrador es cuántas unidades quedan; reemplaza el historial general de ST-11.
 - 2026-11-14: el motivo de un ajuste manual va de 3 a 200 caracteres, para que diga algo útil sin volverse una nota larga; resuelve ST-15.
-- 2026-11-14: el ajuste manual de stock, entrada o salida, lo hacen los dos roles (US-08) y no es una acción solo de administrador como la anulación: recibir mercadería y registrar roturas es tarea diaria del mostrador, y cada movimiento queda con su usuario, su motivo y sin edición ni borrado (ST-13), así que una salida mal usada se rastrea en el historial del producto.
+- 2026-11-14: el ajuste manual de stock lo hacían los dos roles. (Reemplazada el 2026-11-14 por ST-22.)
+- 2026-11-14: los ajustes manuales de stock pasan a ser solo del administrador (ST-22), porque la tabla de permisos de la consigna (sección 3) lo exige: el vendedor no toca el stock. Reemplaza la decisión anterior que se los permitía a los dos roles.
+- 2026-11-15: alta y edición de productos pasan a ser solo del administrador (US-08), por la tabla de permisos de la consigna; el operador consulta catálogo y stock, y no ve el botón Nuevo producto ni la ficha de edición.
+- 2026-11-14: la consigna del profesor tiene prioridad sobre las decisiones propias; donde choquen, se adapta la spec y se anota acá.
+- 2026-11-14: gráficos, filtros del listado de ventas e impresión de comprobantes y recibos dejan de estar descartados (CO-01 a CO-03, IN-06), porque la consigna los pide (RF-V7, RF-V8, RF-C5, RF-T2).
+- 2026-11-14: el pago con tarjeta guarda tipo, marca y últimos 4 dígitos (VE-12), y el de contado el monto recibido y el vuelto (VE-50), porque la consigna lo pide (RF-V5, regla 9); reemplaza la tarjeta sin datos. Se implementa junto con el resto de los cambios de esquema.
+- 2026-11-14: se suma la API REST de la consigna (sección 11) en `app/api`, como adaptador sobre los servicios existentes; las pantallas siguen usando server actions, que llaman a los mismos servicios.
+- 2026-11-14: US-20 resuelto: cada usuario cambia su propia contraseña, porque la consigna lo pide (RF-U5).
+- 2026-11-14: la venta y el ajuste de stock descuentan con condición (`stock >= cantidad`) y abortan si no se modificó la fila, como pide la consigna (sección 10.2), además del check de la base.
 - 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
 - 2026-11-14: US-22 resuelto: el administrador fija la contraseña inicial al crear el usuario. El alta inserta user y account directo con el hash de Better Auth, para no abrir sesión como el usuario nuevo.

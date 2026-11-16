@@ -15,11 +15,27 @@ const correo = z
 
 const rol = z.enum(ROLES, "Elegí un rol.");
 
+export const CONTRASENA_MINIMA = 8;
+
+// US-21: la contraseña tiene al menos 8 caracteres.
+const contrasena = z
+  .string()
+  .min(
+    CONTRASENA_MINIMA,
+    `La contraseña tiene al menos ${CONTRASENA_MINIMA} caracteres.`,
+  );
+
 export const esquemaUsuarioNuevo = z.object({
   nombre,
   correo,
   rol,
-  contrasena: z.string().min(8, "La contraseña tiene al menos 8 caracteres."),
+  contrasena,
+});
+
+// RF-U5 y US-20: cada usuario cambia su propia contraseña.
+export const esquemaCambioContrasena = z.object({
+  actual: z.string().min(1, "Ingresá tu contraseña actual."),
+  nueva: contrasena,
 });
 
 export const esquemaUsuarioEdicion = z.object({
@@ -31,3 +47,4 @@ export const esquemaUsuarioEdicion = z.object({
 
 export type UsuarioNuevo = z.infer<typeof esquemaUsuarioNuevo>;
 export type UsuarioEdicion = z.infer<typeof esquemaUsuarioEdicion>;
+export type CambioContrasena = z.infer<typeof esquemaCambioContrasena>;

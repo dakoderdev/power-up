@@ -1,15 +1,26 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { movimientosStock, productos } from "@/lib/db/schema";
 import type { AjusteManual } from "./esquemas";
 
 export type ResultadoAjuste =
-  | { ajustado: true }
+  | { ajustado: true; movimientoId: number; stock: number }
   | {
       ajustado: false;
       errores: Partial<Record<keyof AjusteManual, string[]>>;
     };
 
+function sinStock(stock: number): ResultadoAjuste {
+  return {
+    ajustado: false,
+    errores: {
+      cantidad: [`No se puede sacar más que el stock actual (${stock}).`],
+    },
+  };
+}
+
+// RF-P4, RF-P5 y regla 2: ingreso o egreso manual; actualiza la existencia
+// con condición (stock >= cantidad) y graba el movimiento en la misma transacción.
 export async function ajustarStock({
   entrada,
   usuarioId,
@@ -30,34 +41,45 @@ export async function ajustarStock({
       };
     }
 
-    if (entrada.tipo === "salida" && entrada.cantidad > producto.stock) {
-      return {
-        ajustado: false,
-        errores: {
-          cantidad: [
-            `No se puede sacar más que el stock actual (${producto.stock}).`,
-          ],
-        },
-      };
+    const esSalida = entrada.tipo === "salida";
+
+    if (esSalida && entrada.cantidad > producto.stock) {
+      return sinStock(producto.stock);
     }
 
-    const variacion =
-      entrada.tipo === "entrada" ? entrada.cantidad : -entrada.cantidad;
+    const variacion = esSalida ? -entrada.cantidad : entrada.cantidad;
 
-    await tx
+    const [actualizado] = await tx
       .update(productos)
       .set({ stock: sql`${productos.stock} + ${variacion}` })
-      .where(eq(productos.id, producto.id));
+      .where(
+        and(
+          eq(productos.id, producto.id),
+          esSalida ? gte(productos.stock, entrada.cantidad) : undefined,
+        ),
+      )
+      .returning({ stock: productos.stock });
 
-    await tx.insert(movimientosStock).values({
-      productoId: producto.id,
-      tipo: entrada.tipo,
-      origen: "manual",
-      cantidad: entrada.cantidad,
-      motivo: entrada.motivo,
-      usuarioId,
-    });
+    if (!actualizado) {
+      return sinStock(producto.stock);
+    }
 
-    return { ajustado: true };
+    const [movimiento] = await tx
+      .insert(movimientosStock)
+      .values({
+        productoId: producto.id,
+        tipo: entrada.tipo,
+        origen: "manual",
+        cantidad: entrada.cantidad,
+        motivo: entrada.motivo,
+        usuarioId,
+      })
+      .returning({ id: movimientosStock.id });
+
+    return {
+      ajustado: true,
+      movimientoId: movimiento.id,
+      stock: actualizado.stock,
+    };
   });
 }
