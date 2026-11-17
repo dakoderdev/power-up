@@ -3,13 +3,14 @@
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { cambiarContrasenaAccion } from "@/lib/usuarios/acciones";
 import {
   esquemaCambioContrasena,
   type ErroresContrasena,
 } from "@/lib/usuarios/esquemas";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 const CAMPOS = [
   {
@@ -74,28 +75,20 @@ export function CambiarContrasena() {
           const idCampo = `${id}-${campo.nombre}`;
 
           return (
-            <div key={campo.nombre} className="flex flex-col gap-2">
-              <label
-                htmlFor={idCampo}
-                className="text-sm font-medium text-neutral-400"
-              >
-                {campo.etiqueta}
-              </label>
-              <input
+            <Field key={campo.nombre}>
+              <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+              <Input
                 id={idCampo}
                 name={campo.nombre}
                 type="password"
                 autoComplete={campo.autoComplete}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? `${idCampo}-error` : undefined}
-                className={`${CLASE_CAMPO} ${error ? "border-red-400" : "border-neutral-800"}`}
               />
               {error ? (
-                <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                  {error}
-                </p>
+                <FieldError id={`${idCampo}-error`}>{error}</FieldError>
               ) : null}
-            </div>
+            </Field>
           );
         })}
       </div>

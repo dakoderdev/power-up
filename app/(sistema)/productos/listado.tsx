@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
 import { Preferencias, SelectorOrden } from "./preferencias";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 const SOLO_ESCRITORIO = "hidden sm:table-cell";
 
@@ -98,14 +99,14 @@ export async function Listado({
       >
         <input type="hidden" name="vista" value={vista} />
         <input type="hidden" name="orden" value={orden} />
-        <input
+        <Input
           type="search"
           name="q"
           defaultValue={busqueda}
           maxLength={120}
           placeholder="Buscar por nombre o código"
           aria-label="Buscar por nombre o código"
-          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
+          className="max-w-md flex-1"
         />
         <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />

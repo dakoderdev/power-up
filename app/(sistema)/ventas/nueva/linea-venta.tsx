@@ -1,10 +1,11 @@
 "use client";
 
-import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Button } from "@/components/ui/button";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import type { ProductoVendible } from "@/lib/productos/listado";
+import { Input } from "@/components/ui/input";
 
 export type Linea = { producto: ProductoVendible; cantidad: number };
 
@@ -53,7 +54,7 @@ export function FilaLinea({
         </div>
       </td>
       <td className="pr-3 sm:pr-6">
-        <input
+        <Input
           type="number"
           inputMode="numeric"
           min={1}
@@ -62,7 +63,7 @@ export function FilaLinea({
           onChange={(evento) => onCantidad(evento.target.value)}
           aria-label={`Cantidad de ${producto.nombre}`}
           aria-invalid={faltaStock}
-          className={`${CLASE_CAMPO} w-20 text-right tabular-nums ${faltaStock ? "border-yellow-400" : "border-neutral-800"}`}
+          className={`w-20 text-right tabular-nums ${faltaStock ? "border-yellow-400" : ""}`}
         />
       </td>
       <td

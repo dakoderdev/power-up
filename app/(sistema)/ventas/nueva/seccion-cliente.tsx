@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { buscarClientesAccion } from "@/lib/clientes/acciones";
 import type { ClienteVenta } from "@/lib/clientes/listado";
@@ -10,6 +9,7 @@ import { CONSUMIDOR_FINAL } from "@/lib/ventas/etiquetas";
 import { AltaCliente } from "./alta-cliente";
 import { Combobox } from "./combobox";
 import { Campo, Seccion } from "./seccion-venta";
+import { Input } from "@/components/ui/input";
 
 export function SeccionCliente({
   cliente,
@@ -64,10 +64,10 @@ export function SeccionCliente({
             )}
           />
           <Campo etiqueta="Documento">
-            <input
+            <Input
               readOnly
               value={cliente?.documento ?? "—"}
-              className={`${CLASE_CAMPO} border-neutral-800 tabular-nums`}
+              className="tabular-nums"
             />
           </Campo>
         </div>

@@ -2,9 +2,10 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { iniciarSesion } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 const FORMATO_CORREO = /^\S+@\S+\.\S{2,}$/;
 const BLOQUES_CAMPO = 10;
@@ -92,14 +93,11 @@ export function FormularioLogin() {
       className="@container flex flex-col gap-6"
     >
       <div className="grid items-start gap-6 @lg:grid-cols-2 @lg:gap-4">
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="correo"
-            className="text-sm font-medium text-neutral-200"
-          >
+        <Field>
+          <FieldLabel htmlFor="correo" className="text-neutral-200">
             Correo electrónico
-          </label>
-          <input
+          </FieldLabel>
+          <Input
             ref={campoCorreo}
             id="correo"
             name="correo"
@@ -113,24 +111,18 @@ export function FormularioLogin() {
             }}
             aria-invalid={errores.correo ? true : undefined}
             aria-describedby={errores.correo ? "error-correo" : undefined}
-            className={`${CLASE_CAMPO} ${errores.correo ? "border-red-400" : "border-neutral-800"}`}
           />
           {errores.correo ? (
-            <p id="error-correo" className="text-sm text-red-400">
-              {errores.correo}
-            </p>
+            <FieldError id="error-correo">{errores.correo}</FieldError>
           ) : null}
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="clave"
-            className="text-sm font-medium text-neutral-200"
-          >
+        <Field>
+          <FieldLabel htmlFor="clave" className="text-neutral-200">
             Contraseña
-          </label>
+          </FieldLabel>
           <div className="relative">
-            <input
+            <Input
               ref={campoClave}
               id="clave"
               name="clave"
@@ -143,7 +135,7 @@ export function FormularioLogin() {
               }}
               aria-invalid={errores.clave ? true : undefined}
               aria-describedby={errores.clave ? "error-clave" : undefined}
-              className={`${CLASE_CAMPO} pr-20 ${errores.clave ? "border-red-400" : "border-neutral-800"}`}
+              className="pr-20"
             />
             <button
               type="button"
@@ -156,11 +148,9 @@ export function FormularioLogin() {
             </button>
           </div>
           {errores.clave ? (
-            <p id="error-clave" className="text-sm text-red-400">
-              {errores.clave}
-            </p>
+            <FieldError id="error-clave">{errores.clave}</FieldError>
           ) : null}
-        </div>
+        </Field>
       </div>
 
       <div className="flex flex-col gap-3 pt-2">

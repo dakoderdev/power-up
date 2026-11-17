@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { MovimientosProducto } from "./movimientos-producto";
 import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 export const metadata: Metadata = {
   title: "Stock · Power Up",
@@ -101,14 +102,14 @@ async function Inventario({
         action="/stock"
         className="flex flex-wrap items-center gap-2"
       >
-        <input
+        <Input
           type="search"
           name="q"
           defaultValue={busqueda}
           maxLength={120}
           placeholder="Buscar por nombre o código"
           aria-label="Buscar por nombre o código"
-          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
+          className="max-w-md flex-1"
         />
         <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />

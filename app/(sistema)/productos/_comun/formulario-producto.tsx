@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearProductoAccion,
@@ -23,11 +22,17 @@ import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
 import type { ErroresProducto } from "@/lib/productos/guardar";
 import { cn } from "@/lib/utils";
 import { VistaPrevia, type Borrador } from "./vista-previa";
+import { Input } from "@/components/ui/input";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 
 type Campo =
   "codigo" | "nombre" | "precio" | "stock" | "stockMinimo" | "imagenUrl";
 
-const CLASE_AYUDA = "text-sm text-neutral-500";
 const CLASE_ENLACE_AYUDA =
   "text-neutral-400 underline underline-offset-4 transition-colors hover:text-white";
 
@@ -68,7 +73,6 @@ const CAMPOS: {
     etiqueta: "Stock mínimo",
     tipo: "text",
     modo: "numeric",
-    ayuda: "Con esta cantidad o menos, el producto figura con stock bajo.",
   },
   {
     nombre: "imagenUrl",
@@ -239,23 +243,20 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                   <p className="flex h-11 items-center text-[0.9375rem] tabular-nums">
                     {producto.stock} unidades
                   </p>
-                  <p className={CLASE_AYUDA}>Cambia solo con movimientos.</p>
+                  <FieldDescription>
+                    Cambia solo con movimientos.
+                  </FieldDescription>
                 </div>
               );
             }
 
             return (
-              <div
+              <Field
                 key={campo.nombre}
-                className={`flex flex-col gap-2 ${campo.completo ? "lg:col-span-full" : ""}`}
+                className={campo.completo ? "lg:col-span-full" : ""}
               >
-                <label
-                  htmlFor={idCampo}
-                  className="text-sm font-medium text-neutral-400"
-                >
-                  {campo.etiqueta}
-                </label>
-                <input
+                <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+                <Input
                   id={idCampo}
                   name={campo.nombre}
                   type={campo.tipo}
@@ -270,19 +271,17 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                       ? descripciones.join(" ")
                       : undefined
                   }
-                  className={`${CLASE_CAMPO} ${campo.modo ? "tabular-nums" : ""} ${error ? "border-red-400" : "border-neutral-800"}`}
+                  className={campo.modo ? "tabular-nums" : ""}
                 />
                 {campo.ayuda ? (
-                  <p id={`${idCampo}-ayuda`} className={CLASE_AYUDA}>
+                  <FieldDescription id={`${idCampo}-ayuda`}>
                     {campo.ayuda}
-                  </p>
+                  </FieldDescription>
                 ) : null}
                 {error ? (
-                  <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                    {error}
-                  </p>
+                  <FieldError id={`${idCampo}-error`}>{error}</FieldError>
                 ) : null}
-              </div>
+              </Field>
             );
           })}
         </div>
@@ -319,10 +318,10 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                 );
               })}
             </div>
-            <p className={CLASE_AYUDA}>
+            <FieldDescription>
               Un producto inactivo no entra en ventas nuevas y sigue en los
               comprobantes anteriores.
-            </p>
+            </FieldDescription>
           </fieldset>
         )}
 

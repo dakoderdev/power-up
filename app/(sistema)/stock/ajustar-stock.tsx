@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_AREA, CLASE_CAMPO } from "@/components/estilos";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { TIPOS_STOCK } from "@/lib/db/schema";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
@@ -19,6 +18,9 @@ import {
 } from "@/lib/stock/esquemas";
 import { cn } from "@/lib/utils";
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 type Errores = Partial<Record<keyof AjusteManual, string[]>>;
 type Tipo = (typeof TIPOS_STOCK)[number];
@@ -144,13 +146,8 @@ export function AjustarStock({
         ))}
       </fieldset>
       <div className="flex w-32 flex-col gap-2">
-        <label
-          htmlFor={`${id}-cantidad`}
-          className="text-sm font-medium text-neutral-400"
-        >
-          Cantidad
-        </label>
-        <input
+        <FieldLabel htmlFor={`${id}-cantidad`}>Cantidad</FieldLabel>
+        <Input
           ref={cantidad}
           id={`${id}-cantidad`}
           name="cantidad"
@@ -159,23 +156,16 @@ export function AjustarStock({
           placeholder="10"
           aria-invalid={Boolean(errorCantidad)}
           aria-describedby={errorCantidad ? `${id}-cantidad-error` : undefined}
-          className={`${CLASE_CAMPO} tabular-nums ${errorCantidad ? "border-red-400" : "border-neutral-800"}`}
+          className="tabular-nums"
         />
         {errorCantidad ? (
-          <p id={`${id}-cantidad-error`} className="text-sm text-red-400">
-            {errorCantidad}
-          </p>
+          <FieldError id={`${id}-cantidad-error`}>{errorCantidad}</FieldError>
         ) : null}
       </div>
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor={`${id}-motivo`}
-          className="text-sm font-medium text-neutral-400"
-        >
-          Motivo
-        </label>
+      <Field>
+        <FieldLabel htmlFor={`${id}-motivo`}>Motivo</FieldLabel>
         <MotivosSugeridos tipo={tipo} onElegir={elegirMotivo} />
-        <textarea
+        <Textarea
           ref={motivo}
           id={`${id}-motivo`}
           name="motivo"
@@ -184,14 +174,11 @@ export function AjustarStock({
           placeholder="Elegí un motivo o escribí uno"
           aria-invalid={Boolean(errorMotivo)}
           aria-describedby={errorMotivo ? `${id}-motivo-error` : undefined}
-          className={`${CLASE_AREA} ${errorMotivo ? "border-red-400" : "border-neutral-800"}`}
         />
         {errorMotivo ? (
-          <p id={`${id}-motivo-error`} className="text-sm text-red-400">
-            {errorMotivo}
-          </p>
+          <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
         ) : null}
-      </div>
+      </Field>
       {falla ? (
         <p role="alert" className="text-sm text-red-400">
           {MENSAJE_FALLA}

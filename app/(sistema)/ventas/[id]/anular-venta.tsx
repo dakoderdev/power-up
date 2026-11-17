@@ -2,10 +2,11 @@
 
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { anularVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaAnulacion } from "@/lib/ventas/esquemas";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 export function AnularVenta({ ventaId }: { ventaId: number }) {
   const id = useId();
@@ -50,27 +51,17 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
         noValidate
         className="flex max-w-2xl flex-col gap-4"
       >
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor={`${id}-motivo`}
-            className="text-sm font-medium text-neutral-400"
-          >
-            Motivo
-          </label>
-          <input
+        <Field>
+          <FieldLabel htmlFor={`${id}-motivo`}>Motivo</FieldLabel>
+          <Input
             id={`${id}-motivo`}
             name="motivo"
             type="text"
             aria-invalid={Boolean(error)}
             aria-describedby={error ? `${id}-error` : undefined}
-            className={`${CLASE_CAMPO} ${error ? "border-red-400" : "border-neutral-800"}`}
           />
-          {error ? (
-            <p id={`${id}-error`} role="alert" className="text-sm text-red-400">
-              {error}
-            </p>
-          ) : null}
-        </div>
+          {error ? <FieldError id={`${id}-error`}>{error}</FieldError> : null}
+        </Field>
         <div className="flex justify-end">
           <Button variant="outline" size="lg" type="submit" disabled={anulando}>
             {anulando ? "Anulando…" : "Anular venta"}

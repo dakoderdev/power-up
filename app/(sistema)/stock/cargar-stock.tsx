@@ -4,7 +4,6 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
 import { z } from "zod";
-import { CLASE_CAMPO } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
 import {
@@ -18,6 +17,8 @@ import {
   MOTIVOS_SUGERIDOS,
 } from "@/lib/stock/etiquetas";
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 const SEPARACION = 8;
 const MOTIVO_INICIAL = MOTIVOS_SUGERIDOS.entrada[0];
@@ -190,14 +191,9 @@ export function CargarStock({
           className="flex flex-col gap-4 whitespace-normal"
         >
           <p className="truncate text-[0.9375rem] font-medium">{nombre}</p>
-          <div className="flex w-32 flex-col gap-2">
-            <label
-              htmlFor={`${id}-cantidad`}
-              className="text-sm font-medium text-neutral-400"
-            >
-              Cantidad
-            </label>
-            <input
+          <Field className="w-32">
+            <FieldLabel htmlFor={`${id}-cantidad`}>Cantidad</FieldLabel>
+            <Input
               ref={cantidad}
               id={`${id}-cantidad`}
               name="cantidad"
@@ -208,26 +204,18 @@ export function CargarStock({
               aria-describedby={
                 errorCantidad ? `${id}-cantidad-error` : undefined
               }
-              className={`${CLASE_CAMPO} tabular-nums ${errorCantidad ? "border-red-400" : "border-neutral-800"}`}
+              className="tabular-nums"
             />
-          </div>
+          </Field>
           {errorCantidad ? (
-            <p
-              id={`${id}-cantidad-error`}
-              className="-mt-2 text-sm text-red-400"
-            >
+            <FieldError id={`${id}-cantidad-error`} className="-mt-2">
               {errorCantidad}
-            </p>
+            </FieldError>
           ) : null}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={`${id}-motivo`}
-              className="text-sm font-medium text-neutral-400"
-            >
-              Motivo
-            </label>
+          <Field>
+            <FieldLabel htmlFor={`${id}-motivo`}>Motivo</FieldLabel>
             <MotivosSugeridos tipo="entrada" onElegir={elegirMotivo} />
-            <input
+            <Input
               ref={motivo}
               id={`${id}-motivo`}
               name="motivo"
@@ -236,14 +224,11 @@ export function CargarStock({
               maxLength={MOTIVO_MAXIMO}
               aria-invalid={Boolean(errorMotivo)}
               aria-describedby={errorMotivo ? `${id}-motivo-error` : undefined}
-              className={`${CLASE_CAMPO} ${errorMotivo ? "border-red-400" : "border-neutral-800"}`}
             />
             {errorMotivo ? (
-              <p id={`${id}-motivo-error`} className="text-sm text-red-400">
-                {errorMotivo}
-              </p>
+              <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
             ) : null}
-          </div>
+          </Field>
           {falla ? (
             <p role="alert" className="text-sm text-red-400">
               {MENSAJE_FALLA}

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
@@ -17,6 +17,7 @@ import { contar } from "@/lib/texto";
 import { COLORES_ROL, ETIQUETAS_ROL } from "@/lib/usuarios/sesion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -71,14 +72,14 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
         action="/usuarios"
         className="flex flex-wrap items-center gap-2"
       >
-        <input
+        <Input
           type="search"
           name="q"
           defaultValue={busqueda}
           maxLength={120}
           placeholder="Buscar por nombre o acceso"
           aria-label="Buscar por nombre o acceso"
-          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
+          className="max-w-md flex-1"
         />
         <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />
