@@ -123,7 +123,7 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - ST-21: el ajuste manual se registra desde el detalle de stock del producto, eligiendo entrada o salida, cantidad y motivo; desde cada fila del listado de stock se registra una entrada sin salir del listado.
 - ST-22: solo el administrador registra ajustes manuales de stock (ingresos y egresos), verificado en el servidor; el operador consulta el stock y sus movimientos pero no ve los controles de ajuste (RF-P4, RF-P5, sección 3).
 - ST-23: cada producto tiene un stock mínimo propio; está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1). `[pendiente]`: hoy el umbral es fijo (ST-17).
-- ST-24: cada movimiento muestra la existencia resultante (RF-P6). `[pendiente]`
+- ST-24: cada movimiento muestra la existencia resultante (RF-P6). Se calcula como la suma de entradas menos salidas del producto hasta ese movimiento, y sale en la pantalla de movimientos y en la API.
 
 ## Clientes
 
@@ -299,3 +299,4 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-16: la pantalla de saldos es una página propia y no un filtro del listado de clientes, porque la consigna la pide como pantalla (RF-C6); reutiliza `listarClientes` con `conDeuda`, así que el total y el orden salen del mismo servicio que la API.
 - 2026-11-16: el recibo de cada pago lleva un número propio, correlativo entre todos los pagos e independiente del de las facturas, guardado en `recibo_numero` del movimiento de cuenta; se asigna como el último más uno dentro de la transacción del pago, igual que el de las ventas. Los pagos anteriores a la migración se numeraron por orden de fecha (migración `0004`). Se muestra con el formato `0001-00000001`.
 - 2026-11-16: el recibo se muestra en `/pagos/[id]` y reutiliza la hoja de estilos de impresión del comprobante; indica el saldo actual del cliente y no el de la fecha del pago, porque el saldo se deriva y no se guarda por movimiento. El recibo sale con el punto de venta fijo del código, igual que el comprobante nuevo.
+- 2026-11-16: la existencia resultante de cada movimiento se calcula en la consulta (suma acumulada por producto, ordenada por fecha y número) y no se guarda, igual que el saldo de las cuentas, para que no se desincronice ni requiera migración.

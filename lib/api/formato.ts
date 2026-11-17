@@ -110,7 +110,8 @@ export function formatearMovimientoStockApi(
     tipo: tipoMovimientoApi(movimiento),
     cantidad:
       movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad,
-    ...(existenciaResultante === undefined ? {} : { existenciaResultante }),
+    existenciaResultante:
+      existenciaResultante ?? movimiento.existenciaResultante,
     motivo: movimiento.motivo,
     referencia:
       movimiento.ventaId === null ||

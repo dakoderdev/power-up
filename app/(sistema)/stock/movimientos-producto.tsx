@@ -156,6 +156,12 @@ export async function MovimientosProducto({
                 <th scope="col" className={`${CLASE_COLUMNA} w-px text-right`}>
                   Cantidad
                 </th>
+                <th
+                  scope="col"
+                  className={`${CLASE_COLUMNA} w-px pl-6 text-right`}
+                >
+                  Existencia
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -192,6 +198,9 @@ export async function MovimientosProducto({
                   <td className="text-right tabular-nums text-white">
                     {movimiento.tipo === "entrada" ? "+" : "−"}
                     {movimiento.cantidad}
+                  </td>
+                  <td className="pl-6 text-right tabular-nums text-neutral-300">
+                    {movimiento.existenciaResultante}
                   </td>
                 </tr>
               ))}
