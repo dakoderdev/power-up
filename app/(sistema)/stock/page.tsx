@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
@@ -22,6 +22,8 @@ import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { CargarStock } from "./cargar-stock";
 import { MovimientosProducto } from "./movimientos-producto";
 import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Stock · Power Up",
@@ -49,9 +51,7 @@ export default function Stock({
         sus movimientos.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Contenido parametros={searchParams} />
       </Suspense>
     </div>
@@ -110,21 +110,21 @@ async function Inventario({
           aria-label="Buscar por nombre o código"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <Boton variante="secundario" enFormulario type="submit">
+        <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </Boton>
+        </Button>
         {busqueda ? (
-          <Boton asChild variante="texto" enFormulario>
+          <Button asChild variant="ghost" size="lg">
             <Link href="/stock">Limpiar</Link>
-          </Boton>
+          </Button>
         ) : null}
       </form>
 
       <div className="flex min-h-10 items-center">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+        <Badge>
           {contar({ cantidad, singular: "producto", plural: "productos" })}
-        </span>
+        </Badge>
       </div>
 
       {lista.length === 0 ? (
@@ -189,15 +189,17 @@ async function Inventario({
                     {producto.codigo}
                   </td>
                   <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <span
-                      className={`${CLASE_BADGE} ${COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]}`}
+                    <Badge
+                      className={
+                        COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
+                      }
                     >
                       {
                         ETIQUETAS_ESTADO[
                           producto.activo ? "activo" : "inactivo"
                         ]
                       }
-                    </span>
+                    </Badge>
                   </td>
                   <td
                     className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-white"}`}

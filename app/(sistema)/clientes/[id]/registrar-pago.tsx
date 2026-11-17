@@ -4,7 +4,7 @@ import { useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { registrarPagoAccion } from "@/lib/cuentas/acciones";
 import { crearEsquemaPago, type PagoEntrada } from "@/lib/cuentas/esquemas";
 
@@ -104,14 +104,14 @@ export function RegistrarPago({
         puede editar ni anular.
       </p>
       <div className="flex justify-end">
-        <Boton
-          variante="primario"
-          enFormulario
+        <Button
+          variant="default"
+          size="lg"
           type="submit"
           disabled={registrando}
         >
           {registrando ? "Registrando…" : "Registrar pago"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

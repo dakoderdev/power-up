@@ -6,7 +6,7 @@ import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/db/schema";
 import {
   crearUsuarioAccion,
@@ -239,21 +239,16 @@ export function FormularioUsuario({
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Boton asChild variante="texto" enFormulario>
+        <Button asChild variant="ghost" size="lg">
           <Link href="/usuarios">Cancelar</Link>
-        </Boton>
-        <Boton
-          variante="primario"
-          enFormulario
-          type="submit"
-          disabled={guardando}
-        >
+        </Button>
+        <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando
             ? "Guardando…"
             : esAlta
               ? "Crear usuario"
               : "Guardar cambios"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

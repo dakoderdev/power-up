@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useId } from "react";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton, variantesBoton } from "@/components/ui/boton";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { importePositivo } from "@/lib/esquemas-comunes";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import { contar } from "@/lib/texto";
@@ -96,9 +96,9 @@ export function ResumenVenta({
               <label
                 key={valor}
                 className={cn(
-                  variantesBoton({
-                    variante: elegida ? "secundario" : "texto",
-                    enFormulario: true,
+                  buttonVariants({
+                    variant: elegida ? "outline" : "ghost",
+                    size: "lg",
                   }),
                   `${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
                 )}
@@ -237,15 +237,15 @@ export function ResumenVenta({
       )}
 
       <div className="flex flex-col gap-2">
-        <Boton
-          variante="primario"
-          enFormulario
+        <Button
+          variant="default"
+          size="lg"
           type="button"
           onClick={onConfirmar}
           disabled={confirmando}
         >
           {confirmando ? "Confirmando…" : "Confirmar venta"}
-        </Boton>
+        </Button>
         <p className="text-sm text-neutral-500">
           Al confirmar se verifican y descuentan las existencias.
         </p>

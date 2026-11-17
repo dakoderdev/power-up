@@ -4,9 +4,9 @@ import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { listarClientes } from "@/lib/clientes/listado";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
@@ -14,6 +14,8 @@ import { aCentavos, formatearMoneda } from "@/lib/moneda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Clientes · Power Up",
@@ -63,9 +65,7 @@ export default function Clientes({
         Clientes registrados, con el saldo de su cuenta corriente.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Listado parametros={searchParams} />
       </Suspense>
     </div>
@@ -97,27 +97,27 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
           aria-label="Buscar por nombre o documento"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <Boton variante="secundario" enFormulario type="submit">
+        <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </Boton>
+        </Button>
         {busqueda ? (
-          <Boton asChild variante="texto" enFormulario>
+          <Button asChild variant="ghost" size="lg">
             <Link href="/clientes">Limpiar</Link>
-          </Boton>
+          </Button>
         ) : null}
-        <Boton asChild variante="primario" enFormulario className="ml-auto">
+        <Button asChild variant="default" size="lg" className="ml-auto">
           <Link href="/clientes/nuevo">
             <UserPlus aria-hidden="true" className="size-5" />
             Nuevo cliente
           </Link>
-        </Boton>
+        </Button>
       </form>
 
       <div className="flex min-h-10 items-center">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+        <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
-        </span>
+        </Badge>
       </div>
 
       {lista.length === 0 ? (

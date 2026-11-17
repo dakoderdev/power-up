@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { CambiarContrasena } from "./cambiar-contrasena";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Perfil · Power Up",
@@ -16,9 +17,7 @@ export default function Perfil() {
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="esqueleto h-96 max-w-4xl" />
-        }
+        fallback={<Skeleton aria-hidden="true" className="h-96 max-w-4xl" />}
       >
         <Ficha />
       </Suspense>

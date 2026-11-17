@@ -1,7 +1,7 @@
 "use client";
 
 import { Printer } from "pixelarticons/react/Printer.js";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 
 export function BotonImprimir() {
   function imprimir() {
@@ -9,9 +9,9 @@ export function BotonImprimir() {
   }
 
   return (
-    <Boton variante="secundario" type="button" onClick={imprimir}>
+    <Button variant="outline" type="button" onClick={imprimir}>
       <Printer aria-hidden="true" className="size-5" />
       Imprimir recibo
-    </Boton>
+    </Button>
   );
 }

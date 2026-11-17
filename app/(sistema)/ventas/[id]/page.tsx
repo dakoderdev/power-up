@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -19,6 +19,8 @@ import { calcularVuelto } from "@/lib/ventas/vuelto";
 import { AnularVenta } from "./anular-venta";
 import { BotonImprimir } from "./boton-imprimir";
 import { ComprobanteImpreso } from "./comprobante-impreso";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Comprobante · Power Up",
@@ -41,9 +43,7 @@ export default function Comprobante({ params }: PageProps<"/ventas/[id]">) {
         Copia de la venta tal como se confirmó.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Detalle params={params} />
       </Suspense>
     </div>
@@ -118,15 +118,11 @@ function Datos({ venta }: { venta: VentaDetalle }) {
       <div className="flex flex-col gap-2">
         <dt className="text-sm text-neutral-400">Forma de pago</dt>
         <dd className="flex gap-2">
-          <span
-            className={`${CLASE_BADGE} ${COLORES_FORMA_PAGO[venta.formaPago]}`}
-          >
+          <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
             {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
-          </span>
+          </Badge>
           {venta.anuladaEn ? (
-            <span className={`${CLASE_BADGE} text-neutral-400`}>
-              {ETIQUETA_ANULADA}
-            </span>
+            <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
           ) : null}
         </dd>
       </div>

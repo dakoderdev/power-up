@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
-import { variantesBoton } from "@/components/ui/boton";
+import { buttonVariants } from "@/components/ui/button";
 import {
   COOKIE_ORDEN,
   COOKIE_VISTA,
@@ -52,7 +52,7 @@ export function SelectorOrden({ orden }: { orden: Orden }) {
         value={orden}
         onChange={(evento) => cambiar(evento.target.value)}
         className={cn(
-          variantesBoton({ variante: "secundario", enFormulario: true }),
+          buttonVariants({ variant: "outline", size: "lg" }),
           "appearance-none bg-black pr-10",
         )}
       >

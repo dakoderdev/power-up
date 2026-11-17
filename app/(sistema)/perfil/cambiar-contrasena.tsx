@@ -4,7 +4,7 @@ import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { cambiarContrasenaAccion } from "@/lib/usuarios/acciones";
 import {
   esquemaCambioContrasena,
@@ -112,14 +112,9 @@ export function CambiarContrasena() {
       ) : null}
 
       <div className="flex justify-end">
-        <Boton
-          variante="primario"
-          enFormulario
-          type="submit"
-          disabled={guardando}
-        >
+        <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Cambiar contraseña"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

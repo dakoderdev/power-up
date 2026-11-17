@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { obtenerTablero } from "@/lib/inicio/tablero";
@@ -307,9 +307,9 @@ function Seccion({
           {titulo}
         </h2>
         {enlace ? (
-          <Boton asChild variante="texto" className="-mr-3 shrink-0">
+          <Button asChild variant="ghost" className="-mr-3 shrink-0">
             <Link href={enlace.href}>{enlace.texto}</Link>
-          </Boton>
+          </Button>
         ) : null}
       </div>
       {children}

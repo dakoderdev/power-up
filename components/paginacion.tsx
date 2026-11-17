@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boton } from "./ui/boton";
+import { Button } from "./ui/button";
 
 export function Paginacion({
   pagina,
@@ -20,14 +20,14 @@ export function Paginacion({
         Página {pagina} de {paginas}
       </p>
       {pagina > 1 ? (
-        <Boton asChild variante="secundario">
+        <Button asChild variant="outline">
           <Link href={enlace(pagina - 1)}>Anterior</Link>
-        </Boton>
+        </Button>
       ) : null}
       {pagina < paginas ? (
-        <Boton asChild variante="secundario">
+        <Button asChild variant="outline">
           <Link href={enlace(pagina + 1)}>Siguiente</Link>
-        </Boton>
+        </Button>
       ) : null}
     </nav>
   );

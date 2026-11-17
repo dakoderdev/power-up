@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { buscarClientesAccion } from "@/lib/clientes/acciones";
 import type { ClienteVenta } from "@/lib/clientes/listado";
 import { CONSUMIDOR_FINAL } from "@/lib/ventas/etiquetas";
@@ -25,14 +25,14 @@ export function SeccionCliente({
       titulo="Cliente"
       accion={
         creando ? null : (
-          <Boton
-            variante="texto"
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => setCreando(true)}
           >
             <Plus aria-hidden="true" className="size-5" />
             Nuevo cliente
-          </Boton>
+          </Button>
         )
       }
     >

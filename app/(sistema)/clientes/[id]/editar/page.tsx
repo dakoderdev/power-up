@@ -6,6 +6,7 @@ import { obtenerCliente } from "@/lib/clientes/detalle";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { FormularioCliente } from "../../_comun/formulario-cliente";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Editar cliente · Power Up",
@@ -21,9 +22,7 @@ export default function EditarCliente({
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="esqueleto h-96 max-w-2xl" />
-        }
+        fallback={<Skeleton aria-hidden="true" className="h-96 max-w-2xl" />}
       >
         <Edicion params={params} />
       </Suspense>

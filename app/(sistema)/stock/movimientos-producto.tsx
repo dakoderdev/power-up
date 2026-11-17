@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "pixelarticons/react/ArrowLeft.js";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -18,6 +18,7 @@ import { contar } from "@/lib/texto";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { AjustarStock } from "./ajustar-stock";
 import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
+import { Badge } from "@/components/ui/badge";
 
 const FILTROS: { valor?: OrigenStock; etiqueta: string }[] = [
   { etiqueta: "Todos" },
@@ -51,12 +52,12 @@ export async function MovimientosProducto({
 
   return (
     <section className="flex flex-col gap-4">
-      <Boton asChild variante="texto" className="-ml-3 self-start">
+      <Button asChild variant="ghost" className="-ml-3 self-start">
         <Link href="/stock">
           <ArrowLeft aria-hidden="true" className="size-5" />
           Todo el stock
         </Link>
-      </Boton>
+      </Button>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -89,9 +90,9 @@ export async function MovimientosProducto({
             </span>
           ) : null}
         </p>
-        <Boton asChild variante="texto" className="sm:ml-auto">
+        <Button asChild variant="ghost" className="sm:ml-auto">
           <Link href={`/productos/${producto.id}`}>Ver producto</Link>
-        </Boton>
+        </Button>
       </div>
 
       {puedeAjustar ? (
@@ -109,10 +110,10 @@ export async function MovimientosProducto({
           const activo = filtro.valor === origen;
 
           return (
-            <Boton
+            <Button
               key={filtro.etiqueta}
               asChild
-              variante={activo ? "secundario" : "texto"}
+              variant={activo ? "outline" : "ghost"}
               className={activo ? "" : "border border-transparent"}
             >
               <Link
@@ -121,7 +122,7 @@ export async function MovimientosProducto({
               >
                 {filtro.etiqueta}
               </Link>
-            </Boton>
+            </Button>
           );
         })}
       </nav>
@@ -173,9 +174,7 @@ export async function MovimientosProducto({
                     {formatearFechaHora(new Date(movimiento.creadoEn))}
                   </td>
                   <td className="pr-6">
-                    <span className={`${CLASE_BADGE} text-neutral-300`}>
-                      {ETIQUETAS_ORIGEN[movimiento.origen]}
-                    </span>
+                    <Badge>{ETIQUETAS_ORIGEN[movimiento.origen]}</Badge>
                   </td>
                   <td
                     className={`max-w-80 truncate pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}

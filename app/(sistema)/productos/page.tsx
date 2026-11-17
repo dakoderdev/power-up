@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import type { ParametrosListado } from "@/lib/productos/listado";
 import { Listado } from "./listado";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Productos · Power Up",
@@ -27,5 +28,5 @@ export default function Productos({
 }
 
 function ListadoCargando() {
-  return <div aria-hidden="true" className="esqueleto h-96" />;
+  return <Skeleton aria-hidden="true" className="h-96" />;
 }

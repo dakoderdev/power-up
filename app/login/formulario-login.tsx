@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { iniciarSesion } from "./actions";
 
 const FORMATO_CORREO = /^\S+@\S+\.\S{2,}$/;
@@ -177,15 +177,15 @@ export function FormularioLogin() {
             {errorGeneral}
           </p>
         ) : null}
-        <Boton
-          variante="primario"
-          enFormulario
+        <Button
+          variant="default"
+          size="lg"
           type="submit"
           disabled={pendiente}
           className="w-full"
         >
           {pendiente ? "Ingresando…" : "Ingresar"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

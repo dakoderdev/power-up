@@ -6,6 +6,7 @@ import { idPositivo } from "@/lib/esquemas-comunes";
 import { obtenerProducto } from "@/lib/productos/guardar";
 import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { FormularioProducto } from "../_comun/formulario-producto";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Editar producto · Power Up",
@@ -43,5 +44,5 @@ async function Edicion({ params }: { params: Promise<{ id: string }> }) {
 }
 
 function EdicionCargando() {
-  return <div aria-hidden="true" className="esqueleto h-96 max-w-2xl" />;
+  return <Skeleton aria-hidden="true" className="h-96 max-w-2xl" />;
 }

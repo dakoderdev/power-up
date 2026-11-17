@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
@@ -25,6 +25,7 @@ import {
 } from "@/lib/productos/ordenes";
 import { Preferencias, SelectorOrden } from "./preferencias";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { Badge } from "@/components/ui/badge";
 
 const SOLO_ESCRITORIO = "hidden sm:table-cell";
 
@@ -106,26 +107,26 @@ export async function Listado({
           aria-label="Buscar por nombre o código"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <Boton variante="secundario" enFormulario type="submit">
+        <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </Boton>
+        </Button>
         {busqueda ? (
-          <Boton asChild variante="texto" enFormulario>
+          <Button asChild variant="ghost" size="lg">
             <Link href={enlaceVista({ vista, busqueda: "", orden })}>
               Limpiar
             </Link>
-          </Boton>
+          </Button>
         ) : null}
         <div className="ml-auto flex items-center gap-2">
           <SelectorOrden orden={orden} />
           <nav aria-label="Vista" className="flex">
             {VISTAS.map((opcion) => (
-              <Boton
+              <Button
                 key={opcion.valor}
                 asChild
-                variante={vista === opcion.valor ? "secundario" : "texto"}
-                enFormulario
+                variant={vista === opcion.valor ? "outline" : "ghost"}
+                size="lg"
                 className={
                   vista === opcion.valor ? "" : "border border-transparent"
                 }
@@ -142,7 +143,7 @@ export async function Listado({
                 >
                   <opcion.Icono aria-hidden="true" className="size-5" />
                 </Link>
-              </Boton>
+              </Button>
             ))}
           </nav>
         </div>
@@ -213,15 +214,17 @@ export async function Listado({
                     {producto.codigo}
                   </td>
                   <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <span
-                      className={`${CLASE_BADGE} ${COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]}`}
+                    <Badge
+                      className={
+                        COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
+                      }
                     >
                       {
                         ETIQUETAS_ESTADO[
                           producto.activo ? "activo" : "inactivo"
                         ]
                       }
-                    </span>
+                    </Badge>
                   </td>
                   <td className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
                     {producto.stock}

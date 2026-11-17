@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { obtenerUsuario } from "@/lib/usuarios/detalle";
 import { FormularioUsuario } from "../../_comun/formulario-usuario";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Editar usuario · Power Up",
@@ -20,9 +21,7 @@ export default function EditarUsuario({
         Cambiá nombre, correo, rol o estado.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Formulario parametros={params} />
       </Suspense>
     </div>

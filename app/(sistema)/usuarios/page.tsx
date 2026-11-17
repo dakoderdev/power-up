@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
@@ -15,6 +15,8 @@ import {
 } from "@/lib/usuarios/listado";
 import { contar } from "@/lib/texto";
 import { COLORES_ROL, ETIQUETAS_ROL } from "@/lib/usuarios/sesion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -45,9 +47,7 @@ export default function Usuarios({
         </Suspense>
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Lista parametros={searchParams} />
       </Suspense>
     </div>
@@ -80,30 +80,30 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
           aria-label="Buscar por nombre o acceso"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <Boton variante="secundario" enFormulario type="submit">
+        <Button variant="outline" size="lg" type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </Boton>
+        </Button>
         {busqueda ? (
-          <Boton asChild variante="texto" enFormulario>
+          <Button asChild variant="ghost" size="lg">
             <Link href="/usuarios">Limpiar</Link>
-          </Boton>
+          </Button>
         ) : null}
-        <Boton asChild variante="primario" enFormulario className="ml-auto">
+        <Button asChild variant="default" size="lg" className="ml-auto">
           <Link href="/usuarios/nuevo">
             <UserPlus aria-hidden="true" className="size-5" />
             Nuevo usuario
           </Link>
-        </Boton>
+        </Button>
       </form>
       <div className="flex min-h-10 items-center">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+        <Badge>
           {contar({
             cantidad: usuarios.length,
             singular: "usuario",
             plural: "usuarios",
           })}
-        </span>
+        </Badge>
       </div>
       {usuarios.length === 0 ? (
         <Vacio>
@@ -151,18 +151,14 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
                       </Link>
                     </td>
                     <td className="sm:pr-6">
-                      <span
-                        className={`${CLASE_BADGE} ${COLORES_ROL[usuario.rol]}`}
-                      >
+                      <Badge className={COLORES_ROL[usuario.rol]}>
                         {ETIQUETAS_ROL[usuario.rol]}
-                      </span>
+                      </Badge>
                     </td>
                     <td className={SOLO_ESCRITORIO}>
-                      <span
-                        className={`${CLASE_BADGE} ${COLORES_ESTADO[estado]}`}
-                      >
+                      <Badge className={COLORES_ESTADO[estado]}>
                         {ETIQUETAS_ESTADO[estado]}
-                      </span>
+                      </Badge>
                     </td>
                   </tr>
                 );

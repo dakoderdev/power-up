@@ -3,7 +3,7 @@
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { Button } from "@/components/ui/button";
 import { crearClienteAccion } from "@/lib/clientes/acciones";
 import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
 import type { ClienteVenta } from "@/lib/clientes/listado";
@@ -112,17 +112,12 @@ export function AltaCliente({
         cuenta corriente no tiene tope.
       </p>
       <div className="flex flex-wrap justify-end gap-2">
-        <Boton variante="texto" enFormulario type="button" onClick={onCancelar}>
+        <Button variant="ghost" size="lg" type="button" onClick={onCancelar}>
           Cancelar
-        </Boton>
-        <Boton
-          variante="secundario"
-          enFormulario
-          type="submit"
-          disabled={guardando}
-        >
+        </Button>
+        <Button variant="outline" size="lg" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Guardar cliente"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

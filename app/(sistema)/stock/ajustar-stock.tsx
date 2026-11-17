@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
 import { CLASE_AREA, CLASE_CAMPO } from "@/components/estilos";
-import { Boton, variantesBoton } from "@/components/ui/boton";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { TIPOS_STOCK } from "@/lib/db/schema";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
 import {
@@ -120,9 +120,9 @@ export function AjustarStock({
           <label
             key={opcion}
             className={cn(
-              variantesBoton({
-                variante: tipo === opcion ? "secundario" : "texto",
-                enFormulario: true,
+              buttonVariants({
+                variant: tipo === opcion ? "outline" : "ghost",
+                size: "lg",
               }),
               `${tipo === opcion ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
             )}
@@ -202,18 +202,13 @@ export function AjustarStock({
           {aviso ||
             "El ajuste queda en el historial y no se puede editar ni borrar."}
         </p>
-        <Boton
-          variante="primario"
-          enFormulario
-          type="submit"
-          disabled={ajustando}
-        >
+        <Button variant="default" size="lg" type="submit" disabled={ajustando}>
           {ajustando
             ? "Registrando…"
             : tipo === "entrada"
               ? "Registrar entrada"
               : "Registrar salida"}
-        </Boton>
+        </Button>
       </div>
     </form>
   );

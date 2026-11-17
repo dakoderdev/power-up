@@ -6,7 +6,7 @@ import { useId, useRef, useState, useTransition } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { z } from "zod";
 import { CLASE_CAMPO } from "@/components/estilos";
-import { Boton, variantesBoton } from "@/components/ui/boton";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearProductoAccion,
   editarProductoAccion,
@@ -300,9 +300,9 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                   <label
                     key={estado.etiqueta}
                     className={cn(
-                      variantesBoton({
-                        variante: elegido ? "secundario" : "texto",
-                        enFormulario: true,
+                      buttonVariants({
+                        variant: elegido ? "outline" : "ghost",
+                        size: "lg",
                       }),
                       `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
                     )}
@@ -333,14 +333,14 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
         ) : null}
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Boton asChild variante="texto" enFormulario>
+          <Button asChild variant="ghost" size="lg">
             <Link href="/productos" onClick={reiniciar}>
               Cancelar
             </Link>
-          </Boton>
-          <Boton
-            variante="primario"
-            enFormulario
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
             type="submit"
             disabled={guardando}
           >
@@ -349,7 +349,7 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
               : esAlta
                 ? "Crear producto"
                 : "Guardar cambios"}
-          </Boton>
+          </Button>
         </div>
       </form>
 

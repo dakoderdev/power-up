@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Banknote } from "pixelarticons/react/Banknote.js";
 import { Box } from "pixelarticons/react/Box.js";
-import { Boton } from "./ui/boton";
+import { Button } from "./ui/button";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 
 export function EncabezadoPagina({
@@ -27,16 +27,16 @@ export function EncabezadoPagina({
             </Suspense>
           )}
           {actual === "nueva-venta" ? null : (
-            <Boton
+            <Button
               asChild
-              variante="primario"
+              variant="default"
               className="max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
             >
               <Link href="/ventas/nueva">
                 <Banknote aria-hidden="true" className="size-5" />
                 Nueva venta
               </Link>
-            </Boton>
+            </Button>
           )}
         </div>
       </div>
@@ -55,15 +55,15 @@ async function BotonNuevoProducto() {
   }
 
   return (
-    <Boton
+    <Button
       asChild
-      variante="secundario"
+      variant="outline"
       className="bg-black max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
     >
       <Link href="/productos/nuevo">
         <Box aria-hidden="true" className="size-5" />
         Nuevo producto
       </Link>
-    </Boton>
+    </Button>
   );
 }

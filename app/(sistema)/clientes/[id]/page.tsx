@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
-import { Boton } from "@/components/ui/boton";
+import { CLASE_FILA } from "@/components/estilos";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import {
   obtenerCliente,
@@ -21,6 +21,8 @@ import { aCentavos, formatearMoneda } from "@/lib/moneda";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { RegistrarPago } from "./registrar-pago";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Cliente · Power Up",
@@ -45,9 +47,7 @@ export default function Cliente({ params }: PageProps<"/clientes/[id]">) {
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="esqueleto h-96 max-w-4xl" />
-        }
+        fallback={<Skeleton aria-hidden="true" className="h-96 max-w-4xl" />}
       >
         <Ficha params={params} />
       </Suspense>
@@ -108,12 +108,12 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
     <section className="flex flex-col gap-4">
       <div className="flex min-h-10 items-center justify-between gap-4">
         <h2 className={`${CLASE_H2} truncate`}>{cliente.nombre}</h2>
-        <Boton asChild variante="texto">
+        <Button asChild variant="ghost">
           <Link href={`/clientes/${cliente.id}/editar`}>
             <Pencil aria-hidden="true" className="size-5" />
             Editar
           </Link>
-        </Boton>
+        </Button>
       </div>
       <dl className="grid gap-4 sm:grid-cols-2">
         {datos.map((dato) => (
@@ -173,9 +173,7 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                   </td>
                   <td className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
                     <span className="flex items-center gap-2">
-                      <span className={`${CLASE_BADGE} text-neutral-300`}>
-                        {ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}
-                      </span>
+                      <Badge>{ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}</Badge>
                       {movimiento.ventaId && movimiento.numero !== null ? (
                         <Link
                           href={`/ventas/${movimiento.ventaId}`}

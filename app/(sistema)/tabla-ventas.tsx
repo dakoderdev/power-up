@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
@@ -11,6 +11,7 @@ import {
   ETIQUETAS_FORMA_PAGO,
 } from "@/lib/ventas/etiquetas";
 import { MasJuegos } from "./mas-juegos";
+import { Badge } from "@/components/ui/badge";
 
 type Resumen = Awaited<ReturnType<typeof obtenerResumenInicio>>;
 type VentaFila = Resumen["ventasHoy"]["ultimas"][number];
@@ -90,18 +91,14 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                     {venta.clienteNombre}
                   </td>
                   <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <span
-                      className={`${CLASE_BADGE} ${COLORES_FORMA_PAGO[venta.formaPago]}`}
-                    >
+                    <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
                       {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="text-right tabular-nums">
                     {venta.anuladaEn ? (
                       <span className="flex items-center justify-end gap-2">
-                        <span className={`${CLASE_BADGE} text-neutral-400`}>
-                          {ETIQUETA_ANULADA}
-                        </span>
+                        <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
                         <span className="text-neutral-400 line-through">
                           {formatearMoneda(venta.total)}
                         </span>

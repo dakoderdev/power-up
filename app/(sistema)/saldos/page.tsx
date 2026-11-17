@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Vacio } from "@/components/vacio";
 import { listarClientes } from "@/lib/clientes/listado";
@@ -10,6 +10,8 @@ import { formatearMoneda } from "@/lib/moneda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Saldos · Power Up",
@@ -37,9 +39,7 @@ export default function Saldos({
         Clientes que deben, de mayor a menor saldo.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Deudores parametros={searchParams} />
       </Suspense>
     </div>
@@ -69,9 +69,9 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex min-h-10 flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+        <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
-        </span>
+        </Badge>
         <p className="text-[0.9375rem] text-neutral-400">
           Total adeudado:{" "}
           <span className="font-medium tabular-nums text-red-500">
