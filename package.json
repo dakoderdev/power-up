@@ -17,6 +17,7 @@
   "dependencies": {
     "@libsql/client": "^0.18.0",
     "better-auth": "^1.7.18",
+    "chart.js": "^4.6.1",
     "drizzle-orm": "^0.45.4",
     "drizzle-zod": "^0.8.3",
     "next": "16.4.5",

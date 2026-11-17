@@ -11,6 +11,7 @@ import { ANCLA_AJUSTE } from "@/lib/stock/etiquetas";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { TablaVentas } from "./tabla-ventas";
+import { GraficoDiario, GraficoFormas } from "./graficos";
 
 const SEPARADOR_MOVIL =
   "border-t border-neutral-900 pt-10 lg:border-t-0 lg:pt-0";
@@ -21,6 +22,15 @@ export async function Resumen() {
     obtenerResumenInicio(),
     obtenerTablero(),
   ]);
+  const dias = tablero.ventasDiarias.map((d) => ({
+    fecha: d.fecha,
+    importe: Number(d.importe),
+  }));
+  const formas = tablero.porFormaDePago.map((f) => ({
+    etiqueta: ETIQUETAS_FORMA_PAGO[f.forma],
+    importe: Number(f.importe),
+  }));
+  const hayFormas = formas.some((f) => f.importe > 0);
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
@@ -71,6 +81,18 @@ export async function Resumen() {
             {tablero.bajoMinimo.cantidad}
           </Indicador>
         </dl>
+      </Seccion>
+
+      <Seccion titulo="Ventas de 30 días" className={SEPARADOR_MOVIL}>
+        <GraficoDiario dias={dias} />
+      </Seccion>
+
+      <Seccion titulo="Forma de pago del mes" className={SEPARADOR_MOVIL}>
+        {hayFormas ? (
+          <GraficoFormas formas={formas} />
+        ) : (
+          <Vacio>Todavía no hay ventas este mes.</Vacio>
+        )}
       </Seccion>
 
       <Seccion
