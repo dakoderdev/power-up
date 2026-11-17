@@ -20,7 +20,7 @@ const anteriores = alias(movimientosStock, "anteriores");
 // RF-P6 y ST-24: existencia luego del movimiento, suma de entradas menos
 // salidas del producto hasta ese movimiento; no se guarda.
 const EXISTENCIA_RESULTANTE =
-  sql<number>`(select coalesce(sum(case when ${anteriores.tipo} = 'entrada' then ${anteriores.cantidad} else -${anteriores.cantidad} end), 0) from ${anteriores} where ${anteriores.productoId} = ${movimientosStock.productoId} and (${anteriores.creadoEn} < ${movimientosStock.creadoEn} or (${anteriores.creadoEn} = ${movimientosStock.creadoEn} and ${anteriores.id} <= ${movimientosStock.id})))`.mapWith(
+  sql<number>`(select coalesce(sum(case when ${anteriores.tipo} = 'entrada' then ${anteriores.cantidad} else -${anteriores.cantidad} end), 0) from ${movimientosStock} as anteriores where ${anteriores.productoId} = ${movimientosStock.productoId} and (${anteriores.creadoEn} < ${movimientosStock.creadoEn} or (${anteriores.creadoEn} = ${movimientosStock.creadoEn} and ${anteriores.id} <= ${movimientosStock.id})))`.mapWith(
     Number,
   );
 
@@ -70,6 +70,7 @@ export async function listarInventario({
       codigo: productos.codigo,
       nombre: productos.nombre,
       stock: productos.stock,
+      stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })
@@ -89,6 +90,7 @@ export async function obtenerProductoStock(id: number) {
       codigo: productos.codigo,
       nombre: productos.nombre,
       stock: productos.stock,
+      stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })
