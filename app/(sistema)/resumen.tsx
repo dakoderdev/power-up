@@ -4,6 +4,7 @@ import { CLASE_FILA, claseBoton } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
+import { obtenerTablero } from "@/lib/inicio/tablero";
 import { formatearMoneda } from "@/lib/moneda";
 import { contar, pluralizar } from "@/lib/texto";
 import { ANCLA_AJUSTE } from "@/lib/stock/etiquetas";
@@ -16,10 +17,62 @@ const SEPARADOR_MOVIL =
 
 export async function Resumen() {
   await obtenerUsuarioActual();
-  const { ventasHoy, cuentas, stockBajo } = await obtenerResumenInicio();
+  const [{ ventasHoy, cuentas, stockBajo }, tablero] = await Promise.all([
+    obtenerResumenInicio(),
+    obtenerTablero(),
+  ]);
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
+      <Seccion titulo="Indicadores" className="lg:col-span-2">
+        <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <Indicador
+            etiqueta="Ventas de hoy"
+            detalle={contar({
+              cantidad: tablero.hoy.cantidad,
+              singular: "venta",
+              plural: "ventas",
+            })}
+          >
+            {formatearMoneda(tablero.hoy.importe)}
+          </Indicador>
+          <Indicador
+            etiqueta="Ventas del mes"
+            detalle={contar({
+              cantidad: tablero.mes.cantidad,
+              singular: "venta",
+              plural: "ventas",
+            })}
+          >
+            {formatearMoneda(tablero.mes.importe)}
+          </Indicador>
+          <Indicador
+            etiqueta="Total adeudado"
+            detalle={contar({
+              cantidad: tablero.cuentasCorrientes.clientesConSaldo,
+              singular: "cliente",
+              plural: "clientes",
+            })}
+            claseValor="text-red-500"
+          >
+            {formatearMoneda(tablero.cuentasCorrientes.totalAdeudado)}
+          </Indicador>
+          <Indicador
+            etiqueta="Bajo el mínimo"
+            detalle={pluralizar({
+              cantidad: tablero.bajoMinimo.cantidad,
+              singular: "producto activo",
+              plural: "productos activos",
+            })}
+            claseValor={
+              tablero.bajoMinimo.cantidad > 0 ? "text-yellow-400/75" : undefined
+            }
+          >
+            {tablero.bajoMinimo.cantidad}
+          </Indicador>
+        </dl>
+      </Seccion>
+
       <Seccion
         titulo="Ventas de hoy"
         enlace={{
@@ -67,12 +120,13 @@ export async function Resumen() {
 
       <Seccion
         titulo="Cuentas por cobrar"
+        className={SEPARADOR_MOVIL}
         enlace={{
-          href: "/clientes",
+          href: "/saldos",
           texto:
             cuentas.cantidad > cuentas.deudores.length
               ? `Ver los ${cuentas.cantidad} clientes`
-              : "Ver clientes",
+              : "Ver saldos",
         }}
       >
         {cuentas.deudores.length === 0 ? (
@@ -170,6 +224,44 @@ export async function Resumen() {
           </>
         )}
       </Seccion>
+
+      <Seccion
+        titulo="Más vendidos del mes"
+        className={`${SEPARADOR_MOVIL} lg:col-span-2`}
+      >
+        {tablero.masVendidos.length === 0 ? (
+          <Vacio>Todavía no hay ventas este mes.</Vacio>
+        ) : (
+          <ol className="text-[0.9375rem]">
+            {tablero.masVendidos.map((producto) => (
+              <li
+                key={producto.productoId}
+                className={`${CLASE_FILA} flex items-center justify-between gap-6`}
+              >
+                <span className="min-w-0 truncate text-white">
+                  {producto.descripcion}
+                  <span className="text-sm text-neutral-400">
+                    {" "}
+                    · {producto.codigo}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-6 tabular-nums">
+                  <span className="text-neutral-300">
+                    {contar({
+                      cantidad: producto.unidades,
+                      singular: "unidad",
+                      plural: "unidades",
+                    })}
+                  </span>
+                  <span className="text-white">
+                    {formatearMoneda(producto.importe)}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Seccion>
     </div>
   );
 }
@@ -181,25 +273,49 @@ function Seccion({
   children,
 }: {
   titulo: string;
-  enlace: { href: string; texto: string };
+  enlace?: { href: string; texto: string };
   className?: string;
   children: ReactNode;
 }) {
   return (
     <section className={`flex min-w-0 flex-col gap-4 ${className}`}>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex min-h-10 items-center justify-between gap-4">
         <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em] text-white">
           {titulo}
         </h2>
-        <Link
-          href={enlace.href}
-          className={`${claseBoton({ variante: "texto" })} -mr-3 shrink-0`}
-        >
-          {enlace.texto}
-        </Link>
+        {enlace ? (
+          <Link
+            href={enlace.href}
+            className={`${claseBoton({ variante: "texto" })} -mr-3 shrink-0`}
+          >
+            {enlace.texto}
+          </Link>
+        ) : null}
       </div>
       {children}
     </section>
+  );
+}
+
+function Indicador({
+  etiqueta,
+  detalle,
+  claseValor = "text-white",
+  children,
+}: {
+  etiqueta: string;
+  detalle: string;
+  claseValor?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <dt className="text-sm text-neutral-400">{etiqueta}</dt>
+      <dd className={`text-[0.9375rem] font-medium tabular-nums ${claseValor}`}>
+        {children}
+      </dd>
+      <dd className="text-sm tabular-nums text-neutral-300">{detalle}</dd>
+    </div>
   );
 }
 

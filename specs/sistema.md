@@ -199,9 +199,9 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-02: se muestran hasta 15 ventas de hoy, de la más reciente a la más antigua.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
-- IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero`; `[pendiente]` la pantalla.
+- IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero` y mostrado en la pantalla.
 - IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2). `[pendiente]`
-- IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API; `[pendiente]` la pantalla.
+- IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API y mostrado en la pantalla.
 
 ## Consulta, filtros e impresión
 
@@ -301,3 +301,4 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-16: el recibo se muestra en `/pagos/[id]` y reutiliza la hoja de estilos de impresión del comprobante; indica el saldo actual del cliente y no el de la fecha del pago, porque el saldo se deriva y no se guarda por movimiento. El recibo sale con el punto de venta fijo del código, igual que el comprobante nuevo.
 - 2026-11-16: la existencia resultante de cada movimiento se calcula en la consulta (suma acumulada por producto, ordenada por fecha y número) y no se guarda, igual que el saldo de las cuentas, para que no se desincronice ni requiera migración.
 - 2026-11-16: `/perfil` se abre desde el pie de la barra lateral, junto a Cerrar sesión, y no como sección del menú, porque es un dato propio del usuario y no una herramienta de trabajo; al cambiar la contraseña se cierran las demás sesiones del usuario.
+- 2026-11-16: los indicadores y los más vendidos del Inicio salen de `obtenerTablero`, el mismo servicio de `GET /api/tablero`, para que pantalla y API den siempre las mismas cifras; "Cuentas por cobrar" enlaza a la pantalla de saldos.

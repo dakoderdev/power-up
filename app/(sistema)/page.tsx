@@ -24,9 +24,11 @@ export default function Inicio() {
 function ResumenCargando() {
   return (
     <div aria-hidden="true" className="grid gap-10 lg:grid-cols-2">
+      <div className="esqueleto h-28 lg:col-span-2" />
       <div className="esqueleto order-last h-64 lg:order-none lg:col-span-2" />
       <div className="esqueleto h-56" />
       <div className="esqueleto h-56" />
+      <div className="esqueleto h-56 lg:col-span-2" />
     </div>
   );
 }
