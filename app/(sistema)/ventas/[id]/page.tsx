@@ -17,6 +17,8 @@ import {
 } from "@/lib/ventas/etiquetas";
 import { calcularVuelto } from "@/lib/ventas/vuelto";
 import { AnularVenta } from "./anular-venta";
+import { BotonImprimir } from "./boton-imprimir";
+import { ComprobanteImpreso } from "./comprobante-impreso";
 
 export const metadata: Metadata = {
   title: "Comprobante · Power Up",
@@ -59,15 +61,21 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <div className="flex max-w-4xl flex-col gap-10">
-      <Datos venta={venta} />
-      <Items venta={venta} />
-      {venta.anuladaEn ? (
-        <Anulacion venta={venta} />
-      ) : usuario.esAdministrador ? (
-        <AnularVenta ventaId={venta.id} />
-      ) : null}
-    </div>
+    <>
+      <div className="flex max-w-4xl flex-col gap-10">
+        <div className="flex justify-end">
+          <BotonImprimir />
+        </div>
+        <Datos venta={venta} />
+        <Items venta={venta} />
+        {venta.anuladaEn ? (
+          <Anulacion venta={venta} />
+        ) : usuario.esAdministrador ? (
+          <AnularVenta ventaId={venta.id} />
+        ) : null}
+      </div>
+      <ComprobanteImpreso venta={venta} />
+    </>
   );
 }
 
