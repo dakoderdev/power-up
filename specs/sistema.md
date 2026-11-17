@@ -207,7 +207,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 
 - CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número o nombre del cliente (RF-V8). Disponible en `GET /api/facturas` y en la pantalla de ventas.
 - CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). Se imprime desde el detalle de la venta; los datos del comercio están en `lib/comercio.ts`.
-- CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). `[pendiente]`
+- CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). Se abre desde la cuenta corriente del cliente (`/pagos/[id]`) y se imprime con el diálogo del navegador.
 - CO-04: hay una pantalla de saldos (`/saldos`) con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible también en `GET /api/clientes?conDeuda=true&orden=saldo`.
 
 ## Pendientes de la consigna
@@ -298,3 +298,4 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-16: el comprobante se imprime con el diálogo del navegador y una hoja de estilos de impresión (blanco y negro, sin librerías), para no sumar una dependencia; indica que es un comprobante interno sin validez fiscal, porque ARCA está descartado. El comercio se configura en `lib/comercio.ts`.
 - 2026-11-16: la pantalla de saldos es una página propia y no un filtro del listado de clientes, porque la consigna la pide como pantalla (RF-C6); reutiliza `listarClientes` con `conDeuda`, así que el total y el orden salen del mismo servicio que la API.
 - 2026-11-16: el recibo de cada pago lleva un número propio, correlativo entre todos los pagos e independiente del de las facturas, guardado en `recibo_numero` del movimiento de cuenta; se asigna como el último más uno dentro de la transacción del pago, igual que el de las ventas. Los pagos anteriores a la migración se numeraron por orden de fecha (migración `0004`). Se muestra con el formato `0001-00000001`.
+- 2026-11-16: el recibo se muestra en `/pagos/[id]` y reutiliza la hoja de estilos de impresión del comprobante; indica el saldo actual del cliente y no el de la fecha del pago, porque el saldo se deriva y no se guarda por movimiento. El recibo sale con el punto de venta fijo del código, igual que el comprobante nuevo.

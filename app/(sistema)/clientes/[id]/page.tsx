@@ -13,6 +13,7 @@ import {
   type CuentaCliente,
 } from "@/lib/clientes/detalle";
 import { ETIQUETAS_TIPO_CUENTA } from "@/lib/cuentas/etiquetas";
+import { formatearRecibo } from "@/lib/cuentas/recibo";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
 import { aCentavos, formatearMoneda } from "@/lib/moneda";
@@ -185,6 +186,14 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                             puntoVenta: movimiento.puntoVenta ?? 1,
                             numero: movimiento.numero,
                           })}
+                        </Link>
+                      ) : movimiento.tipo === "pago" &&
+                        movimiento.reciboNumero !== null ? (
+                        <Link
+                          href={`/pagos/${movimiento.id}`}
+                          className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                        >
+                          Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
                         </Link>
                       ) : (
                         <span className="truncate text-neutral-300">
