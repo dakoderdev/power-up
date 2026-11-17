@@ -17,6 +17,7 @@ type MovimientoConSaldo = {
   tipo: "venta" | "pago" | "anulacion";
   importe: string;
   observacion: string | null;
+  reciboNumero: number | null;
   fecha: Date;
   ventaId: number | null;
   puntoVenta: number | null;
@@ -31,6 +32,7 @@ async function obtenerMovimientos(clienteId: number) {
       tipo: movimientosCuenta.tipo,
       importe: movimientosCuenta.importe,
       observacion: movimientosCuenta.observacion,
+      reciboNumero: movimientosCuenta.reciboNumero,
       fecha: movimientosCuenta.fecha,
       ventaId: movimientosCuenta.ventaId,
       puntoVenta: ventas.puntoVenta,
