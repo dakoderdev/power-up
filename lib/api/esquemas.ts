@@ -7,6 +7,7 @@ import {
   esquemaProductoEdicion,
   esquemaProductoNuevo,
 } from "@/lib/productos/esquemas";
+import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
 import { esquemaAjusteManual } from "@/lib/stock/esquemas";
 import {
   esquemaCambioContrasena,
@@ -93,6 +94,7 @@ export const esquemaProductoNuevoApi = z
     descripcion: texto,
     precio: centavos,
     stockInicial: enteroNoNegativo.optional(),
+    stockMinimo: enteroNoNegativo.optional(),
     imagenUrl: texto.nullish(),
     activo: z.boolean().optional(),
   })
@@ -101,6 +103,7 @@ export const esquemaProductoNuevoApi = z
     nombre: producto.descripcion,
     precio: deCentavos(producto.precio),
     stock: producto.stockInicial ?? 0,
+    stockMinimo: producto.stockMinimo ?? STOCK_MINIMO_INICIAL,
     imagenUrl: producto.imagenUrl ?? null,
     activo: producto.activo ?? true,
   }))
@@ -110,6 +113,7 @@ export const esquemaProductoPatchApi = z.strictObject({
   codigo: texto.optional(),
   descripcion: texto.optional(),
   precio: centavos.optional(),
+  stockMinimo: enteroNoNegativo.optional(),
   imagenUrl: texto.nullish(),
   activo: z.boolean().optional(),
 });
@@ -122,6 +126,7 @@ export function fusionarProducto({
     codigo: string;
     nombre: string;
     precio: string;
+    stockMinimo: number;
     imagenUrl: string | null;
     activo: boolean;
   };
@@ -132,6 +137,7 @@ export function fusionarProducto({
     nombre: cambios.descripcion ?? actual.nombre,
     precio:
       cambios.precio === undefined ? actual.precio : deCentavos(cambios.precio),
+    stockMinimo: cambios.stockMinimo ?? actual.stockMinimo,
     imagenUrl:
       cambios.imagenUrl === undefined ? actual.imagenUrl : cambios.imagenUrl,
     activo: cambios.activo ?? actual.activo,

@@ -24,6 +24,7 @@ type ProductoBase = {
   nombre: string;
   precio: string;
   stock: number;
+  stockMinimo: number;
   activo: boolean;
   imagenUrl: string | null;
   creadoEn?: Date;
@@ -36,6 +37,7 @@ export function formatearProductoApi(producto: ProductoBase) {
     descripcion: producto.nombre,
     precio: enCentavos(producto.precio),
     existencia: producto.stock,
+    stockMinimo: producto.stockMinimo,
     bajoMinimo: esStockBajo(producto),
     activo: producto.activo,
     imagenUrl: producto.imagenUrl,

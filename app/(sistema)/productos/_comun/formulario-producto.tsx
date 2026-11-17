@@ -18,10 +18,12 @@ import {
   type ProductoFila,
 } from "@/lib/productos/esquemas";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
+import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
 import type { ErroresProducto } from "@/lib/productos/guardar";
 import { VistaPrevia, type Borrador } from "./vista-previa";
 
-type Campo = "codigo" | "nombre" | "precio" | "stock" | "imagenUrl";
+type Campo =
+  "codigo" | "nombre" | "precio" | "stock" | "stockMinimo" | "imagenUrl";
 
 const CLASE_AYUDA = "text-sm text-neutral-500";
 const CLASE_ENLACE_AYUDA =
@@ -60,6 +62,13 @@ const CAMPOS: {
     ayuda: "Se registra como entrada.",
   },
   {
+    nombre: "stockMinimo",
+    etiqueta: "Stock mínimo",
+    tipo: "text",
+    modo: "numeric",
+    ayuda: "Con esta cantidad o menos, el producto figura con stock bajo.",
+  },
+  {
     nombre: "imagenUrl",
     etiqueta: "Imagen de tapa (opcional)",
     tipo: "url",
@@ -88,9 +97,10 @@ const ESTADOS = [
   { valor: false, etiqueta: ETIQUETAS_ESTADO.inactivo },
 ];
 
-function leerFormulario(formulario: FormData): Borrador {
+function leerFormulario(formulario: FormData) {
   const texto = (campo: string) => String(formulario.get(campo) ?? "");
   const stock = texto("stock").trim();
+  const minimo = texto("stockMinimo").trim();
 
   return {
     codigo: texto("codigo"),
@@ -98,6 +108,7 @@ function leerFormulario(formulario: FormData): Borrador {
     precio: texto("precio"),
     imagenUrl: texto("imagenUrl"),
     stock: stock === "" ? 0 : Number(stock),
+    stockMinimo: minimo === "" ? STOCK_MINIMO_INICIAL : Number(minimo),
     activo: texto("activo") !== "false",
   };
 }
@@ -122,6 +133,10 @@ function valorInicial({
 }) {
   if (campo === "stock") {
     return "0";
+  }
+
+  if (campo === "stockMinimo") {
+    return String(producto?.stockMinimo ?? STOCK_MINIMO_INICIAL);
   }
 
   if (campo === "precio") {

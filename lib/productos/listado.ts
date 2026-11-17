@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import { itemsVenta, productos, ventas } from "@/lib/db/schema";
 import { ubicarPagina } from "@/lib/paginacion";
-import { UMBRAL_STOCK_BAJO } from "@/lib/stock/etiquetas";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
 const PRODUCTOS_POR_PAGINA = 36;
@@ -39,7 +38,7 @@ export function limpiarVista(texto: string | string[] | undefined) {
   return valor === "grilla" ? "grilla" : "lista";
 }
 
-// RF-P1: catálogo paginado con búsqueda por código o descripción y marca de stock bajo.
+// RF-P1 y ST-23: catálogo paginado con búsqueda por código o descripción y marca de stock bajo según el mínimo de cada producto.
 export async function listarProductos({
   busqueda,
   orden,
@@ -64,7 +63,10 @@ export async function listarProductos({
       : undefined,
     activo === undefined ? undefined : eq(productos.activo, activo),
     bajoMinimo
-      ? and(eq(productos.activo, true), lte(productos.stock, UMBRAL_STOCK_BAJO))
+      ? and(
+          eq(productos.activo, true),
+          lte(productos.stock, productos.stockMinimo),
+        )
       : undefined,
   );
 
@@ -85,6 +87,7 @@ export async function listarProductos({
       nombre: productos.nombre,
       precio: productos.precio,
       stock: productos.stock,
+      stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })

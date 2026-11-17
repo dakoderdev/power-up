@@ -2,16 +2,19 @@ import { contar } from "../texto";
 
 export const MOTIVO_STOCK_INICIAL = "Stock inicial";
 
-export const UMBRAL_STOCK_BAJO = 3;
+export const STOCK_MINIMO_INICIAL = 3;
 
+// ST-23: stock bajo según el mínimo propio del producto.
 export function esStockBajo({
   stock,
+  stockMinimo,
   activo,
 }: {
   stock: number;
+  stockMinimo: number;
   activo: boolean;
 }) {
-  return activo && stock <= UMBRAL_STOCK_BAJO;
+  return activo && stock <= stockMinimo;
 }
 
 export const ETIQUETAS_ORIGEN = {
