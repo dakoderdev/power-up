@@ -1,0 +1,1 @@
+UPDATE `movimientos_cuenta` SET `recibo_numero` = (SELECT count(*) FROM `movimientos_cuenta` AS `m2` WHERE `m2`.`tipo` = 'pago' AND (`m2`.`fecha` < `movimientos_cuenta`.`fecha` OR (`m2`.`fecha` = `movimientos_cuenta`.`fecha` AND `m2`.`id` <= `movimientos_cuenta`.`id`))) WHERE `tipo` = 'pago' AND `recibo_numero` IS NULL;
