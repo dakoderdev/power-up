@@ -116,13 +116,13 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - ST-14: el stock no se edita directamente: solo cambia por movimientos.
 - ST-15: el motivo de un movimiento manual tiene entre 3 y 200 caracteres.
 - ST-16: se permiten ajustes manuales sobre productos inactivos.
-- ST-17: un producto tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero.
+- ST-17: un producto sin mínimo propio tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero; ese valor es el mínimo inicial de todo producto nuevo.
 - ST-18: la sección Stock lista todos los productos con su stock actual, de menor a mayor stock, y se busca por nombre o código.
 - ST-19: el listado de stock marca el stock de los productos activos con stock bajo (ST-17).
 - ST-20: al entrar a un producto desde Stock se ven su stock actual y sus movimientos, filtrables por origen.
 - ST-21: el ajuste manual se registra desde el detalle de stock del producto, eligiendo entrada o salida, cantidad y motivo; desde cada fila del listado de stock se registra una entrada sin salir del listado.
 - ST-22: solo el administrador registra ajustes manuales de stock (ingresos y egresos), verificado en el servidor; el operador consulta el stock y sus movimientos pero no ve los controles de ajuste (RF-P4, RF-P5, sección 3).
-- ST-23: cada producto tiene un stock mínimo propio; está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1). `[pendiente]`: hoy el umbral es fijo (ST-17).
+- ST-23: cada producto tiene un stock mínimo propio (por defecto 3); está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1).
 - ST-24: cada movimiento muestra la existencia resultante (RF-P6). Se calcula como la suma de entradas menos salidas del producto hasta ese movimiento, y sale en la pantalla de movimientos y en la API.
 
 ## Clientes
@@ -302,3 +302,4 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-16: la existencia resultante de cada movimiento se calcula en la consulta (suma acumulada por producto, ordenada por fecha y número) y no se guarda, igual que el saldo de las cuentas, para que no se desincronice ni requiera migración.
 - 2026-11-16: `/perfil` se abre desde el pie de la barra lateral, junto a Cerrar sesión, y no como sección del menú, porque es un dato propio del usuario y no una herramienta de trabajo; al cambiar la contraseña se cierran las demás sesiones del usuario.
 - 2026-11-16: los indicadores y los más vendidos del Inicio salen de `obtenerTablero`, el mismo servicio de `GET /api/tablero`, para que pantalla y API den siempre las mismas cifras; "Cuentas por cobrar" enlaza a la pantalla de saldos.
+- 2026-11-16: el stock mínimo pasa a ser un campo de cada producto (`stock_minimo`, por defecto 3), porque la consigna lo pide (RF-P1, RF-T1); reemplaza la decisión del 2026-11-08 del umbral fijo. Su regla (entero no negativo) vive en Zod y no en un check de la base, para no reconstruir la tabla.

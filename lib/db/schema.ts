@@ -37,6 +37,7 @@ export const productos = sqliteTable(
     nombre: text("nombre", { length: 120 }).notNull(),
     precio: dinero("precio").notNull(),
     stock: integer("stock").notNull().default(0),
+    stockMinimo: integer("stock_minimo").notNull().default(3),
     activo: booleano("activo").notNull().default(true),
     imagenUrl: text("imagen_url"),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
