@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { ROLES } from "@/lib/db/schema";
 import {
   crearUsuarioAccion,
@@ -238,23 +239,21 @@ export function FormularioUsuario({
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Link
-          href="/usuarios"
-          className={claseBoton({ variante: "texto", enFormulario: true })}
-        >
-          Cancelar
-        </Link>
-        <button
+        <Boton asChild variante="texto" enFormulario>
+          <Link href="/usuarios">Cancelar</Link>
+        </Boton>
+        <Boton
+          variante="primario"
+          enFormulario
           type="submit"
           disabled={guardando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {guardando
             ? "Guardando…"
             : esAlta
               ? "Crear usuario"
               : "Guardar cambios"}
-        </button>
+        </Boton>
       </div>
     </form>
   );

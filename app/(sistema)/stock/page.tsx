@@ -3,14 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import {
-  CLASE_BADGE,
-  CLASE_CAMPO,
-  CLASE_FILA,
-  claseBoton,
-} from "@/components/estilos";
+import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
@@ -114,20 +110,14 @@ async function Inventario({
           aria-label="Buscar por nombre o código"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <button
-          type="submit"
-          className={claseBoton({ variante: "secundario", enFormulario: true })}
-        >
+        <Boton variante="secundario" enFormulario type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </button>
+        </Boton>
         {busqueda ? (
-          <Link
-            href="/stock"
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar
-          </Link>
+          <Boton asChild variante="texto" enFormulario>
+            <Link href="/stock">Limpiar</Link>
+          </Boton>
         ) : null}
       </form>
 

@@ -3,7 +3,8 @@
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { cambiarContrasenaAccion } from "@/lib/usuarios/acciones";
 import {
   esquemaCambioContrasena,
@@ -111,13 +112,14 @@ export function CambiarContrasena() {
       ) : null}
 
       <div className="flex justify-end">
-        <button
+        <Boton
+          variante="primario"
+          enFormulario
           type="submit"
           disabled={guardando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {guardando ? "Guardando…" : "Cambiar contraseña"}
-        </button>
+        </Boton>
       </div>
     </form>
   );

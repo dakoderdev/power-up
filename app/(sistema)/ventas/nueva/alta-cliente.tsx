@@ -2,7 +2,8 @@
 
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { crearClienteAccion } from "@/lib/clientes/acciones";
 import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
 import type { ClienteVenta } from "@/lib/clientes/listado";
@@ -111,20 +112,17 @@ export function AltaCliente({
         cuenta corriente no tiene tope.
       </p>
       <div className="flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancelar}
-          className={claseBoton({ variante: "texto", enFormulario: true })}
-        >
+        <Boton variante="texto" enFormulario type="button" onClick={onCancelar}>
           Cancelar
-        </button>
-        <button
+        </Boton>
+        <Boton
+          variante="secundario"
+          enFormulario
           type="submit"
           disabled={guardando}
-          className={claseBoton({ variante: "secundario", enFormulario: true })}
         >
           {guardando ? "Guardando…" : "Guardar cliente"}
-        </button>
+        </Boton>
       </div>
     </form>
   );

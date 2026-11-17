@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useId } from "react";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton, variantesBoton } from "@/components/ui/boton";
 import { importePositivo } from "@/lib/esquemas-comunes";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import { contar } from "@/lib/texto";
+import { cn } from "@/lib/utils";
 import {
   ETIQUETAS_FORMA_PAGO,
   ETIQUETAS_TIPO_TARJETA,
@@ -93,7 +95,13 @@ export function ResumenVenta({
             return (
               <label
                 key={valor}
-                className={`${claseBoton({ variante: elegida ? "secundario" : "texto", enFormulario: true })} ${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`}
+                className={cn(
+                  variantesBoton({
+                    variante: elegida ? "secundario" : "texto",
+                    enFormulario: true,
+                  }),
+                  `${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                )}
               >
                 <input
                   type="radio"
@@ -229,14 +237,15 @@ export function ResumenVenta({
       )}
 
       <div className="flex flex-col gap-2">
-        <button
+        <Boton
+          variante="primario"
+          enFormulario
           type="button"
           onClick={onConfirmar}
           disabled={confirmando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {confirmando ? "Confirmando…" : "Confirmar venta"}
-        </button>
+        </Boton>
         <p className="text-sm text-neutral-500">
           Al confirmar se verifican y descuentan las existencias.
         </p>

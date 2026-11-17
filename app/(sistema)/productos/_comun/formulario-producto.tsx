@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton, variantesBoton } from "@/components/ui/boton";
 import {
   crearProductoAccion,
   editarProductoAccion,
@@ -20,6 +21,7 @@ import {
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
 import type { ErroresProducto } from "@/lib/productos/guardar";
+import { cn } from "@/lib/utils";
 import { VistaPrevia, type Borrador } from "./vista-previa";
 
 type Campo =
@@ -297,7 +299,13 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                 return (
                   <label
                     key={estado.etiqueta}
-                    className={`${claseBoton({ variante: elegido ? "secundario" : "texto", enFormulario: true })} ${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`}
+                    className={cn(
+                      variantesBoton({
+                        variante: elegido ? "secundario" : "texto",
+                        enFormulario: true,
+                      }),
+                      `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                    )}
                   >
                     <input
                       type="radio"
@@ -325,24 +333,23 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
         ) : null}
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Link
-            href="/productos"
-            onClick={reiniciar}
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Cancelar
-          </Link>
-          <button
+          <Boton asChild variante="texto" enFormulario>
+            <Link href="/productos" onClick={reiniciar}>
+              Cancelar
+            </Link>
+          </Boton>
+          <Boton
+            variante="primario"
+            enFormulario
             type="submit"
             disabled={guardando}
-            className={claseBoton({ variante: "primario", enFormulario: true })}
           >
             {guardando
               ? "Guardando…"
               : esAlta
                 ? "Crear producto"
                 : "Guardar cambios"}
-          </button>
+          </Boton>
         </div>
       </form>
 

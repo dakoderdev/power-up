@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Banknote } from "pixelarticons/react/Banknote.js";
 import { Box } from "pixelarticons/react/Box.js";
+import { Boton } from "./ui/boton";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
-import { claseBoton } from "./estilos";
 
 export function EncabezadoPagina({
   titulo,
@@ -27,13 +27,16 @@ export function EncabezadoPagina({
             </Suspense>
           )}
           {actual === "nueva-venta" ? null : (
-            <Link
-              href="/ventas/nueva"
-              className={`${claseBoton({ variante: "primario" })} max-lg:h-11 max-lg:shadow-[0_8px_24px_black]`}
+            <Boton
+              asChild
+              variante="primario"
+              className="max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
             >
-              <Banknote aria-hidden="true" className="size-5" />
-              Nueva venta
-            </Link>
+              <Link href="/ventas/nueva">
+                <Banknote aria-hidden="true" className="size-5" />
+                Nueva venta
+              </Link>
+            </Boton>
           )}
         </div>
       </div>
@@ -52,12 +55,15 @@ async function BotonNuevoProducto() {
   }
 
   return (
-    <Link
-      href="/productos/nuevo"
-      className={`${claseBoton({ variante: "secundario" })} bg-black max-lg:h-11 max-lg:shadow-[0_8px_24px_black]`}
+    <Boton
+      asChild
+      variante="secundario"
+      className="bg-black max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
     >
-      <Box aria-hidden="true" className="size-5" />
-      Nuevo producto
-    </Link>
+      <Link href="/productos/nuevo">
+        <Box aria-hidden="true" className="size-5" />
+        Nuevo producto
+      </Link>
+    </Boton>
   );
 }

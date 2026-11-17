@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_AREA, CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_AREA, CLASE_CAMPO } from "@/components/estilos";
+import { Boton, variantesBoton } from "@/components/ui/boton";
 import { TIPOS_STOCK } from "@/lib/db/schema";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
 import {
@@ -16,6 +17,7 @@ import {
   MOTIVO_MAXIMO,
   type AjusteManual,
 } from "@/lib/stock/esquemas";
+import { cn } from "@/lib/utils";
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
 
 type Errores = Partial<Record<keyof AjusteManual, string[]>>;
@@ -117,7 +119,13 @@ export function AjustarStock({
         {TIPOS_STOCK.map((opcion) => (
           <label
             key={opcion}
-            className={`${claseBoton({ variante: tipo === opcion ? "secundario" : "texto", enFormulario: true })} ${tipo === opcion ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`}
+            className={cn(
+              variantesBoton({
+                variante: tipo === opcion ? "secundario" : "texto",
+                enFormulario: true,
+              }),
+              `${tipo === opcion ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+            )}
           >
             <input
               type="radio"
@@ -194,17 +202,18 @@ export function AjustarStock({
           {aviso ||
             "El ajuste queda en el historial y no se puede editar ni borrar."}
         </p>
-        <button
+        <Boton
+          variante="primario"
+          enFormulario
           type="submit"
           disabled={ajustando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {ajustando
             ? "Registrando…"
             : tipo === "entrada"
               ? "Registrar entrada"
               : "Registrar salida"}
-        </button>
+        </Boton>
       </div>
     </form>
   );

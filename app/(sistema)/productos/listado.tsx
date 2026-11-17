@@ -3,14 +3,10 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import {
-  CLASE_BADGE,
-  CLASE_CAMPO,
-  CLASE_FILA,
-  claseBoton,
-} from "@/components/estilos";
+import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
@@ -110,42 +106,43 @@ export async function Listado({
           aria-label="Buscar por nombre o código"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <button
-          type="submit"
-          className={claseBoton({
-            variante: "secundario",
-            enFormulario: true,
-          })}
-        >
+        <Boton variante="secundario" enFormulario type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </button>
+        </Boton>
         {busqueda ? (
-          <Link
-            href={enlaceVista({ vista, busqueda: "", orden })}
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar
-          </Link>
+          <Boton asChild variante="texto" enFormulario>
+            <Link href={enlaceVista({ vista, busqueda: "", orden })}>
+              Limpiar
+            </Link>
+          </Boton>
         ) : null}
         <div className="ml-auto flex items-center gap-2">
           <SelectorOrden orden={orden} />
           <nav aria-label="Vista" className="flex">
             {VISTAS.map((opcion) => (
-              <Link
+              <Boton
                 key={opcion.valor}
-                href={enlaceVista({
-                  vista: opcion.valor,
-                  busqueda,
-                  orden,
-                  pagina,
-                })}
-                aria-label={opcion.etiqueta}
-                aria-current={vista === opcion.valor ? "page" : undefined}
-                className={`${claseBoton({ variante: vista === opcion.valor ? "secundario" : "texto", enFormulario: true })} ${vista === opcion.valor ? "" : "border border-transparent"}`}
+                asChild
+                variante={vista === opcion.valor ? "secundario" : "texto"}
+                enFormulario
+                className={
+                  vista === opcion.valor ? "" : "border border-transparent"
+                }
               >
-                <opcion.Icono aria-hidden="true" className="size-5" />
-              </Link>
+                <Link
+                  href={enlaceVista({
+                    vista: opcion.valor,
+                    busqueda,
+                    orden,
+                    pagina,
+                  })}
+                  aria-label={opcion.etiqueta}
+                  aria-current={vista === opcion.valor ? "page" : undefined}
+                >
+                  <opcion.Icono aria-hidden="true" className="size-5" />
+                </Link>
+              </Boton>
             ))}
           </nav>
         </div>

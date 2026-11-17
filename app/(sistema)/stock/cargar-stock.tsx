@@ -4,7 +4,8 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
 import {
   esquemaAjusteManual,
@@ -158,18 +159,19 @@ export function CargarStock({
 
   return (
     <>
-      <button
+      <Boton
+        variante="texto"
         ref={boton}
         type="button"
         onClick={alternar}
         aria-controls={id}
         aria-expanded={abierto}
         aria-label={`Cargar stock de ${nombre}`}
-        className={`${claseBoton({ variante: "texto" })} relative z-10 -mr-3`}
+        className="relative z-10 -mr-3"
       >
         <Plus aria-hidden="true" className="size-5" />
         <span className="hidden sm:inline">Cargar stock</span>
-      </button>
+      </Boton>
       <span role="status" className="sr-only">
         {aviso}
       </span>
@@ -247,13 +249,14 @@ export function CargarStock({
               {MENSAJE_FALLA}
             </p>
           ) : null}
-          <button
+          <Boton
+            variante="primario"
+            enFormulario
             type="submit"
             disabled={cargando}
-            className={claseBoton({ variante: "primario", enFormulario: true })}
           >
             {cargando ? "Registrando…" : "Registrar entrada"}
-          </button>
+          </Boton>
         </form>
       </div>
     </>

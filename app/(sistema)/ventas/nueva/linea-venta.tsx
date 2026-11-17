@@ -1,7 +1,8 @@
 "use client";
 
-import { CLASE_CAMPO, CLASE_FILA, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
+import { Boton } from "@/components/ui/boton";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import type { ProductoVendible } from "@/lib/productos/listado";
 
@@ -73,14 +74,15 @@ export function FilaLinea({
         {formatearMoneda(deCentavos(subtotal(linea)))}
       </td>
       <td>
-        <button
+        <Boton
+          variante="texto"
+          enFormulario
           type="button"
           onClick={onQuitar}
           aria-label={`Quitar ${producto.nombre}`}
-          className={claseBoton({ variante: "texto", enFormulario: true })}
         >
           Quitar
-        </button>
+        </Boton>
       </td>
     </tr>
   );

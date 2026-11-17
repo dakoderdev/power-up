@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { claseBoton } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { obtenerPago, type PagoDetalle } from "@/lib/cuentas/pagar";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import { idPositivo } from "@/lib/esquemas-comunes";
@@ -47,12 +47,9 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
     <>
       <div className="flex max-w-4xl flex-col gap-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href={`/clientes/${pago.clienteId}`}
-            className={claseBoton({ variante: "texto" })}
-          >
-            Volver al cliente
-          </Link>
+          <Boton asChild variante="texto">
+            <Link href={`/clientes/${pago.clienteId}`}>Volver al cliente</Link>
+          </Boton>
           <BotonImprimir />
         </div>
         <Datos pago={pago} numero={pago.reciboNumero} />

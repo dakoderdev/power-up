@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "pixelarticons/react/ArrowLeft.js";
-import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
+import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -50,13 +51,12 @@ export async function MovimientosProducto({
 
   return (
     <section className="flex flex-col gap-4">
-      <Link
-        href="/stock"
-        className={`${claseBoton({ variante: "texto" })} -ml-3 self-start`}
-      >
-        <ArrowLeft aria-hidden="true" className="size-5" />
-        Todo el stock
-      </Link>
+      <Boton asChild variante="texto" className="-ml-3 self-start">
+        <Link href="/stock">
+          <ArrowLeft aria-hidden="true" className="size-5" />
+          Todo el stock
+        </Link>
+      </Boton>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -89,12 +89,9 @@ export async function MovimientosProducto({
             </span>
           ) : null}
         </p>
-        <Link
-          href={`/productos/${producto.id}`}
-          className={`${claseBoton({ variante: "texto" })} sm:ml-auto`}
-        >
-          Ver producto
-        </Link>
+        <Boton asChild variante="texto" className="sm:ml-auto">
+          <Link href={`/productos/${producto.id}`}>Ver producto</Link>
+        </Boton>
       </div>
 
       {puedeAjustar ? (
@@ -112,14 +109,19 @@ export async function MovimientosProducto({
           const activo = filtro.valor === origen;
 
           return (
-            <Link
+            <Boton
               key={filtro.etiqueta}
-              href={enlaceStock({ productoId, origen: filtro.valor })}
-              aria-current={activo ? "page" : undefined}
-              className={`${claseBoton({ variante: activo ? "secundario" : "texto" })} ${activo ? "" : "border border-transparent"}`}
+              asChild
+              variante={activo ? "secundario" : "texto"}
+              className={activo ? "" : "border border-transparent"}
             >
-              {filtro.etiqueta}
-            </Link>
+              <Link
+                href={enlaceStock({ productoId, origen: filtro.valor })}
+                aria-current={activo ? "page" : undefined}
+              >
+                {filtro.etiqueta}
+              </Link>
+            </Boton>
           );
         })}
       </nav>

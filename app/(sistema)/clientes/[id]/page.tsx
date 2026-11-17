@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
+import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import {
   obtenerCliente,
@@ -107,13 +108,12 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
     <section className="flex flex-col gap-4">
       <div className="flex min-h-10 items-center justify-between gap-4">
         <h2 className={`${CLASE_H2} truncate`}>{cliente.nombre}</h2>
-        <Link
-          href={`/clientes/${cliente.id}/editar`}
-          className={claseBoton({ variante: "texto" })}
-        >
-          <Pencil aria-hidden="true" className="size-5" />
-          Editar
-        </Link>
+        <Boton asChild variante="texto">
+          <Link href={`/clientes/${cliente.id}/editar`}>
+            <Pencil aria-hidden="true" className="size-5" />
+            Editar
+          </Link>
+        </Boton>
       </div>
       <dl className="grid gap-4 sm:grid-cols-2">
         {datos.map((dato) => (

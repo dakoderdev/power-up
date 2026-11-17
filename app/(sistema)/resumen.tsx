@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CLASE_FILA, claseBoton } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { obtenerTablero } from "@/lib/inicio/tablero";
@@ -306,12 +307,9 @@ function Seccion({
           {titulo}
         </h2>
         {enlace ? (
-          <Link
-            href={enlace.href}
-            className={`${claseBoton({ variante: "texto" })} -mr-3 shrink-0`}
-          >
-            {enlace.texto}
-          </Link>
+          <Boton asChild variante="texto" className="-mr-3 shrink-0">
+            <Link href={enlace.href}>{enlace.texto}</Link>
+          </Boton>
         ) : null}
       </div>
       {children}

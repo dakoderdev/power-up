@@ -4,12 +4,8 @@ import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import {
-  CLASE_BADGE,
-  CLASE_CAMPO,
-  CLASE_FILA,
-  claseBoton,
-} from "@/components/estilos";
+import { CLASE_BADGE, CLASE_CAMPO, CLASE_FILA } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
@@ -84,28 +80,21 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
           aria-label="Buscar por nombre o acceso"
           className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
         />
-        <button
-          type="submit"
-          className={claseBoton({ variante: "secundario", enFormulario: true })}
-        >
+        <Boton variante="secundario" enFormulario type="submit">
           <Search aria-hidden="true" className="size-5" />
           Buscar
-        </button>
+        </Boton>
         {busqueda ? (
-          <Link
-            href="/usuarios"
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar
-          </Link>
+          <Boton asChild variante="texto" enFormulario>
+            <Link href="/usuarios">Limpiar</Link>
+          </Boton>
         ) : null}
-        <Link
-          href="/usuarios/nuevo"
-          className={`${claseBoton({ variante: "primario", enFormulario: true })} ml-auto`}
-        >
-          <UserPlus aria-hidden="true" className="size-5" />
-          Nuevo usuario
-        </Link>
+        <Boton asChild variante="primario" enFormulario className="ml-auto">
+          <Link href="/usuarios/nuevo">
+            <UserPlus aria-hidden="true" className="size-5" />
+            Nuevo usuario
+          </Link>
+        </Boton>
       </form>
       <div className="flex min-h-10 items-center">
         <span className={`${CLASE_BADGE} text-neutral-300`}>

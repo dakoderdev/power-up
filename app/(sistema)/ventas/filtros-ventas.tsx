@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
-import { claseBoton, CLASE_CAMPO } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { FORMAS_PAGO } from "@/lib/db/schema";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import type { ValoresFiltro } from "@/lib/ventas/filtros";
@@ -153,19 +154,13 @@ export function FiltrosVentas({
         />
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <button
-          type="submit"
-          className={claseBoton({ variante: "primario", enFormulario: true })}
-        >
+        <Boton variante="primario" enFormulario type="submit">
           Filtrar
-        </button>
+        </Boton>
         {activos ? (
-          <Link
-            href="/ventas"
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar filtros
-          </Link>
+          <Boton asChild variante="texto" enFormulario>
+            <Link href="/ventas">Limpiar filtros</Link>
+          </Boton>
         ) : null}
       </div>
     </form>

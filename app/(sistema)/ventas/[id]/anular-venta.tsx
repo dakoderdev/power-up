@@ -2,7 +2,8 @@
 
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { CLASE_CAMPO } from "@/components/estilos";
+import { Boton } from "@/components/ui/boton";
 import { anularVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaAnulacion } from "@/lib/ventas/esquemas";
 
@@ -71,16 +72,14 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
           ) : null}
         </div>
         <div className="flex justify-end">
-          <button
+          <Boton
+            variante="secundario"
+            enFormulario
             type="submit"
             disabled={anulando}
-            className={claseBoton({
-              variante: "secundario",
-              enFormulario: true,
-            })}
           >
             {anulando ? "Anulando…" : "Anular venta"}
-          </button>
+          </Boton>
         </div>
       </form>
     </section>
