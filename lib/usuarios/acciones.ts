@@ -1,15 +1,25 @@
 "use server";
 
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { esquemaUsuarioEdicion, esquemaUsuarioNuevo } from "./esquemas";
+import {
+  esquemaCambioContrasena,
+  esquemaUsuarioEdicion,
+  esquemaUsuarioNuevo,
+  type ErroresContrasena,
+} from "./esquemas";
 import {
   crearUsuario,
   editarUsuario,
   type ResultadoCrear,
   type ResultadoEditar,
 } from "./guardar";
-import { requerirAdministrador } from "./sesion";
+import {
+  cambiarContrasena,
+  obtenerUsuarioActual,
+  requerirAdministrador,
+} from "./sesion";
 
 export async function crearUsuarioAccion(
   datos: unknown,
@@ -71,4 +81,36 @@ export async function editarUsuarioAccion({
   }
 
   return resultado;
+}
+
+// RF-U5 y US-20: cada usuario cambia su propia contraseña; la actual la verifica Better Auth.
+export async function cambiarContrasenaAccion(
+  datos: unknown,
+): Promise<
+  { cambiada: true } | { cambiada: false; errores: ErroresContrasena }
+> {
+  await obtenerUsuarioActual();
+
+  const validacion = esquemaCambioContrasena.safeParse(datos);
+
+  if (!validacion.success) {
+    return {
+      cambiada: false,
+      errores: z.flattenError(validacion.error).fieldErrors,
+    };
+  }
+
+  const resultado = await cambiarContrasena({
+    entrada: validacion.data,
+    headers: await headers(),
+  });
+
+  if (!resultado.cambiada) {
+    return {
+      cambiada: false,
+      errores: { actual: ["La contraseña actual no coincide."] },
+    };
+  }
+
+  return { cambiada: true };
 }

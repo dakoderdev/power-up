@@ -48,3 +48,6 @@ export const esquemaUsuarioEdicion = z.object({
 export type UsuarioNuevo = z.infer<typeof esquemaUsuarioNuevo>;
 export type UsuarioEdicion = z.infer<typeof esquemaUsuarioEdicion>;
 export type CambioContrasena = z.infer<typeof esquemaCambioContrasena>;
+export type ErroresContrasena = Partial<
+  Record<keyof CambioContrasena, string[]>
+>;
