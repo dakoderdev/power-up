@@ -6,6 +6,7 @@ import { Home } from "pixelarticons/react/Home.js";
 import { Logout } from "pixelarticons/react/Logout.js";
 import { Receipt } from "pixelarticons/react/Receipt.js";
 import { Shield } from "pixelarticons/react/Shield.js";
+import { Wallet } from "pixelarticons/react/Wallet.js";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { cerrarSesion } from "./actions";
 import { EnlaceSeccion, MarcoBarra } from "./barra-lateral";
@@ -39,6 +40,11 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
             <li>
               <EnlaceSeccion href="/clientes" icono={<Contact />}>
                 Clientes
+              </EnlaceSeccion>
+            </li>
+            <li>
+              <EnlaceSeccion href="/saldos" icono={<Wallet />}>
+                Saldos
               </EnlaceSeccion>
             </li>
             <Suspense fallback={null}>
