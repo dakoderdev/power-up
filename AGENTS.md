@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, API REST con Route Handlers, deploy en Vercel. La consigna del parcial exige además shadcn/ui y Chart.js; la UI usa componentes propios sobre Tailwind, Chart.js se incorpora en el hito de cierre y shadcn/ui no se usa por decisión del equipo (ver README). Moneda única: pesos argentinos.
+Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, API REST con Route Handlers, deploy en Vercel. La consigna del parcial exige además shadcn/ui y Chart.js; los componentes de shadcn/ui se suman de a uno en `components/ui/`, readaptados a `DESIGN.md` (nombres y variantes en español, sin el tema por defecto), y Chart.js se incorpora en el hito de cierre (ver README). Moneda única: pesos argentinos.
 
 ## Reglas
 

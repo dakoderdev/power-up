@@ -11,7 +11,7 @@ La consigna final del parcial (29/10/2026) lista shadcn/ui y Chart.js (`react-ch
 Ninguna de las dos ausencias es un descuido:
 
 - **Chart.js** se va a incorporar para los gráficos del tablero (RF-T2). Los datos ya los calcula `GET /api/tablero`.
-- **shadcn/ui** no se va a usar, por decisión del equipo. La interfaz tiene un diseño propio, unico, y consistente, y adoptar la librería implicaría reemplazar o reestilizar componentes que ya funcionan, sin aportar nada al resultado. Además, el equipo ya trabajó con shadcn/ui en su proyecto final de la carrera, por lo que conoce la librería y su funcionamiento, asi que no hay problema en cuanto el aprendizaje de la herramienta en si.
+- **shadcn/ui** se incorpora componente por componente, adaptado al diseño propio: cada pieza entra con la estructura de shadcn (`components/ui/`, `cva`, `cn` de `lib/utils.ts`, `asChild`) y con las clases y variantes de `DESIGN.md` en lugar del tema por defecto. Primero el botón (`components/ui/boton.tsx`); `components.json` queda configurado para los siguientes.
 
 El estado de cada requerimiento está en [`specs/sistema.md`](specs/sistema.md); lo que falta está marcado `[pendiente]`.
 
