@@ -169,7 +169,7 @@ export async function Resumen() {
                 >
                   <Link
                     href={`/clientes/${deudor.id}`}
-                    className="truncate text-white underline-offset-4 hover:underline"
+                    className="truncate text-white underline-offset-4 decoration-neutral-600 hover:underline"
                   >
                     {deudor.nombre}
                   </Link>

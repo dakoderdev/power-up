@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_FILA } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import {
@@ -23,6 +22,14 @@ import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { RegistrarPago } from "./registrar-pago";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Cliente · Power Up",
@@ -146,74 +153,72 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
           Todavía no hay ventas en cuenta corriente ni pagos de este cliente.
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <caption className="sr-only">
-              Ventas en cuenta corriente, anulaciones y pagos, del más antiguo
-              al más reciente
-            </caption>
-            <thead>
-              <tr className="border-b border-neutral-900">
-                {COLUMNAS.map((columna) => (
-                  <th
-                    key={columna.titulo}
-                    scope="col"
-                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                  >
-                    {columna.titulo}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cuenta.movimientos.map((movimiento) => (
-                <tr key={movimiento.id} className={CLASE_FILA}>
-                  <td className="pr-3 tabular-nums text-neutral-300 sm:pr-6">
-                    {formatearFechaHora(movimiento.fecha)}
-                  </td>
-                  <td className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
-                    <span className="flex items-center gap-2">
-                      <Badge>{ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}</Badge>
-                      {movimiento.ventaId && movimiento.numero !== null ? (
-                        <Link
-                          href={`/ventas/${movimiento.ventaId}`}
-                          className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
-                        >
-                          N.º{" "}
-                          {formatearComprobante({
-                            puntoVenta: movimiento.puntoVenta ?? 1,
-                            numero: movimiento.numero,
-                          })}
-                        </Link>
-                      ) : movimiento.tipo === "pago" &&
-                        movimiento.reciboNumero !== null ? (
-                        <Link
-                          href={`/pagos/${movimiento.id}`}
-                          className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
-                        >
-                          Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
-                        </Link>
-                      ) : (
-                        <span className="truncate text-neutral-300">
-                          {movimiento.observacion}
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="pr-3 text-right tabular-nums text-white sm:pr-6">
-                    {movimiento.tipo === "venta" ? "" : "−"}
-                    {formatearMoneda(movimiento.importe)}
-                  </td>
-                  <td
-                    className={`text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-                  >
-                    {formatearMoneda(movimiento.saldo)}
-                  </td>
-                </tr>
+        <Table>
+          <caption className="sr-only">
+            Ventas en cuenta corriente, anulaciones y pagos, del más antiguo al
+            más reciente
+          </caption>
+          <TableHeader>
+            <TableRow>
+              {COLUMNAS.map((columna) => (
+                <TableHead
+                  key={columna.titulo}
+                  scope="col"
+                  className={columna.clase}
+                >
+                  {columna.titulo}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {cuenta.movimientos.map((movimiento) => (
+              <TableRow key={movimiento.id}>
+                <TableCell className="pr-3 tabular-nums text-neutral-300 sm:pr-6">
+                  {formatearFechaHora(movimiento.fecha)}
+                </TableCell>
+                <TableCell className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
+                  <span className="flex items-center gap-2">
+                    <Badge>{ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}</Badge>
+                    {movimiento.ventaId && movimiento.numero !== null ? (
+                      <Link
+                        href={`/ventas/${movimiento.ventaId}`}
+                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                      >
+                        N.º{" "}
+                        {formatearComprobante({
+                          puntoVenta: movimiento.puntoVenta ?? 1,
+                          numero: movimiento.numero,
+                        })}
+                      </Link>
+                    ) : movimiento.tipo === "pago" &&
+                      movimiento.reciboNumero !== null ? (
+                      <Link
+                        href={`/pagos/${movimiento.id}`}
+                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                      >
+                        Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
+                      </Link>
+                    ) : (
+                      <span className="truncate text-neutral-300">
+                        {movimiento.observacion}
+                      </span>
+                    )}
+                  </span>
+                </TableCell>
+                <TableCell className="pr-3 text-right tabular-nums text-white sm:pr-6">
+                  {movimiento.tipo === "venta" ? "" : "−"}
+                  {formatearMoneda(movimiento.importe)}
+                </TableCell>
+                <TableCell
+                  className={`text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                >
+                  {formatearMoneda(movimiento.saldo)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </section>
   );

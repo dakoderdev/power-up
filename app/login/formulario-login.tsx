@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { iniciarSesion } from "./actions";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Eye } from "pixelarticons/react/Eye.js";
+import { EyeOff } from "pixelarticons/react/EyeOff.js";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 const FORMATO_CORREO = /^\S+@\S+\.\S{2,}$/;
 const BLOQUES_CAMPO = 10;
@@ -121,8 +129,8 @@ export function FormularioLogin() {
           <FieldLabel htmlFor="clave" className="text-neutral-200">
             Contraseña
           </FieldLabel>
-          <div className="relative">
-            <Input
+          <InputGroup>
+            <InputGroupInput
               ref={campoClave}
               id="clave"
               name="clave"
@@ -135,18 +143,25 @@ export function FormularioLogin() {
               }}
               aria-invalid={errores.clave ? true : undefined}
               aria-describedby={errores.clave ? "error-clave" : undefined}
-              className="pr-20"
             />
-            <button
-              type="button"
-              onClick={() => setVisible(!visible)}
-              aria-pressed={visible}
-              aria-controls="clave"
-              className="absolute inset-y-0 right-0 px-3 text-sm text-neutral-400 transition-colors hover:text-white"
-            >
-              {visible ? "Ocultar" : "Mostrar"}
-            </button>
-          </div>
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon"
+                onClick={() => setVisible(!visible)}
+                aria-pressed={visible}
+                aria-controls="clave"
+                aria-label={
+                  visible ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+              >
+                {visible ? (
+                  <EyeOff aria-hidden="true" />
+                ) : (
+                  <Eye aria-hidden="true" />
+                )}
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
           {errores.clave ? (
             <FieldError id="error-clave">{errores.clave}</FieldError>
           ) : null}

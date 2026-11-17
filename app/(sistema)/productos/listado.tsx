@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
 import { Search } from "pixelarticons/react/Search.js";
-import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,14 @@ import { Preferencias, SelectorOrden } from "./preferencias";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const SOLO_ESCRITORIO = "hidden sm:table-cell";
 
@@ -177,67 +184,58 @@ export async function Listado({
           ))}
         </ul>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <thead>
-              <tr className="border-b border-neutral-900">
-                {COLUMNAS.map((columna) => (
-                  <th
-                    key={columna.titulo}
-                    scope="col"
-                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                  >
-                    {columna.titulo}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((producto) => (
-                <tr
-                  key={producto.id}
-                  className={`${CLASE_FILA} group relative`}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {COLUMNAS.map((columna) => (
+                <TableHead
+                  key={columna.titulo}
+                  scope="col"
+                  className={columna.clase}
                 >
-                  <td className="pr-3 sm:pr-6">
-                    <div className="flex items-center gap-3">
-                      <Tapa url={producto.imagenUrl} className="h-8 w-6" />
-                      <Link
-                        href={`/productos/${producto.id}`}
-                        className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
-                      >
-                        {producto.nombre}
-                      </Link>
-                    </div>
-                  </td>
-                  <td
-                    className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                  >
-                    {producto.codigo}
-                  </td>
-                  <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <Badge
-                      className={
-                        COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
-                      }
-                    >
-                      {
-                        ETIQUETAS_ESTADO[
-                          producto.activo ? "activo" : "inactivo"
-                        ]
-                      }
-                    </Badge>
-                  </td>
-                  <td className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
-                    {producto.stock}
-                  </td>
-                  <td className="text-right tabular-nums">
-                    {formatearMoneda(producto.precio)}
-                  </td>
-                </tr>
+                  {columna.titulo}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lista.map((producto) => (
+              <TableRow key={producto.id} className="group relative">
+                <TableCell className="pr-3 sm:pr-6">
+                  <div className="flex items-center gap-3">
+                    <Tapa url={producto.imagenUrl} className="h-8 w-6" />
+                    <Link
+                      href={`/productos/${producto.id}`}
+                      className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                    >
+                      {producto.nombre}
+                    </Link>
+                  </div>
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                >
+                  {producto.codigo}
+                </TableCell>
+                <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                  <Badge
+                    className={
+                      COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
+                    }
+                  >
+                    {ETIQUETAS_ESTADO[producto.activo ? "activo" : "inactivo"]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
+                  {producto.stock}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatearMoneda(producto.precio)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Paginacion

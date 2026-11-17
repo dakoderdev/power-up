@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
 import { Button } from "@/components/ui/button";
@@ -21,10 +20,18 @@ import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { CargarStock } from "./cargar-stock";
 import { MovimientosProducto } from "./movimientos-producto";
-import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
+import { enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Stock · Power Up",
@@ -135,94 +142,79 @@ async function Inventario({
             : "Todavía no hay productos. Cargá el primero con Nuevo producto."}
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <thead>
-              <tr className="border-b border-neutral-900">
-                <th scope="col" className={`${CLASE_COLUMNA} pr-3 sm:pr-6`}>
-                  Producto
-                </th>
-                <th
-                  scope="col"
-                  className={`${CLASE_COLUMNA} w-px pr-6 ${SOLO_ESCRITORIO}`}
-                >
-                  Código
-                </th>
-                <th
-                  scope="col"
-                  className={`${CLASE_COLUMNA} w-px pr-6 ${SOLO_ESCRITORIO}`}
-                >
-                  Estado
-                </th>
-                <th scope="col" className={`${CLASE_COLUMNA} w-px text-right`}>
-                  Stock
-                </th>
-                {puedeAjustar ? (
-                  <th scope="col" className={`${CLASE_COLUMNA} w-px pl-6`}>
-                    <span className="sr-only">Acciones</span>
-                  </th>
-                ) : null}
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((producto) => (
-                <tr
-                  key={producto.id}
-                  className={`${CLASE_FILA} group relative`}
-                >
-                  <td className="max-w-48 pr-3 sm:max-w-none sm:pr-6">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Tapa
-                        url={producto.imagenUrl}
-                        className="h-8 w-6 shrink-0"
-                      />
-                      <Link
-                        href={enlaceStock({ productoId: producto.id })}
-                        className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
-                      >
-                        {producto.nombre}
-                      </Link>
-                    </div>
-                  </td>
-                  <td
-                    className={`pr-6 tabular-nums ${CLASE_SECUNDARIO} ${SOLO_ESCRITORIO}`}
-                  >
-                    {producto.codigo}
-                  </td>
-                  <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <Badge
-                      className={
-                        COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
-                      }
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col" className="pr-3 sm:pr-6">
+                Producto
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Código
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Estado
+              </TableHead>
+              <TableHead scope="col" className="w-px text-right">
+                Stock
+              </TableHead>
+              {puedeAjustar ? (
+                <TableHead scope="col" className="w-px pl-6">
+                  <span className="sr-only">Acciones</span>
+                </TableHead>
+              ) : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lista.map((producto) => (
+              <TableRow key={producto.id} className="group relative">
+                <TableCell className="max-w-48 pr-3 sm:max-w-none sm:pr-6">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Tapa
+                      url={producto.imagenUrl}
+                      className="h-8 w-6 shrink-0"
+                    />
+                    <Link
+                      href={enlaceStock({ productoId: producto.id })}
+                      className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
                     >
-                      {
-                        ETIQUETAS_ESTADO[
-                          producto.activo ? "activo" : "inactivo"
-                        ]
-                      }
-                    </Badge>
-                  </td>
-                  <td
-                    className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-white"}`}
+                      {producto.nombre}
+                    </Link>
+                  </div>
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums ${CLASE_SECUNDARIO} ${SOLO_ESCRITORIO}`}
+                >
+                  {producto.codigo}
+                </TableCell>
+                <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                  <Badge
+                    className={
+                      COLORES_ESTADO[producto.activo ? "activo" : "inactivo"]
+                    }
                   >
-                    {producto.stock}
-                    {esStockBajo(producto) ? (
-                      <span className="sr-only"> (stock bajo)</span>
-                    ) : null}
-                  </td>
-                  {puedeAjustar ? (
-                    <td className="pl-6">
-                      <CargarStock
-                        productoId={producto.id}
-                        nombre={producto.nombre}
-                      />
-                    </td>
+                    {ETIQUETAS_ESTADO[producto.activo ? "activo" : "inactivo"]}
+                  </Badge>
+                </TableCell>
+                <TableCell
+                  className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-white"}`}
+                >
+                  {producto.stock}
+                  {esStockBajo(producto) ? (
+                    <span className="sr-only"> (stock bajo)</span>
                   ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </TableCell>
+                {puedeAjustar ? (
+                  <TableCell className="pl-6">
+                    <CargarStock
+                      productoId={producto.id}
+                      nombre={producto.nombre}
+                    />
+                  </TableCell>
+                ) : null}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Paginacion

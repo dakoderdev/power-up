@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Vacio } from "@/components/vacio";
 import { listarClientes } from "@/lib/clientes/listado";
@@ -12,6 +11,14 @@ import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Saldos · Power Up",
@@ -80,50 +87,48 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
         </p>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-          <thead>
-            <tr className="border-b border-neutral-900">
-              {COLUMNAS.map((columna) => (
-                <th
-                  key={columna.titulo}
-                  scope="col"
-                  className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                >
-                  {columna.titulo}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {lista.map((cliente) => (
-              <tr key={cliente.id} className={`${CLASE_FILA} group relative`}>
-                <td className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
-                  <Link
-                    href={`/clientes/${cliente.id}`}
-                    className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
-                  >
-                    {cliente.nombre}
-                  </Link>
-                </td>
-                <td
-                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                >
-                  {cliente.documento}
-                </td>
-                <td
-                  className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                >
-                  {cliente.telefono ?? cliente.email}
-                </td>
-                <td className="text-right tabular-nums text-white">
-                  {formatearMoneda(cliente.saldo)}
-                </td>
-              </tr>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {COLUMNAS.map((columna) => (
+              <TableHead
+                key={columna.titulo}
+                scope="col"
+                className={columna.clase}
+              >
+                {columna.titulo}
+              </TableHead>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {lista.map((cliente) => (
+            <TableRow key={cliente.id} className="group relative">
+              <TableCell className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
+                <Link
+                  href={`/clientes/${cliente.id}`}
+                  className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                >
+                  {cliente.nombre}
+                </Link>
+              </TableCell>
+              <TableCell
+                className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+              >
+                {cliente.documento}
+              </TableCell>
+              <TableCell
+                className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+              >
+                {cliente.telefono ?? cliente.email}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-white">
+                {formatearMoneda(cliente.saldo)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <Paginacion
         pagina={pagina}

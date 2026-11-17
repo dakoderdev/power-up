@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_FILA } from "@/components/estilos";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
@@ -18,6 +17,14 @@ import { COLORES_ROL, ETIQUETAS_ROL } from "@/lib/usuarios/sesion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -111,62 +118,62 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
           {`No hay usuarios que coincidan con "${busqueda}". Probá con otro nombre o acceso.`}
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <caption className="sr-only">Usuarios del sistema</caption>
-            <thead>
-              <tr className="border-b border-neutral-900">
-                {COLUMNAS.map((columna) => (
-                  <th
-                    key={columna.titulo}
-                    scope="col"
-                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                  >
-                    {columna.titulo}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {usuarios.map((usuario) => {
-                const estado = usuario.activo ? "activo" : "inactivo";
+        <Table>
+          <caption className="sr-only">Usuarios del sistema</caption>
+          <TableHeader>
+            <TableRow>
+              {COLUMNAS.map((columna) => (
+                <TableHead
+                  key={columna.titulo}
+                  scope="col"
+                  className={columna.clase}
+                >
+                  {columna.titulo}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {usuarios.map((usuario) => {
+              const estado = usuario.activo ? "activo" : "inactivo";
 
-                return (
-                  <tr key={usuario.id} className={CLASE_FILA}>
-                    <td className="max-w-48 py-2 pr-3 sm:max-w-none sm:pr-6">
-                      <Link
-                        href={`/usuarios/${usuario.id}/editar`}
-                        className="block hover:underline"
-                      >
-                        <p className="truncate text-white">
+              return (
+                <TableRow key={usuario.id} className="group relative">
+                  <TableCell className="max-w-48 py-2 pr-3 sm:max-w-none sm:pr-6">
+                    <Link
+                      href={`/usuarios/${usuario.id}/editar`}
+                      className="block after:absolute after:inset-0"
+                    >
+                      <p className="truncate text-white">
+                        <span className="underline-offset-4 decoration-neutral-600 group-hover:underline">
                           {usuario.nombre}
-                          {usuario.esActual ? (
-                            <span className="ml-2 text-sm text-neutral-400">
-                              (vos)
-                            </span>
-                          ) : null}
-                        </p>
-                        <p className="truncate text-sm text-neutral-300">
-                          {usuario.acceso}
-                        </p>
-                      </Link>
-                    </td>
-                    <td className="sm:pr-6">
-                      <Badge className={COLORES_ROL[usuario.rol]}>
-                        {ETIQUETAS_ROL[usuario.rol]}
-                      </Badge>
-                    </td>
-                    <td className={SOLO_ESCRITORIO}>
-                      <Badge className={COLORES_ESTADO[estado]}>
-                        {ETIQUETAS_ESTADO[estado]}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        </span>
+                        {usuario.esActual ? (
+                          <span className="ml-2 text-sm text-neutral-400">
+                            (vos)
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="truncate text-sm text-neutral-300 transition-colors group-hover:text-white">
+                        {usuario.acceso}
+                      </p>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="sm:pr-6">
+                    <Badge className={COLORES_ROL[usuario.rol]}>
+                      {ETIQUETAS_ROL[usuario.rol]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className={SOLO_ESCRITORIO}>
+                    <Badge className={COLORES_ESTADO[estado]}>
+                      {ETIQUETAS_ESTADO[estado]}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
     </section>
   );

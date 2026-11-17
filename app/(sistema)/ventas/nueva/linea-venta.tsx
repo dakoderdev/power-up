@@ -1,11 +1,11 @@
 "use client";
 
-import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Button } from "@/components/ui/button";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import type { ProductoVendible } from "@/lib/productos/listado";
 import { Input } from "@/components/ui/input";
+import { TableCell, TableRow } from "@/components/ui/table";
 
 export type Linea = { producto: ProductoVendible; cantidad: number };
 
@@ -36,8 +36,8 @@ export function FilaLinea({
   const faltaStock = cantidad > producto.stock;
 
   return (
-    <tr className={CLASE_FILA}>
-      <td className="max-w-0 py-2 pr-3 sm:pr-6">
+    <TableRow>
+      <TableCell className="max-w-0 py-2 pr-3 sm:pr-6">
         <div className="flex items-center gap-3">
           <Tapa url={producto.imagenUrl} className="h-8 w-6 shrink-0" />
           <div className="flex min-w-0 flex-col">
@@ -52,8 +52,8 @@ export function FilaLinea({
             </span>
           </div>
         </div>
-      </td>
-      <td className="pr-3 sm:pr-6">
+      </TableCell>
+      <TableCell className="pr-3 sm:pr-6">
         <Input
           type="number"
           inputMode="numeric"
@@ -65,16 +65,16 @@ export function FilaLinea({
           aria-invalid={faltaStock}
           className={`w-20 text-right tabular-nums ${faltaStock ? "border-yellow-400" : ""}`}
         />
-      </td>
-      <td
+      </TableCell>
+      <TableCell
         className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
       >
         {formatearMoneda(producto.precio)}
-      </td>
-      <td className="pr-3 text-right tabular-nums sm:pr-6">
+      </TableCell>
+      <TableCell className="pr-3 text-right tabular-nums sm:pr-6">
         {formatearMoneda(deCentavos(subtotal(linea)))}
-      </td>
-      <td>
+      </TableCell>
+      <TableCell>
         <Button
           variant="ghost"
           size="lg"
@@ -84,7 +84,7 @@ export function FilaLinea({
         >
           Quitar
         </Button>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

@@ -13,7 +13,7 @@ const badgeVariants = cva(
         destructive: "text-destructive",
         outline: "text-white",
         ghost: "border-transparent text-neutral-300",
-        link: "border-transparent text-neutral-300 underline-offset-4 [a&]:hover:underline",
+        link: "border-transparent text-neutral-300 underline-offset-4 decoration-neutral-600 [a&]:hover:underline",
       },
     },
     defaultVariants: {

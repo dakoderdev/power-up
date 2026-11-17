@@ -224,7 +224,10 @@ export function ResumenVenta({
           {confirmada.vuelto === null
             ? ""
             : ` Vuelto: ${formatearMoneda(confirmada.vuelto)}.`}{" "}
-          <Link href="/ventas" className="underline-offset-4 hover:underline">
+          <Link
+            href="/ventas"
+            className="underline-offset-4 decoration-neutral-600 hover:underline"
+          >
             Ver ventas
           </Link>
         </p>

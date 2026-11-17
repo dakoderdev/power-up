@@ -28,6 +28,10 @@ const TEXTO = "#a3a3a3";
 const GRILLA = "#262626";
 const COLORES = ["#4ade80", "#facc15", "#60a5fa", "#f87171"];
 
+function usarGeist() {
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+}
+
 function pesos(valor: number) {
   return valor.toLocaleString("es-AR", {
     style: "currency",
@@ -48,6 +52,7 @@ export function GraficoDiario({
       return;
     }
 
+    usarGeist();
     const grafico = new Chart(canvas.current, {
       type: "bar",
       data: {
@@ -63,6 +68,7 @@ export function GraficoDiario({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: { display: false },
           tooltip: {
             callbacks: { label: (c) => pesos(c.parsed.y ?? 0) },
           },
@@ -107,6 +113,7 @@ export function GraficoFormas({
       return;
     }
 
+    usarGeist();
     const grafico = new Chart(canvas.current, {
       type: "doughnut",
       data: {

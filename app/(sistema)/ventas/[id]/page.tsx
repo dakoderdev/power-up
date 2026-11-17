@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CLASE_FILA } from "@/components/estilos";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -21,6 +20,15 @@ import { BotonImprimir } from "./boton-imprimir";
 import { ComprobanteImpreso } from "./comprobante-impreso";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Comprobante · Power Up",
@@ -132,62 +140,60 @@ function Datos({ venta }: { venta: VentaDetalle }) {
 
 function Items({ venta }: { venta: VentaDetalle }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-        <thead>
-          <tr className="border-b border-neutral-900">
-            {COLUMNAS.map((columna) => (
-              <th
-                key={columna.titulo}
-                scope="col"
-                className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-              >
-                {columna.titulo}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {venta.items.map((item) => (
-            <tr key={item.id} className={CLASE_FILA}>
-              <td className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
-                {item.codigo}
-              </td>
-              <td className="max-w-40 truncate pr-3 text-white sm:max-w-96 sm:pr-6">
-                {item.descripcion}
-              </td>
-              <td className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
-                {item.cantidad}
-              </td>
-              <td
-                className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-              >
-                {formatearMoneda(item.precioUnitario)}
-              </td>
-              <td className="text-right tabular-nums text-white">
-                {formatearMoneda(item.subtotal)}
-              </td>
-            </tr>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {COLUMNAS.map((columna) => (
+            <TableHead
+              key={columna.titulo}
+              scope="col"
+              className={columna.clase}
+            >
+              {columna.titulo}
+            </TableHead>
           ))}
-        </tbody>
-        <tfoot>
-          <tr className="h-11 border-t border-neutral-800">
-            <th
-              scope="row"
-              colSpan={COLUMNAS.length - 1}
-              className="text-right font-medium text-neutral-400"
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {venta.items.map((item) => (
+          <TableRow key={item.id}>
+            <TableCell className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
+              {item.codigo}
+            </TableCell>
+            <TableCell className="max-w-40 truncate pr-3 text-white sm:max-w-96 sm:pr-6">
+              {item.descripcion}
+            </TableCell>
+            <TableCell className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
+              {item.cantidad}
+            </TableCell>
+            <TableCell
+              className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
             >
-              Total
-            </th>
-            <td
-              className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
-            >
-              {formatearMoneda(venta.total)}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+              {formatearMoneda(item.precioUnitario)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums text-white">
+              {formatearMoneda(item.subtotal)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow className="border-t border-neutral-800">
+          <th
+            scope="row"
+            colSpan={COLUMNAS.length - 1}
+            className="pr-3 text-right font-medium text-neutral-400 sm:pr-6"
+          >
+            Total
+          </th>
+          <TableCell
+            className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
+          >
+            {formatearMoneda(venta.total)}
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
   );
 }
 
