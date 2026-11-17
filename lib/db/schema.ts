@@ -60,6 +60,7 @@ export const clientes = sqliteTable(
     telefono: text("telefono"),
     email: text("email"),
     limiteCredito: dinero("limite_credito"),
+    activo: booleano("activo").notNull().default(true),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [

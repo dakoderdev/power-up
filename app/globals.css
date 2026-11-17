@@ -20,6 +20,11 @@
   --border: var(--color-neutral-800);
   --input: var(--color-neutral-800);
   --ring: var(--color-verde);
+  --chart-1: var(--color-verde);
+  --chart-2: #ff0984;
+  --chart-3: #1f991f;
+  --chart-4: #b3065d;
+  --chart-5: #737373;
   --radius: 0;
 }
 
@@ -43,6 +48,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --radius-sm: var(--radius);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);

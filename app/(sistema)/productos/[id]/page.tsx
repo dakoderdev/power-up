@@ -7,6 +7,7 @@ import { obtenerProducto } from "@/lib/productos/guardar";
 import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { FormularioProducto } from "../_comun/formulario-producto";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Editar producto · Power Up",
@@ -16,7 +17,7 @@ export default function EditarProducto({
   params,
 }: PageProps<"/productos/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Editar producto">
         Cambiá los datos del producto o pasalo a inactivo.
       </EncabezadoPagina>
@@ -24,7 +25,7 @@ export default function EditarProducto({
       <Suspense fallback={<EdicionCargando />}>
         <Edicion params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 

@@ -17,16 +17,31 @@ const base = createInsertSchema(clientes, {
   limiteCredito: () => textoOpcional.pipe(importePositivo.nullish()),
 });
 
-export const esquemaClienteNuevo = base
-  .omit({ id: true, creadoEn: true })
-  .refine((cliente) => cliente.telefono != null || cliente.email != null, {
-    message: "Ingresá al menos un dato de contacto (teléfono o correo).",
-    path: ["telefono"],
-  });
+const datos = base.omit({ id: true, creadoEn: true, activo: true });
 
-export const esquemaClienteEdicion = esquemaClienteNuevo;
+const CONTACTO_REQUERIDO = {
+  message: "Ingresá al menos un dato de contacto (teléfono o correo).",
+  path: ["telefono"],
+};
+
+function tieneContacto(cliente: {
+  telefono?: string | null;
+  email?: string | null;
+}) {
+  return cliente.telefono != null || cliente.email != null;
+}
+
+export const esquemaClienteNuevo = datos.refine(
+  tieneContacto,
+  CONTACTO_REQUERIDO,
+);
+
+export const esquemaClienteEdicion = datos
+  .extend({ activo: z.boolean() })
+  .refine(tieneContacto, CONTACTO_REQUERIDO);
 
 export const esquemaClienteFila = createSelectSchema(clientes);
 
 export type ClienteNuevo = z.infer<typeof esquemaClienteNuevo>;
+export type ClienteEdicion = z.infer<typeof esquemaClienteEdicion>;
 export type ClienteFila = z.infer<typeof esquemaClienteFila>;

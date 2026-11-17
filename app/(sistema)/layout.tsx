@@ -8,6 +8,7 @@ import { Receipt } from "pixelarticons/react/Receipt.js";
 import { Shield } from "pixelarticons/react/Shield.js";
 import { User } from "pixelarticons/react/User.js";
 import { Wallet } from "pixelarticons/react/Wallet.js";
+import { Toaster } from "@/components/ui/sonner";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { cerrarSesion } from "./actions";
 import { EnlaceSeccion, MarcoBarra } from "./barra-lateral";
@@ -66,6 +67,7 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
           {children}
         </main>
       </div>
+      <Toaster position="top-center" />
     </div>
   );
 }

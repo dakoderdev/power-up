@@ -2,9 +2,9 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
 import { ListBox } from "pixelarticons/react/ListBox.js";
-import { Search } from "pixelarticons/react/Search.js";
 import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
+import { Buscador } from "@/components/buscador";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
@@ -25,7 +25,6 @@ import {
 import { Preferencias, SelectorOrden } from "./preferencias";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -99,33 +98,13 @@ export async function Listado({
   return (
     <section className="flex flex-col gap-4">
       <Preferencias vista={vista} orden={orden} />
-      <form
-        role="search"
-        action="/productos"
-        className="flex flex-wrap items-center gap-2"
+      <Buscador
+        ruta="/productos"
+        busqueda={busqueda}
+        etiqueta="Buscar por nombre o código"
+        limpiar={enlaceVista({ vista, busqueda: "", orden })}
+        ocultos={{ vista, orden }}
       >
-        <input type="hidden" name="vista" value={vista} />
-        <input type="hidden" name="orden" value={orden} />
-        <Input
-          type="search"
-          name="q"
-          defaultValue={busqueda}
-          maxLength={120}
-          placeholder="Buscar por nombre o código"
-          aria-label="Buscar por nombre o código"
-          className="max-w-md flex-1"
-        />
-        <Button variant="outline" size="lg" type="submit">
-          <Search aria-hidden="true" className="size-5" />
-          Buscar
-        </Button>
-        {busqueda ? (
-          <Button asChild variant="ghost" size="lg">
-            <Link href={enlaceVista({ vista, busqueda: "", orden })}>
-              Limpiar
-            </Link>
-          </Button>
-        ) : null}
         <div className="ml-auto flex items-center gap-2">
           <SelectorOrden orden={orden} />
           <nav aria-label="Vista" className="flex">
@@ -155,7 +134,7 @@ export async function Listado({
             ))}
           </nav>
         </div>
-      </form>
+      </Buscador>
 
       {lista.length === 0 ? (
         <Vacio>

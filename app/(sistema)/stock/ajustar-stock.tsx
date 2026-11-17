@@ -21,6 +21,7 @@ import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { toast } from "sonner";
 
 type Errores = Partial<Record<keyof AjusteManual, string[]>>;
 type Tipo = (typeof TIPOS_STOCK)[number];
@@ -44,7 +45,6 @@ export function AjustarStock({
   const [tipo, setTipo] = useState<Tipo>("entrada");
   const [errores, setErrores] = useState<Errores>({});
   const [falla, setFalla] = useState(false);
-  const [aviso, setAviso] = useState("");
   const [ajustando, iniciarAjuste] = useTransition();
 
   useEffect(() => {
@@ -85,14 +85,13 @@ export function AjustarStock({
 
     setErrores({});
     setFalla(false);
-    setAviso("");
     iniciarAjuste(async () => {
       try {
         const respuesta = await ajustarStockAccion(validacion.data);
 
         if (respuesta.ajustado) {
           formulario.current?.reset();
-          setAviso(avisoAjuste(validacion.data));
+          toast.success(avisoAjuste(validacion.data));
           return;
         }
 
@@ -137,7 +136,6 @@ export function AjustarStock({
               onChange={() => {
                 setTipo(opcion);
                 setErrores({});
-                setAviso("");
               }}
               className="sr-only"
             />
@@ -186,8 +184,7 @@ export function AjustarStock({
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-4">
         <p role="status" className="mr-auto text-sm text-neutral-400">
-          {aviso ||
-            "El ajuste queda en el historial y no se puede editar ni borrar."}
+          El ajuste queda en el historial y no se puede editar ni borrar.
         </p>
         <Button variant="default" size="lg" type="submit" disabled={ajustando}>
           {ajustando

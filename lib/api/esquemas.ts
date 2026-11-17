@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
+import {
+  esquemaClienteEdicion,
+  esquemaClienteNuevo,
+} from "@/lib/clientes/esquemas";
 import { esquemaPago } from "@/lib/cuentas/esquemas";
 import { FORMAS_PAGO, ROLES } from "@/lib/db/schema";
 import { deCentavos } from "@/lib/moneda";
@@ -196,6 +199,7 @@ export const esquemaClientePatchApi = z.strictObject({
   telefono: texto.nullish(),
   email: texto.nullish(),
   limiteCredito: centavos.nullish(),
+  activo: z.boolean().optional(),
 });
 
 export function fusionarCliente({
@@ -208,10 +212,12 @@ export function fusionarCliente({
     telefono: string | null;
     email: string | null;
     limiteCredito: string | null;
+    activo: boolean;
   };
   cambios: z.infer<typeof esquemaClientePatchApi>;
 }) {
-  return esquemaClienteNuevo.safeParse({
+  return esquemaClienteEdicion.safeParse({
+    activo: cambios.activo ?? actual.activo,
     nombre: cambios.nombre ?? actual.nombre,
     documento: cambios.nroDoc ?? actual.documento,
     telefono:

@@ -52,6 +52,7 @@ type ClienteBase = {
   telefono: string | null;
   email: string | null;
   limiteCredito: string | null;
+  activo: boolean;
   creadoEn?: Date;
 };
 
@@ -75,6 +76,7 @@ export function formatearClienteApi({
     limiteCredito: limite,
     saldo: saldoCentavos,
     disponible: limite === null ? null : limite - saldoCentavos,
+    activo: cliente.activo,
     ...(cliente.creadoEn ? { creadoEn: enIso(cliente.creadoEn) } : {}),
   };
 }

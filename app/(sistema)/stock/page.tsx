@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "pixelarticons/react/Search.js";
+import { Buscador } from "@/components/buscador";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
-import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { COLORES_ESTADO, ETIQUETAS_ESTADO } from "@/lib/estados";
@@ -23,7 +22,6 @@ import { MovimientosProducto } from "./movimientos-producto";
 import { enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -32,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Fila, Linea, Pagina, Seccion } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Stock · Power Up",
@@ -53,7 +52,7 @@ export default function Stock({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Stock">
         Stock actual de cada producto, de menor a mayor. Entrá a uno para ver
         sus movimientos.
@@ -62,7 +61,7 @@ export default function Stock({
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Contenido parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -103,37 +102,18 @@ async function Inventario({
   });
 
   return (
-    <section className="flex flex-col gap-4">
-      <form
-        role="search"
-        action="/stock"
-        className="flex flex-wrap items-center gap-2"
-      >
-        <Input
-          type="search"
-          name="q"
-          defaultValue={busqueda}
-          maxLength={120}
-          placeholder="Buscar por nombre o código"
-          aria-label="Buscar por nombre o código"
-          className="max-w-md flex-1"
-        />
-        <Button variant="outline" size="lg" type="submit">
-          <Search aria-hidden="true" className="size-5" />
-          Buscar
-        </Button>
-        {busqueda ? (
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/stock">Limpiar</Link>
-          </Button>
-        ) : null}
-      </form>
+    <Seccion>
+      <Buscador
+        ruta="/stock"
+        busqueda={busqueda}
+        etiqueta="Buscar por nombre o código"
+      />
 
-      <div className="flex min-h-10 items-center">
+      <Fila className="min-h-10">
         <Badge>
           {contar({ cantidad, singular: "producto", plural: "productos" })}
         </Badge>
-      </div>
+      </Fila>
 
       {lista.length === 0 ? (
         <Vacio>
@@ -159,7 +139,7 @@ async function Inventario({
               </TableHead>
               {puedeAjustar ? (
                 <TableHead scope="col" className="w-px pl-6">
-                  <span className="sr-only">Acciones</span>
+                  <Linea className="sr-only">Acciones</Linea>
                 </TableHead>
               ) : null}
             </TableRow>
@@ -168,7 +148,7 @@ async function Inventario({
             {lista.map((producto) => (
               <TableRow key={producto.id} className="group relative">
                 <TableCell className="max-w-48 pr-3 sm:max-w-none sm:pr-6">
-                  <div className="flex min-w-0 items-center gap-3">
+                  <Fila className="min-w-0 gap-3">
                     <Tapa
                       url={producto.imagenUrl}
                       className="h-8 w-6 shrink-0"
@@ -179,7 +159,7 @@ async function Inventario({
                     >
                       {producto.nombre}
                     </Link>
-                  </div>
+                  </Fila>
                 </TableCell>
                 <TableCell
                   className={`pr-6 tabular-nums ${CLASE_SECUNDARIO} ${SOLO_ESCRITORIO}`}
@@ -200,7 +180,7 @@ async function Inventario({
                 >
                   {producto.stock}
                   {esStockBajo(producto) ? (
-                    <span className="sr-only"> (stock bajo)</span>
+                    <Linea className="sr-only"> (stock bajo)</Linea>
                   ) : null}
                 </TableCell>
                 {puedeAjustar ? (
@@ -222,6 +202,6 @@ async function Inventario({
         paginas={paginas}
         enlace={(numero) => enlaceStock({ busqueda, pagina: numero })}
       />
-    </section>
+    </Seccion>
   );
 }

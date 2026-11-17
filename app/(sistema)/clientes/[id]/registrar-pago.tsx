@@ -8,6 +8,7 @@ import { registrarPagoAccion } from "@/lib/cuentas/acciones";
 import { crearEsquemaPago, type PagoEntrada } from "@/lib/cuentas/esquemas";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { toast } from "sonner";
 
 type Errores = Partial<Record<keyof PagoEntrada, string[]>>;
 
@@ -43,6 +44,7 @@ export function RegistrarPago({
 
       if (respuesta.registrado) {
         formulario.current?.reset();
+        toast.success("Pago registrado.");
         return;
       }
 

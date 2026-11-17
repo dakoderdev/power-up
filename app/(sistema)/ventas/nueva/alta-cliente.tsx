@@ -9,6 +9,7 @@ import type { ClienteVenta } from "@/lib/clientes/listado";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { toast } from "sonner";
 
 type Campo = "nombre" | "documento" | "telefono" | "email" | "limiteCredito";
 type Errores = Partial<Record<Campo, string[]>>;
@@ -62,6 +63,7 @@ export function AltaCliente({
       const respuesta = await crearClienteAccion(validacion.data);
 
       if (respuesta.creado) {
+        toast.success("Cliente creado y elegido para la venta.");
         onCreado(respuesta.cliente);
         return;
       }

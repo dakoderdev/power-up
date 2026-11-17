@@ -11,6 +11,7 @@ import {
 } from "@/lib/usuarios/esquemas";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { toast } from "sonner";
 
 const CAMPOS = [
   {
@@ -28,15 +29,12 @@ const CAMPOS = [
 export function CambiarContrasena() {
   const id = useId();
   const [errores, setErrores] = useState<ErroresContrasena>({});
-  const [listo, setListo] = useState(false);
   const [guardando, iniciarGuardado] = useTransition();
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const formulario = evento.currentTarget;
     const datos = new FormData(formulario);
-
-    setListo(false);
 
     const validacion = esquemaCambioContrasena.safeParse({
       actual: String(datos.get("actual") ?? ""),
@@ -54,7 +52,7 @@ export function CambiarContrasena() {
 
       if (respuesta.cambiada) {
         formulario.reset();
-        setListo(true);
+        toast.success("Contraseña actualizada.");
         return;
       }
 
@@ -97,12 +95,6 @@ export function CambiarContrasena() {
         La contraseña nueva tiene al menos 8 caracteres. Al cambiarla se cierran
         tus otras sesiones abiertas.
       </p>
-
-      {listo ? (
-        <p role="status" className="text-sm text-neutral-300">
-          Contraseña actualizada.
-        </p>
-      ) : null}
 
       <div className="flex justify-end">
         <Button variant="default" size="lg" type="submit" disabled={guardando}>

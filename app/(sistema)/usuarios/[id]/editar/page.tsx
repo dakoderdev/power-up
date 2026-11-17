@@ -5,6 +5,7 @@ import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { obtenerUsuario } from "@/lib/usuarios/detalle";
 import { FormularioUsuario } from "../../_comun/formulario-usuario";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Editar usuario · Power Up",
@@ -16,7 +17,7 @@ export default function EditarUsuario({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Editar usuario">
         Cambiá nombre, correo, rol o estado.
       </EncabezadoPagina>
@@ -24,7 +25,7 @@ export default function EditarUsuario({
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Formulario parametros={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 

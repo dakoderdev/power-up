@@ -4,6 +4,16 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
+import {
+  Columna,
+  Dato,
+  Fila,
+  Linea,
+  ListaDatos,
+  Pagina,
+  Seccion,
+  Titulo,
+} from "@/components/maquetacion";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import {
@@ -22,9 +32,11 @@ import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { RegistrarPago } from "./registrar-pago";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -44,11 +56,9 @@ const COLUMNAS = [
   { titulo: "Saldo", clase: `w-px text-right ${SOLO_ESCRITORIO}` },
 ];
 
-const CLASE_H2 = "font-pixel text-3xl leading-none tracking-[-0.01em]";
-
 export default function Cliente({ params }: PageProps<"/clientes/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Cliente">
         Datos de contacto y cuenta corriente.
       </EncabezadoPagina>
@@ -58,7 +68,7 @@ export default function Cliente({ params }: PageProps<"/clientes/[id]">) {
       >
         <Ficha params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -76,13 +86,10 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
   const debe = aCentavos(cuenta.saldo) > 0;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-10">
+    <Columna>
       <Datos cliente={cliente} saldo={cuenta.saldo} />
 
-      <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-        <div className="flex min-h-10 items-center">
-          <h2 className={CLASE_H2}>Registrar pago</h2>
-        </div>
+      <Seccion titulo="Registrar pago" separada>
         {debe ? (
           <RegistrarPago clienteId={cliente.id} saldo={cuenta.saldo} />
         ) : (
@@ -90,10 +97,10 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
             El cliente no tiene saldo adeudado, así que no admite pagos.
           </Vacio>
         )}
-      </section>
+      </Seccion>
 
       <Historial cuenta={cuenta} />
-    </div>
+    </Columna>
   );
 }
 
@@ -112,52 +119,58 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
   ];
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex min-h-10 items-center justify-between gap-4">
-        <h2 className={`${CLASE_H2} truncate`}>{cliente.nombre}</h2>
+    <Seccion
+      titulo={
+        <Fila className="min-w-0 gap-3">
+          <Titulo className="truncate">{cliente.nombre}</Titulo>
+          {cliente.activo ? null : (
+            <Badge variant="secondary">{ETIQUETAS_ESTADO.inactivo}</Badge>
+          )}
+        </Fila>
+      }
+      accion={
         <Button asChild variant="ghost">
           <Link href={`/clientes/${cliente.id}/editar`}>
             <Pencil aria-hidden="true" className="size-5" />
             Editar
           </Link>
         </Button>
-      </div>
-      <dl className="grid gap-4 sm:grid-cols-2">
+      }
+    >
+      <ListaDatos>
         {datos.map((dato) => (
-          <div key={dato.termino} className="flex flex-col gap-2">
-            <dt className="text-sm text-neutral-400">{dato.termino}</dt>
-            <dd className="truncate tabular-nums text-white">{dato.valor}</dd>
-          </div>
-        ))}
-        <div className="flex flex-col gap-2">
-          <dt className="text-sm text-neutral-400">Saldo adeudado</dt>
-          <dd
-            className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-white"}`}
+          <Dato
+            key={dato.termino}
+            termino={dato.termino}
+            className="truncate tabular-nums"
           >
-            {formatearMoneda(saldo)}
-          </dd>
-        </div>
-      </dl>
-    </section>
+            {dato.valor}
+          </Dato>
+        ))}
+        <Dato
+          termino="Saldo adeudado"
+          className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-white"}`}
+        >
+          {formatearMoneda(saldo)}
+        </Dato>
+      </ListaDatos>
+    </Seccion>
   );
 }
 
 function Historial({ cuenta }: { cuenta: CuentaCliente }) {
   return (
-    <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-      <div className="flex min-h-10 items-center">
-        <h2 className={CLASE_H2}>Cuenta corriente</h2>
-      </div>
+    <Seccion titulo="Cuenta corriente" separada>
       {cuenta.movimientos.length === 0 ? (
         <Vacio>
           Todavía no hay ventas en cuenta corriente ni pagos de este cliente.
         </Vacio>
       ) : (
         <Table>
-          <caption className="sr-only">
+          <TableCaption className="sr-only">
             Ventas en cuenta corriente, anulaciones y pagos, del más antiguo al
             más reciente
-          </caption>
+          </TableCaption>
           <TableHeader>
             <TableRow>
               {COLUMNAS.map((columna) => (
@@ -178,7 +191,7 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                   {formatearFechaHora(movimiento.fecha)}
                 </TableCell>
                 <TableCell className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
-                  <span className="flex items-center gap-2">
+                  <Linea className="flex items-center gap-2">
                     <Badge>{ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}</Badge>
                     {movimiento.ventaId && movimiento.numero !== null ? (
                       <Link
@@ -200,11 +213,11 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                         Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
                       </Link>
                     ) : (
-                      <span className="truncate text-neutral-300">
+                      <Linea tono="tenue" className="truncate">
                         {movimiento.observacion}
-                      </span>
+                      </Linea>
                     )}
-                  </span>
+                  </Linea>
                 </TableCell>
                 <TableCell className="pr-3 text-right tabular-nums text-white sm:pr-6">
                   {movimiento.tipo === "venta" ? "" : "−"}
@@ -220,6 +233,6 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
           </TableBody>
         </Table>
       )}
-    </section>
+    </Seccion>
   );
 }

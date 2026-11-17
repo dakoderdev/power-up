@@ -5,16 +5,29 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearClienteAccion,
   editarClienteAccion,
 } from "@/lib/clientes/acciones";
 import type { ClienteDetalle } from "@/lib/clientes/detalle";
-import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
+import {
+  esquemaClienteEdicion,
+  esquemaClienteNuevo,
+  type ClienteEdicion,
+} from "@/lib/clientes/esquemas";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
+import { cn } from "@/lib/utils";
 import type { ErroresCliente } from "@/lib/clientes/guardar";
 import { Input } from "@/components/ui/input";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { toast } from "sonner";
 
 type Campo = "nombre" | "documento" | "telefono" | "email" | "limiteCredito";
 
@@ -38,6 +51,11 @@ const CAMPOS: {
   },
 ];
 
+const ESTADOS = [
+  { valor: true, etiqueta: ETIQUETAS_ESTADO.activo },
+  { valor: false, etiqueta: ETIQUETAS_ESTADO.inactivo },
+];
+
 function valorInicial({
   campo,
   cliente,
@@ -57,6 +75,8 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
   const [errores, setErrores] = useState<ErroresCliente>({});
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, iniciarGuardado] = useTransition();
+  const [activo, setActivo] = useState(cliente?.activo ?? true);
+  const [pendiente, setPendiente] = useState<ClienteEdicion | null>(null);
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -67,35 +87,61 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
         String(formulario.get(campo.nombre) ?? ""),
       ]),
     );
-    const validacion = esquemaClienteNuevo.safeParse(datos);
-
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      setMensaje(null);
-      return;
-    }
 
     setErrores({});
     setMensaje(null);
-    iniciarGuardado(async () => {
-      if (esAlta) {
+
+    if (esAlta) {
+      const validacion = esquemaClienteNuevo.safeParse(datos);
+
+      if (!validacion.success) {
+        setErrores(z.flattenError(validacion.error).fieldErrors);
+        return;
+      }
+
+      iniciarGuardado(async () => {
         const respuesta = await crearClienteAccion(validacion.data);
 
         if (respuesta.creado) {
+          toast.success("Cliente creado.");
           router.push(`/clientes/${respuesta.cliente.id}`);
           return;
         }
 
         setErrores(respuesta.errores);
-        return;
-      }
-
-      const respuesta = await editarClienteAccion({
-        id: cliente.id,
-        datos: validacion.data,
       });
+      return;
+    }
+
+    const validacion = esquemaClienteEdicion.safeParse({ ...datos, activo });
+
+    if (!validacion.success) {
+      setErrores(z.flattenError(validacion.error).fieldErrors);
+      return;
+    }
+
+    if (cliente.activo && !validacion.data.activo) {
+      setPendiente(validacion.data);
+      return;
+    }
+
+    guardarEdicion(validacion.data);
+  }
+
+  function guardarEdicion(datos: ClienteEdicion) {
+    if (esAlta) {
+      return;
+    }
+
+    iniciarGuardado(async () => {
+      const respuesta = await editarClienteAccion({ id: cliente.id, datos });
 
       if (respuesta.guardado) {
+        toast.success(
+          cliente.activo && !datos.activo
+            ? "Cliente dado de baja."
+            : "Cambios guardados.",
+        );
         router.push(`/clientes/${cliente.id}`);
         return;
       }
@@ -145,6 +191,50 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
         ya emitidos.
       </p>
 
+      {esAlta ? null : (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="pb-2 text-sm font-medium text-neutral-400">
+            Estado
+          </legend>
+          <div className="flex gap-2">
+            {ESTADOS.map((estado) => {
+              const elegido = activo === estado.valor;
+
+              return (
+                <label
+                  key={estado.etiqueta}
+                  className={cn(
+                    buttonVariants({
+                      variant: elegido ? "outline" : "ghost",
+                      size: "lg",
+                    }),
+                    `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="activo"
+                    value={String(estado.valor)}
+                    checked={elegido}
+                    onChange={() => setActivo(estado.valor)}
+                    className="sr-only"
+                  />
+                  {estado.etiqueta}
+                </label>
+              );
+            })}
+          </div>
+          {errores.activo ? (
+            <FieldError>{errores.activo[0]}</FieldError>
+          ) : (
+            <FieldDescription>
+              Un cliente dado de baja no aparece en ventas nuevas y conserva su
+              historial. Solo se puede dar de baja con saldo cero.
+            </FieldDescription>
+          )}
+        </fieldset>
+      )}
+
       {mensaje ? (
         <p role="alert" className="text-sm text-red-400">
           {mensaje}
@@ -165,6 +255,20 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
               : "Guardar cambios"}
         </Button>
       </div>
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Dar de baja a ${cliente?.nombre ?? "este cliente"}?`}
+        descripcion="Deja de aparecer en ventas nuevas y conserva su historial y sus comprobantes. Lo podés volver a activar desde esta ficha."
+        accion="Dar de baja"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </form>
   );
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
 import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/db/schema";
 import {
@@ -46,6 +48,9 @@ export function FormularioUsuario({
   const [errores, setErrores] = useState<ErroresUsuario>({});
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, iniciarGuardado] = useTransition();
+  const [pendiente, setPendiente] = useState<z.infer<
+    typeof esquemaUsuarioEdicion
+  > | null>(null);
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -74,6 +79,7 @@ export function FormularioUsuario({
         const respuesta = await crearUsuarioAccion(validacion.data);
 
         if (respuesta.creado) {
+          toast.success("Usuario creado.");
           router.push("/usuarios");
           return;
         }
@@ -95,13 +101,28 @@ export function FormularioUsuario({
       return;
     }
 
+    if (usuario.activo && !validacion.data.activo) {
+      setPendiente(validacion.data);
+      return;
+    }
+
+    guardarEdicion(validacion.data);
+  }
+
+  function guardarEdicion(datos: z.infer<typeof esquemaUsuarioEdicion>) {
+    if (usuario === undefined) {
+      return;
+    }
+
     iniciarGuardado(async () => {
-      const respuesta = await editarUsuarioAccion({
-        id: usuario.id,
-        datos: validacion.data,
-      });
+      const respuesta = await editarUsuarioAccion({ id: usuario.id, datos });
 
       if (respuesta.guardado) {
+        toast.success(
+          usuario.activo && !datos.activo
+            ? "Usuario desactivado."
+            : "Cambios guardados.",
+        );
         router.push("/usuarios");
         return;
       }
@@ -246,6 +267,20 @@ export function FormularioUsuario({
               : "Guardar cambios"}
         </Button>
       </div>
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Desactivar a ${usuario?.nombre ?? "este usuario"}?`}
+        descripcion="Se cierran sus sesiones abiertas y no puede volver a entrar hasta que otro administrador lo reactive."
+        accion="Desactivar"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </form>
   );
 }

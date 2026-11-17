@@ -4,6 +4,7 @@ import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import type { ParametrosListado } from "@/lib/productos/listado";
 import { Listado } from "./listado";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Productos · Power Up",
@@ -15,7 +16,7 @@ export default function Productos({
   searchParams: Promise<ParametrosListado>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Productos">
         Juegos y consolas del catálogo, con su precio y stock.
       </EncabezadoPagina>
@@ -23,7 +24,7 @@ export default function Productos({
       <Suspense fallback={<ListadoCargando />}>
         <Listado parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 

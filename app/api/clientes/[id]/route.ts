@@ -45,7 +45,7 @@ export const GET = ruta<Params>({}, async ({ params }) => {
   });
 });
 
-// RF-C2: edición parcial del cliente.
+// RF-C2 y RF-C7: edición parcial del cliente; la baja es lógica (activo: false).
 export const PATCH = ruta<Params>({}, async ({ solicitud, params }) => {
   const id = leerId(params.id);
   const actual = await obtenerCliente(id);
@@ -59,6 +59,10 @@ export const PATCH = ruta<Params>({}, async ({ solicitud, params }) => {
   const resultado = await editarCliente({ id, entrada });
 
   if (!resultado.guardado) {
+    if (resultado.errores.activo) {
+      throw new ApiError(422, "SALDO_PENDIENTE", resultado.errores.activo[0]);
+    }
+
     if (resultado.errores.documento) {
       throw new ApiError(
         409,

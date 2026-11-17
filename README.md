@@ -10,8 +10,8 @@ La consigna final del parcial (29/10/2026) lista shadcn/ui y Chart.js (`react-ch
 
 Ninguna de las dos ausencias es un descuido:
 
-- **Chart.js** se va a incorporar para los gráficos del tablero (RF-T2). Los datos ya los calcula `GET /api/tablero`.
-- **shadcn/ui** se incorpora componente por componente, adaptado al diseño propio: cada pieza entra con la estructura de shadcn (`components/ui/`, `cva`, `cn` de `lib/utils.ts`, `asChild`) y tematizada con los tokens de `app/globals.css` (paleta de `DESIGN.md`) en lugar del tema por defecto. Primero el botón (`components/ui/button.tsx`); `components.json` queda configurado para los siguientes.
+- **Chart.js**, con `react-chartjs-2`, ya muestra en el inicio las ventas diarias y las del mes por forma de pago (RF-T2, IN-06).
+- **shadcn/ui** se incorpora componente por componente, adaptado al diseño propio: cada pieza entra con la estructura de shadcn (`components/ui/`, `cva`, `cn` de `lib/utils.ts`, `asChild`) y tematizada con los tokens de `app/globals.css` (paleta de `DESIGN.md`) en lugar del tema por defecto. Ya están en `components/ui/` el botón, los campos de formulario, badges, tablas, estados vacío y de carga, popover, tooltip y paginación (detalle en `specs/sistema.md`, Decisiones).
 
 El estado de cada requerimiento está en [`specs/sistema.md`](specs/sistema.md); lo que falta está marcado `[pendiente]`.
 

@@ -137,6 +137,10 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - CL-08: el alta durante una venta usa las mismas reglas que el alta normal.
 - CL-09: el documento del cliente es único.
 - CL-10: el documento no puede estar vacío y es numérico; no se valida el formato de DNI ni CUIT.
+- CL-11: la baja de un cliente es lógica (`activo` en falso); se puede volver a activar (RF-C7, regla 12).
+- CL-12: no se da de baja un cliente con saldo distinto de cero; la API responde 422 `SALDO_PENDIENTE`.
+- CL-13: un cliente dado de baja no aparece en la búsqueda de la venta, y el servidor rechaza una venta a su nombre (422 `CLIENTE_INACTIVO`).
+- CL-14: un cliente dado de baja sigue en el listado y en su ficha, marcado "Inactivo", con su historial completo.
 
 ## Cuentas corrientes y pagos
 
@@ -200,7 +204,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
 - IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero` y mostrado en la pantalla.
-- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2).
+- IN-06: el inicio muestra con Chart.js (vía `react-chartjs-2`) las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2).
 - IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API y mostrado en la pantalla.
 
 ## Consulta, filtros e impresión
@@ -215,7 +219,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 Decididos por la consigna y no implementados todavía; cada uno requiere cambio de esquema con migración.
 
 - PE-01: categorías de productos con alta, edición y baja (RF-P7). Reemplaza la decisión del 2026-11-09 que las descartaba.
-- PE-02: cliente con tipo de documento (DNI o CUIT), domicilio, habilitación de cuenta corriente y baja lógica (RF-C2, RF-C7, regla 6).
+- PE-02: cliente con tipo de documento (DNI o CUIT), domicilio y habilitación de cuenta corriente (RF-C2, regla 6). La baja lógica (RF-C7) ya está: CL-11 a CL-14.
 - PE-03: el pago registra su medio: efectivo, transferencia o tarjeta (RF-C5).
 - PE-04: el seed carga al menos 2 usuarios (uno por rol), 5 categorías, 30 productos, 10 clientes y 50 facturas en los últimos 30 días, usando los mismos servicios que la app (sección 8 y 10.7).
 
@@ -288,6 +292,9 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-15: alta y edición de productos pasan a ser solo del administrador (US-08), por la tabla de permisos de la consigna; el operador consulta catálogo y stock, y no ve el botón Nuevo producto ni la ficha de edición.
 - 2026-11-14: la consigna del profesor tiene prioridad sobre las decisiones propias; donde choquen, se adapta la spec y se anota acá.
 - 2026-11-17: se adopta shadcn/ui, porque el profesor confirmó que es obligatorio; reemplaza la decisión del equipo de no usarlo (README). Los componentes se suman de a uno en `components/ui/` y se readaptan a `DESIGN.md` en lugar de usar el tema de shadcn, para no perder el diseño propio. El primero es el botón (`Boton`), que reemplaza a `claseBoton`.
+- 2026-11-17: los componentes de shadcn/ui entran tal cual salen, con nombres en inglés, y toman el diseño propio de tokens en `app/globals.css` (DI-46), en lugar de readaptarse a mano uno por uno; así cada `shadcn add` sale casi listo. `Boton` pasa a `Button`. Ya están Button, Badge, Empty, Skeleton, Input, Textarea, NativeSelect, Label, Field, Checkbox, Separator, Input Group, Table, Popover, Tooltip y Pagination; el combobox de la venta y los grupos de opciones con forma de botón quedan propios.
+- 2026-11-17: los gráficos pasan de `chart.js` directo a `react-chartjs-2` (`Bar`, `Doughnut`), porque la consigna lo pide explícitamente en la tabla de tecnologías ("Chart.js (con react-chartjs-2)", obligatorio).
+- 2026-11-17: se suman `AlertDialog` (confirmación de anular, dar de baja y desactivar) y avisos con `sonner` para cada operación, porque la consigna (sección 8) pide confirmar las acciones irreversibles y avisar el resultado de cada operación.
 - 2026-11-14: gráficos, filtros del listado de ventas e impresión de comprobantes y recibos dejan de estar descartados (CO-01 a CO-03, IN-06), porque la consigna los pide (RF-V7, RF-V8, RF-C5, RF-T2).
 - 2026-11-14: el pago con tarjeta guarda tipo, marca y últimos 4 dígitos (VE-12), y el de contado el monto recibido y el vuelto (VE-50), porque la consigna lo pide (RF-V5, regla 9); reemplaza la tarjeta sin datos. Implementado el 2026-11-16 (migración `0002`); las ventas anteriores a la migración quedan con esos campos vacíos.
 - 2026-11-14: se suma la API REST de la consigna (sección 11) en `app/api`, como adaptador sobre los servicios existentes; las pantallas siguen usando server actions, que llaman a los mismos servicios.

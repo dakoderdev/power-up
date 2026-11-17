@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
+import { Buscador } from "@/components/buscador";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { Paginacion } from "@/components/paginacion";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import {
   Table,
   TableBody,
@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Fila, Pagina, Seccion } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Clientes · Power Up",
@@ -68,7 +69,7 @@ export default function Clientes({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Clientes">
         Clientes registrados, con el saldo de su cuenta corriente.
       </EncabezadoPagina>
@@ -76,7 +77,7 @@ export default function Clientes({
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Listado parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -90,43 +91,25 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
   });
 
   return (
-    <section className="flex flex-col gap-4">
-      <form
-        role="search"
-        action="/clientes"
-        className="flex flex-wrap items-center gap-2"
+    <Seccion>
+      <Buscador
+        ruta="/clientes"
+        busqueda={busqueda}
+        etiqueta="Buscar por nombre o documento"
       >
-        <Input
-          type="search"
-          name="q"
-          defaultValue={busqueda}
-          maxLength={120}
-          placeholder="Buscar por nombre o documento"
-          aria-label="Buscar por nombre o documento"
-          className="max-w-md flex-1"
-        />
-        <Button variant="outline" size="lg" type="submit">
-          <Search aria-hidden="true" className="size-5" />
-          Buscar
-        </Button>
-        {busqueda ? (
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/clientes">Limpiar</Link>
-          </Button>
-        ) : null}
         <Button asChild variant="default" size="lg" className="ml-auto">
           <Link href="/clientes/nuevo">
             <UserPlus aria-hidden="true" className="size-5" />
             Nuevo cliente
           </Link>
         </Button>
-      </form>
+      </Buscador>
 
-      <div className="flex min-h-10 items-center">
+      <Fila className="min-h-10">
         <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
         </Badge>
-      </div>
+      </Fila>
 
       {lista.length === 0 ? (
         <Vacio>
@@ -159,6 +142,11 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
                   >
                     {cliente.nombre}
                   </Link>
+                  {cliente.activo ? null : (
+                    <Badge variant="secondary" className="ml-2">
+                      {ETIQUETAS_ESTADO.inactivo}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell
                   className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
@@ -186,6 +174,6 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
         paginas={paginas}
         enlace={(numero) => enlaceListado({ busqueda, pagina: numero })}
       />
-    </section>
+    </Seccion>
   );
 }

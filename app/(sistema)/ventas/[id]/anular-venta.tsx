@@ -2,9 +2,11 @@
 
 import { useId, useState, useTransition } from "react";
 import type { FormEvent } from "react";
+import { toast } from "sonner";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
 import { Button } from "@/components/ui/button";
 import { anularVentaAccion } from "@/lib/ventas/acciones";
-import { esquemaAnulacion } from "@/lib/ventas/esquemas";
+import { esquemaAnulacion, type Anulacion } from "@/lib/ventas/esquemas";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
@@ -12,6 +14,7 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
   const id = useId();
   const [error, setError] = useState<string | null>(null);
   const [anulando, iniciarAnulacion] = useTransition();
+  const [pendiente, setPendiente] = useState<Anulacion | null>(null);
 
   function anular(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -27,12 +30,28 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
     }
 
     setError(null);
+    setPendiente(validacion.data);
+  }
+
+  function confirmar() {
+    if (!pendiente) {
+      return;
+    }
+
+    const datos = pendiente;
+    setPendiente(null);
     iniciarAnulacion(async () => {
-      const respuesta = await anularVentaAccion(validacion.data);
+      const respuesta = await anularVentaAccion(datos);
 
       if (!respuesta.anulada) {
         setError(respuesta.mensaje);
+        return;
       }
+
+      toast.success("Venta anulada.", {
+        description:
+          "Se devolvió el stock y se ajustó el saldo si correspondía.",
+      });
     });
   }
 
@@ -68,6 +87,14 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
           </Button>
         </div>
       </form>
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo="¿Anular esta venta?"
+        descripcion="Se devuelve el stock y, si fue en cuenta corriente, se resta el total del saldo del cliente. No se puede deshacer."
+        accion="Anular venta"
+        onConfirmar={confirmar}
+      />
     </section>
   );
 }

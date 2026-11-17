@@ -3,6 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
+import {
+  Columna,
+  Dato,
+  Fila,
+  ListaDatos,
+  Pagina,
+} from "@/components/maquetacion";
 import { Button } from "@/components/ui/button";
 import { obtenerPago, type PagoDetalle } from "@/lib/cuentas/pagar";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
@@ -20,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function Recibo({ params }: PageProps<"/pagos/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Recibo">
         Constancia del pago registrado en la cuenta corriente.
       </EncabezadoPagina>
@@ -28,7 +35,7 @@ export default function Recibo({ params }: PageProps<"/pagos/[id]">) {
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Detalle params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -44,15 +51,15 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex max-w-4xl flex-col gap-10">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <Columna>
+        <Fila className="flex-wrap justify-between gap-4">
           <Button asChild variant="ghost">
             <Link href={`/clientes/${pago.clienteId}`}>Volver al cliente</Link>
           </Button>
           <BotonImprimir />
-        </div>
+        </Fila>
         <Datos pago={pago} numero={pago.reciboNumero} />
-      </div>
+      </Columna>
       <ReciboImpreso pago={pago} numero={pago.reciboNumero} />
     </>
   );
@@ -72,13 +79,16 @@ function Datos({ pago, numero }: { pago: PagoDetalle; numero: number }) {
   ];
 
   return (
-    <dl className="grid gap-4 sm:grid-cols-2">
+    <ListaDatos>
       {datos.map((dato) => (
-        <div key={dato.termino} className="flex flex-col gap-2">
-          <dt className="text-sm text-neutral-400">{dato.termino}</dt>
-          <dd className="tabular-nums text-white">{dato.valor}</dd>
-        </div>
+        <Dato
+          key={dato.termino}
+          termino={dato.termino}
+          className="tabular-nums"
+        >
+          {dato.valor}
+        </Dato>
       ))}
-    </dl>
+    </ListaDatos>
   );
 }

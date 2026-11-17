@@ -1,12 +1,17 @@
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { esDuplicado } from "@/lib/db/errores";
+import { obtenerSaldo } from "@/lib/cuentas/saldo";
 import { clientes } from "@/lib/db/schema";
-import type { ClienteNuevo } from "./esquemas";
+import { aCentavos } from "@/lib/moneda";
+import type { ClienteEdicion, ClienteNuevo } from "./esquemas";
 
 const MENSAJE_DUPLICADO = "Ya hay un cliente con ese documento.";
 
-export type ErroresCliente = Partial<Record<keyof ClienteNuevo, string[]>>;
+export type ErroresCliente = Partial<Record<keyof ClienteEdicion, string[]>>;
+
+export const MENSAJE_SALDO_PENDIENTE =
+  "No se puede dar de baja: el cliente tiene saldo pendiente. Registrá el pago antes.";
 
 const DOCUMENTO_DUPLICADO = {
   errores: { documento: [MENSAJE_DUPLICADO] } as ErroresCliente,
@@ -58,15 +63,27 @@ export type ResultadoEditar =
   | { guardado: true }
   | { guardado: false; errores: ErroresCliente; mensaje?: string };
 
+// RF-C2 y RF-C7: edita el cliente; la baja es lógica y no se admite con saldo pendiente.
 export async function editarCliente({
   id,
   entrada,
 }: {
   id: number;
-  entrada: ClienteNuevo;
+  entrada: ClienteEdicion;
 }): Promise<ResultadoEditar> {
   if (await documentoEnUso({ documento: entrada.documento, exceptoId: id })) {
     return { guardado: false, ...DOCUMENTO_DUPLICADO };
+  }
+
+  if (!entrada.activo) {
+    const saldo = await obtenerSaldo({ consulta: db, clienteId: id });
+
+    if (aCentavos(saldo) !== 0) {
+      return {
+        guardado: false,
+        errores: { activo: [MENSAJE_SALDO_PENDIENTE] },
+      };
+    }
   }
 
   try {

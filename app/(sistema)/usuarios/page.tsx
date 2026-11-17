@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
+import { Buscador } from "@/components/buscador";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
@@ -16,7 +16,6 @@ import { contar } from "@/lib/texto";
 import { COLORES_ROL, ETIQUETAS_ROL } from "@/lib/usuarios/sesion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Fila, Linea, Pagina, Seccion, Texto } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Usuarios · Power Up",
@@ -48,7 +48,7 @@ export default function Usuarios({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Usuarios">
         <Suspense fallback={`${REGLA_ADMINISTRADOR}.`}>
           <Descripcion />
@@ -58,7 +58,7 @@ export default function Usuarios({
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Lista parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -73,38 +73,20 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
   const { usuarios } = await listarUsuarios(busqueda);
 
   return (
-    <section className="flex flex-col gap-4">
-      <form
-        role="search"
-        action="/usuarios"
-        className="flex flex-wrap items-center gap-2"
+    <Seccion>
+      <Buscador
+        ruta="/usuarios"
+        busqueda={busqueda}
+        etiqueta="Buscar por nombre o acceso"
       >
-        <Input
-          type="search"
-          name="q"
-          defaultValue={busqueda}
-          maxLength={120}
-          placeholder="Buscar por nombre o acceso"
-          aria-label="Buscar por nombre o acceso"
-          className="max-w-md flex-1"
-        />
-        <Button variant="outline" size="lg" type="submit">
-          <Search aria-hidden="true" className="size-5" />
-          Buscar
-        </Button>
-        {busqueda ? (
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/usuarios">Limpiar</Link>
-          </Button>
-        ) : null}
         <Button asChild variant="default" size="lg" className="ml-auto">
           <Link href="/usuarios/nuevo">
             <UserPlus aria-hidden="true" className="size-5" />
             Nuevo usuario
           </Link>
         </Button>
-      </form>
-      <div className="flex min-h-10 items-center">
+      </Buscador>
+      <Fila className="min-h-10">
         <Badge>
           {contar({
             cantidad: usuarios.length,
@@ -112,7 +94,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
             plural: "usuarios",
           })}
         </Badge>
-      </div>
+      </Fila>
       {usuarios.length === 0 ? (
         <Vacio>
           {`No hay usuarios que coincidan con "${busqueda}". Probá con otro nombre o acceso.`}
@@ -144,19 +126,22 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
                       href={`/usuarios/${usuario.id}/editar`}
                       className="block after:absolute after:inset-0"
                     >
-                      <p className="truncate text-white">
-                        <span className="underline-offset-4 decoration-neutral-600 group-hover:underline">
+                      <Texto className="truncate">
+                        <Linea className="underline-offset-4 decoration-neutral-600 group-hover:underline">
                           {usuario.nombre}
-                        </span>
+                        </Linea>
                         {usuario.esActual ? (
-                          <span className="ml-2 text-sm text-neutral-400">
+                          <Linea tono="secundario" className="ml-2 text-sm">
                             (vos)
-                          </span>
+                          </Linea>
                         ) : null}
-                      </p>
-                      <p className="truncate text-sm text-neutral-300 transition-colors group-hover:text-white">
+                      </Texto>
+                      <Texto
+                        tono="tenue"
+                        className="truncate text-sm transition-colors group-hover:text-white"
+                      >
                         {usuario.acceso}
-                      </p>
+                      </Texto>
                     </Link>
                   </TableCell>
                   <TableCell className="sm:pr-6">
@@ -175,6 +160,6 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
           </TableBody>
         </Table>
       )}
-    </section>
+    </Seccion>
   );
 }

@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toast } from "sonner";
 
 const FORMA_INICIAL: FormaPago = "contado";
 const SEPARADOR = "border-t border-neutral-900 pt-10";
@@ -134,6 +135,9 @@ export function ArmadoVenta() {
       const respuesta = await confirmarVentaAccion(validacion.data);
 
       if (respuesta.confirmada) {
+        toast.success("Venta confirmada.", {
+          description: respuesta.comprobante,
+        });
         setConfirmada({
           comprobante: respuesta.comprobante,
           vuelto: respuesta.vuelto,

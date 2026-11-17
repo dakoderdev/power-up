@@ -24,6 +24,7 @@ import {
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { toast } from "sonner";
 
 const MOTIVO_INICIAL = MOTIVOS_SUGERIDOS.entrada[0];
 
@@ -42,7 +43,6 @@ export function CargarStock({
   const [errores, setErrores] = useState<Errores>({});
   const [falla, setFalla] = useState(false);
   const [abierto, setAbierto] = useState(false);
-  const [aviso, setAviso] = useState("");
   const [cargando, iniciarCarga] = useTransition();
 
   function cambiarAbierto(quedaAbierto: boolean) {
@@ -79,14 +79,13 @@ export function CargarStock({
 
     setErrores({});
     setFalla(false);
-    setAviso("");
     iniciarCarga(async () => {
       try {
         const respuesta = await ajustarStockAccion(validacion.data);
 
         if (respuesta.ajustado) {
           cambiarAbierto(false);
-          setAviso(avisoAjuste(validacion.data));
+          toast.success(avisoAjuste(validacion.data));
           return;
         }
 
@@ -112,9 +111,6 @@ export function CargarStock({
           <span className="hidden sm:inline">Cargar stock</span>
         </Button>
       </PopoverTrigger>
-      <span role="status" className="sr-only">
-        {aviso}
-      </span>
       <PopoverContent
         align="end"
         aria-label={`Cargar stock de ${nombre}`}

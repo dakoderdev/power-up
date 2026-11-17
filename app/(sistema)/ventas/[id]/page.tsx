@@ -2,6 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
+import {
+  Columna,
+  Dato,
+  Fila,
+  ListaDatos,
+  Pagina,
+  Seccion,
+  Texto,
+} from "@/components/maquetacion";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
 import { formatearMoneda } from "@/lib/moneda";
@@ -46,7 +55,7 @@ const COLUMNAS = [
 
 export default function Comprobante({ params }: PageProps<"/ventas/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Comprobante">
         Copia de la venta tal como se confirmó.
       </EncabezadoPagina>
@@ -54,7 +63,7 @@ export default function Comprobante({ params }: PageProps<"/ventas/[id]">) {
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Detalle params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -70,10 +79,10 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex max-w-4xl flex-col gap-10">
-        <div className="flex justify-end">
+      <Columna>
+        <Fila className="justify-end">
           <BotonImprimir />
-        </div>
+        </Fila>
         <Datos venta={venta} />
         <Items venta={venta} />
         {venta.anuladaEn ? (
@@ -81,7 +90,7 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
         ) : usuario.esAdministrador ? (
           <AnularVenta ventaId={venta.id} />
         ) : null}
-      </div>
+      </Columna>
       <ComprobanteImpreso venta={venta} />
     </>
   );
@@ -116,25 +125,25 @@ function Datos({ venta }: { venta: VentaDetalle }) {
   ];
 
   return (
-    <dl className="grid gap-4 sm:grid-cols-2">
+    <ListaDatos>
       {datos.map((dato) => (
-        <div key={dato.termino} className="flex flex-col gap-2">
-          <dt className="text-sm text-neutral-400">{dato.termino}</dt>
-          <dd className="tabular-nums text-white">{dato.valor}</dd>
-        </div>
+        <Dato
+          key={dato.termino}
+          termino={dato.termino}
+          className="tabular-nums"
+        >
+          {dato.valor}
+        </Dato>
       ))}
-      <div className="flex flex-col gap-2">
-        <dt className="text-sm text-neutral-400">Forma de pago</dt>
-        <dd className="flex gap-2">
-          <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
-            {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
-          </Badge>
-          {venta.anuladaEn ? (
-            <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
-          ) : null}
-        </dd>
-      </div>
-    </dl>
+      <Dato termino="Forma de pago" className="flex gap-2">
+        <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
+          {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
+        </Badge>
+        {venta.anuladaEn ? (
+          <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
+        ) : null}
+      </Dato>
+    </ListaDatos>
   );
 }
 
@@ -179,13 +188,13 @@ function Items({ venta }: { venta: VentaDetalle }) {
       </TableBody>
       <TableFooter>
         <TableRow className="border-t border-neutral-800">
-          <th
+          <TableHead
             scope="row"
             colSpan={COLUMNAS.length - 1}
-            className="pr-3 text-right font-medium text-neutral-400 sm:pr-6"
+            className="h-auto pr-3 text-right text-[0.9375rem] sm:pr-6"
           >
             Total
-          </th>
+          </TableHead>
           <TableCell
             className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
           >
@@ -199,18 +208,15 @@ function Items({ venta }: { venta: VentaDetalle }) {
 
 function Anulacion({ venta }: { venta: VentaDetalle }) {
   return (
-    <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-      <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em]">
-        Anulación
-      </h2>
-      <p className="text-[0.9375rem] text-neutral-300">
+    <Seccion titulo="Anulación" separada>
+      <Texto tono="tenue" className="text-[0.9375rem]">
         Anulada el {formatearFechaHora(venta.anuladaEn!)} por{" "}
         {venta.anuladaPor ?? "un usuario"}. Motivo: {venta.motivoAnulacion}
-      </p>
-      <p className="text-sm text-neutral-400">
+      </Texto>
+      <Texto tono="secundario" className="text-sm">
         El stock se devolvió y, si fue en cuenta corriente, el total se restó
         del saldo del cliente.
-      </p>
-    </section>
+      </Texto>
+    </Seccion>
   );
 }

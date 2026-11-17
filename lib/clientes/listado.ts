@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { SALDO } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
@@ -21,7 +21,7 @@ function filtrar(busqueda: string) {
     : undefined;
 }
 
-// RF-V2 y CL-05: búsqueda rápida por nombre o documento para la venta.
+// RF-V2, CL-05 y RF-C7: búsqueda rápida para la venta; un cliente dado de baja no aparece.
 export async function buscarClientes(busqueda: string) {
   return db
     .select({
@@ -30,7 +30,7 @@ export async function buscarClientes(busqueda: string) {
       documento: clientes.documento,
     })
     .from(clientes)
-    .where(filtrar(busqueda))
+    .where(and(eq(clientes.activo, true), filtrar(busqueda)))
     .orderBy(asc(clientes.nombre), asc(clientes.id))
     .limit(LIMITE_BUSQUEDA);
 }
@@ -84,6 +84,7 @@ export async function listarClientes({
       telefono: clientes.telefono,
       email: clientes.email,
       limiteCredito: clientes.limiteCredito,
+      activo: clientes.activo,
       creadoEn: clientes.creadoEn,
       saldo,
     })

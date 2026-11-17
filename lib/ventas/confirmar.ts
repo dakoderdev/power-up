@@ -18,6 +18,7 @@ import { calcularVuelto } from "./vuelto";
 
 export type CodigoErrorVenta =
   | "CLIENTE_INEXISTENTE"
+  | "CLIENTE_INACTIVO"
   | "CUENTA_CORRIENTE_NO_HABILITADA"
   | "PRODUCTO_INEXISTENTE"
   | "PRODUCTO_INACTIVO"
@@ -147,6 +148,19 @@ export async function confirmarVenta({
           confirmada: false,
           errores: [
             { codigo: "CLIENTE_INEXISTENTE", mensaje: "El cliente no existe." },
+          ],
+        };
+      }
+
+      if (cliente && !cliente.activo) {
+        return {
+          confirmada: false,
+          errores: [
+            {
+              codigo: "CLIENTE_INACTIVO",
+              mensaje:
+                "El cliente está dado de baja. Elegí otro o vendé a consumidor final.",
+            },
           ],
         };
       }

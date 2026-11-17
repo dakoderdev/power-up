@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Fila, Linea, Pagina, Seccion, Texto } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Saldos · Power Up",
@@ -41,7 +42,7 @@ export default function Saldos({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Saldos">
         Clientes que deben, de mayor a menor saldo.
       </EncabezadoPagina>
@@ -49,7 +50,7 @@ export default function Saldos({
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Deudores parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -74,18 +75,18 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex min-h-10 flex-wrap items-center justify-between gap-x-6 gap-y-2">
+    <Seccion>
+      <Fila className="min-h-10 flex-wrap justify-between gap-x-6 gap-y-2">
         <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
         </Badge>
-        <p className="text-[0.9375rem] text-neutral-400">
+        <Texto tono="secundario" className="text-[0.9375rem]">
           Total adeudado:{" "}
-          <span className="font-medium tabular-nums text-red-500">
+          <Linea className="font-medium tabular-nums text-red-500">
             {formatearMoneda(totalAdeudado)}
-          </span>
-        </p>
-      </div>
+          </Linea>
+        </Texto>
+      </Fila>
 
       <Table>
         <TableHeader>
@@ -137,6 +138,6 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
           numero > 1 ? `/saldos?pagina=${numero}` : "/saldos"
         }
       />
-    </section>
+    </Seccion>
   );
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearProductoAccion,
@@ -161,6 +163,9 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
   const [borrador, setBorrador] = useState(() => borradorInicial(producto));
   const [guardando, iniciarGuardado] = useTransition();
   const formulario = useRef<HTMLFormElement>(null);
+  const [pendiente, setPendiente] = useState<z.infer<
+    typeof esquemaProductoEdicion
+  > | null>(null);
 
   function reiniciar() {
     formulario.current?.reset();
@@ -189,24 +194,50 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
 
     setErrores({});
     setMensaje(null);
-    iniciarGuardado(async () => {
-      const respuesta = esAlta
-        ? await crearProductoAccion(validacion.data)
-        : await editarProductoAccion({
-            id: producto.id,
-            datos: validacion.data,
-          });
 
-      if (respuesta.guardado) {
-        if (esAlta) {
+    if (esAlta) {
+      const nuevo = validacion.data as z.infer<typeof esquemaProductoNuevo>;
+      iniciarGuardado(async () => {
+        const respuesta = await crearProductoAccion(nuevo);
+
+        if (respuesta.guardado) {
           reiniciar();
+          toast.success("Producto creado.");
+          router.push(`/productos?${new URLSearchParams({ q: nuevo.codigo })}`);
+          return;
         }
 
-        router.push(
-          esAlta
-            ? `/productos?${new URLSearchParams({ q: validacion.data.codigo })}`
-            : "/productos",
+        setErrores(respuesta.errores);
+        setMensaje(respuesta.mensaje ?? null);
+      });
+      return;
+    }
+
+    const edicion = validacion.data as z.infer<typeof esquemaProductoEdicion>;
+
+    if (producto.activo && !edicion.activo) {
+      setPendiente(edicion);
+      return;
+    }
+
+    guardarEdicion(edicion);
+  }
+
+  function guardarEdicion(datos: z.infer<typeof esquemaProductoEdicion>) {
+    if (esAlta) {
+      return;
+    }
+
+    iniciarGuardado(async () => {
+      const respuesta = await editarProductoAccion({ id: producto.id, datos });
+
+      if (respuesta.guardado) {
+        toast.success(
+          producto.activo && !datos.activo
+            ? "Producto dado de baja."
+            : "Cambios guardados.",
         );
+        router.push("/productos");
         return;
       }
 
@@ -353,6 +384,20 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
       </form>
 
       <VistaPrevia borrador={borrador} />
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Dar de baja ${producto?.nombre ?? "el producto"}?`}
+        descripcion="Deja de ofrecerse en ventas nuevas y sigue en los comprobantes viejos. Lo podés volver a activar desde esta ficha."
+        accion="Dar de baja"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </div>
   );
 }

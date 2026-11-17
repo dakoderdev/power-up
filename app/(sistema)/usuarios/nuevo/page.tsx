@@ -4,6 +4,7 @@ import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { FormularioUsuario } from "../_comun/formulario-usuario";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Nuevo usuario · Power Up",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function NuevoUsuario() {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Nuevo usuario">
         Elegí su rol y una contraseña inicial.
       </EncabezadoPagina>
@@ -19,7 +20,7 @@ export default function NuevoUsuario() {
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Formulario />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
