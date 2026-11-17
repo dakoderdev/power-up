@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { clientes, movimientosCuenta, user } from "@/lib/db/schema";
 import { crearEsquemaPago, type PagoEntrada } from "./esquemas";
+import { siguienteRecibo } from "./recibo";
 import { obtenerSaldo } from "./saldo";
 
 export type ResultadoPago =
@@ -13,7 +14,7 @@ export type ResultadoPago =
     };
 
 // RF-C5 y regla 8: registra el pago y el crédito en una sola transacción;
-// el importe no supera el saldo (PA-03, PA-07).
+// el importe no supera el saldo (PA-03, PA-07). Regla 4: asigna el número de recibo.
 export async function registrarPago({
   entrada,
   usuarioId,
@@ -51,6 +52,7 @@ export async function registrarPago({
         tipo: "pago",
         importe: validacion.data.importe,
         observacion: validacion.data.observacion ?? null,
+        reciboNumero: siguienteRecibo(),
         usuarioId,
       })
       .returning({ id: movimientosCuenta.id });
@@ -69,6 +71,7 @@ export async function obtenerPago(id: number) {
   const [pago] = await db
     .select({
       id: movimientosCuenta.id,
+      reciboNumero: movimientosCuenta.reciboNumero,
       fecha: movimientosCuenta.fecha,
       importe: movimientosCuenta.importe,
       observacion: movimientosCuenta.observacion,
