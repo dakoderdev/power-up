@@ -1,4 +1,5 @@
-import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import {
@@ -13,6 +14,15 @@ import { ubicarPagina } from "@/lib/paginacion";
 
 const MOVIMIENTOS_POR_PAGINA = 30;
 const PRODUCTOS_POR_PAGINA = 36;
+
+const anteriores = alias(movimientosStock, "anteriores");
+
+// RF-P6 y ST-24: existencia luego del movimiento, suma de entradas menos
+// salidas del producto hasta ese movimiento; no se guarda.
+const EXISTENCIA_RESULTANTE =
+  sql<number>`(select coalesce(sum(case when ${anteriores.tipo} = 'entrada' then ${anteriores.cantidad} else -${anteriores.cantidad} end), 0) from ${movimientosStock} as anteriores where ${anteriores.productoId} = ${movimientosStock.productoId} and (${anteriores.creadoEn} < ${movimientosStock.creadoEn} or (${anteriores.creadoEn} = ${movimientosStock.creadoEn} and ${anteriores.id} <= ${movimientosStock.id})))`.mapWith(
+    Number,
+  );
 
 export type OrigenStock = (typeof ORIGENES_STOCK)[number];
 
@@ -60,6 +70,7 @@ export async function listarInventario({
       codigo: productos.codigo,
       nombre: productos.nombre,
       stock: productos.stock,
+      stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })
@@ -79,6 +90,7 @@ export async function obtenerProductoStock(id: number) {
       codigo: productos.codigo,
       nombre: productos.nombre,
       stock: productos.stock,
+      stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })
@@ -90,8 +102,9 @@ export async function obtenerProductoStock(id: number) {
 
 export type TipoStock = (typeof TIPOS_STOCK)[number];
 
-// RF-P6 y ST-11: movimientos del más nuevo al más viejo, con usuario y
-// referencia a la venta; filtrables por producto, origen, tipo y fechas.
+// RF-P6 y ST-11: movimientos del más nuevo al más viejo, con usuario,
+// referencia a la venta y existencia resultante (ST-24); filtrables por
+// producto, origen, tipo y fechas.
 export async function listarMovimientos({
   productoId,
   paginaPedida,
@@ -141,6 +154,7 @@ export async function listarMovimientos({
       tipo: movimientosStock.tipo,
       origen: movimientosStock.origen,
       cantidad: movimientosStock.cantidad,
+      existenciaResultante: EXISTENCIA_RESULTANTE,
       motivo: movimientosStock.motivo,
       creadoEn: movimientosStock.creadoEn,
       usuarioId: user.id,
@@ -176,6 +190,7 @@ export async function obtenerMovimiento(id: number) {
       tipo: movimientosStock.tipo,
       origen: movimientosStock.origen,
       cantidad: movimientosStock.cantidad,
+      existenciaResultante: EXISTENCIA_RESULTANTE,
       motivo: movimientosStock.motivo,
       creadoEn: movimientosStock.creadoEn,
       usuarioId: user.id,

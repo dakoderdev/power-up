@@ -116,14 +116,14 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - ST-14: el stock no se edita directamente: solo cambia por movimientos.
 - ST-15: el motivo de un movimiento manual tiene entre 3 y 200 caracteres.
 - ST-16: se permiten ajustes manuales sobre productos inactivos.
-- ST-17: un producto tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero.
+- ST-17: un producto sin mínimo propio tiene stock bajo cuando le quedan 3 unidades o menos, incluido cero; ese valor es el mínimo inicial de todo producto nuevo.
 - ST-18: la sección Stock lista todos los productos con su stock actual, de menor a mayor stock, y se busca por nombre o código.
 - ST-19: el listado de stock marca el stock de los productos activos con stock bajo (ST-17).
 - ST-20: al entrar a un producto desde Stock se ven su stock actual y sus movimientos, filtrables por origen.
 - ST-21: el ajuste manual se registra desde el detalle de stock del producto, eligiendo entrada o salida, cantidad y motivo; desde cada fila del listado de stock se registra una entrada sin salir del listado.
 - ST-22: solo el administrador registra ajustes manuales de stock (ingresos y egresos), verificado en el servidor; el operador consulta el stock y sus movimientos pero no ve los controles de ajuste (RF-P4, RF-P5, sección 3).
-- ST-23: cada producto tiene un stock mínimo propio; está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1). `[pendiente]`: hoy el umbral es fijo (ST-17).
-- ST-24: cada movimiento muestra la existencia resultante (RF-P6). `[pendiente]`
+- ST-23: cada producto tiene un stock mínimo propio (por defecto 3); está bajo el mínimo cuando su stock es menor o igual a ese valor (RF-P1, RF-T1).
+- ST-24: cada movimiento muestra la existencia resultante (RF-P6). Se calcula como la suma de entradas menos salidas del producto hasta ese movimiento, y sale en la pantalla de movimientos y en la API.
 
 ## Clientes
 
@@ -190,7 +190,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-27: el administrador puede cambiar el rol de otro usuario.
 - US-28: no se puede pasar a operador ni desactivar al último administrador activo (US-16).
 - US-29: un administrador no puede cambiar su propio rol ni desactivarse a sí mismo.
-- US-20: cada usuario cambia su propia contraseña desde `/perfil`, indicando la actual (RF-U5). Disponible en la API (`PUT /api/auth/password`); `[pendiente]` la pantalla.
+- US-20: cada usuario cambia su propia contraseña desde `/perfil`, indicando la actual (RF-U5). Disponible en la API (`PUT /api/auth/password`) y en la pantalla.
 - US-31: el administrador restablece la contraseña de otro usuario con una temporal generada al azar que se muestra una sola vez (RF-U5).
 
 ## Inicio
@@ -199,16 +199,16 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-02: se muestran hasta 15 ventas de hoy, de la más reciente a la más antigua.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
-- IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero`; `[pendiente]` la pantalla.
-- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2). `[pendiente]`
-- IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API; `[pendiente]` la pantalla.
+- IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero` y mostrado en la pantalla.
+- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2).
+- IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API y mostrado en la pantalla.
 
 ## Consulta, filtros e impresión
 
-- CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número (RF-V8). Disponible en `GET /api/facturas`; `[pendiente]` en la pantalla.
-- CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). `[pendiente]`
-- CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). `[pendiente]`
-- CO-04: hay una pantalla de saldos con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible en `GET /api/clientes?conDeuda=true&orden=saldo`; `[pendiente]` la pantalla.
+- CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número o nombre del cliente (RF-V8). Disponible en `GET /api/facturas` y en la pantalla de ventas.
+- CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). Se imprime desde el detalle de la venta; los datos del comercio están en `lib/comercio.ts`.
+- CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). Se abre desde la cuenta corriente del cliente (`/pagos/[id]`) y se imprime con el diálogo del navegador.
+- CO-04: hay una pantalla de saldos (`/saldos`) con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible también en `GET /api/clientes?conDeuda=true&orden=saldo`.
 
 ## Pendientes de la consigna
 
@@ -294,3 +294,12 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-14: la venta y el ajuste de stock descuentan con condición (`stock >= cantidad`) y abortan si no se modificó la fila, como pide la consigna (sección 10.2), además del check de la base.
 - 2026-11-10: un administrador no se cambia el rol ni se desactiva a sí mismo (US-29), como en la mayoría de los sistemas, para que nadie se quede afuera por error en medio de su propia sesión; el cambio lo hace otro administrador.
 - 2026-11-14: US-22 resuelto: el administrador fija la contraseña inicial al crear el usuario. El alta inserta user y account directo con el hash de Better Auth, para no abrir sesión como el usuario nuevo.
+- 2026-11-16: los filtros del listado de ventas viajan en la URL (formulario GET), para paginar y compartir con ellos; la cantidad y el total de cada día respetan el filtro, y con el estado "anuladas" el día muestra solo la cantidad, porque las anuladas no suman en los totales (VE-45). Los selectores de cliente y vendedor ofrecen solo quienes tienen ventas.
+- 2026-11-16: el comprobante se imprime con el diálogo del navegador y una hoja de estilos de impresión (blanco y negro, sin librerías), para no sumar una dependencia; indica que es un comprobante interno sin validez fiscal, porque ARCA está descartado. El comercio se configura en `lib/comercio.ts`.
+- 2026-11-16: la pantalla de saldos es una página propia y no un filtro del listado de clientes, porque la consigna la pide como pantalla (RF-C6); reutiliza `listarClientes` con `conDeuda`, así que el total y el orden salen del mismo servicio que la API.
+- 2026-11-16: el recibo de cada pago lleva un número propio, correlativo entre todos los pagos e independiente del de las facturas, guardado en `recibo_numero` del movimiento de cuenta; se asigna como el último más uno dentro de la transacción del pago, igual que el de las ventas. Los pagos anteriores a la migración se numeraron por orden de fecha (migración `0004`). Se muestra con el formato `0001-00000001`.
+- 2026-11-16: el recibo se muestra en `/pagos/[id]` y reutiliza la hoja de estilos de impresión del comprobante; indica el saldo actual del cliente y no el de la fecha del pago, porque el saldo se deriva y no se guarda por movimiento. El recibo sale con el punto de venta fijo del código, igual que el comprobante nuevo.
+- 2026-11-16: la existencia resultante de cada movimiento se calcula en la consulta (suma acumulada por producto, ordenada por fecha y número) y no se guarda, igual que el saldo de las cuentas, para que no se desincronice ni requiera migración.
+- 2026-11-16: `/perfil` se abre desde el pie de la barra lateral, junto a Cerrar sesión, y no como sección del menú, porque es un dato propio del usuario y no una herramienta de trabajo; al cambiar la contraseña se cierran las demás sesiones del usuario.
+- 2026-11-16: los indicadores y los más vendidos del Inicio salen de `obtenerTablero`, el mismo servicio de `GET /api/tablero`, para que pantalla y API den siempre las mismas cifras; "Cuentas por cobrar" enlaza a la pantalla de saldos.
+- 2026-11-16: el stock mínimo pasa a ser un campo de cada producto (`stock_minimo`, por defecto 3), porque la consigna lo pide (RF-P1, RF-T1); reemplaza la decisión del 2026-11-08 del umbral fijo. Su regla (entero no negativo) vive en Zod y no en un check de la base, para no reconstruir la tabla.

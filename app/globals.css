@@ -72,3 +72,26 @@ input:-webkit-autofill {
     transition-duration: 0.01ms !important;
   }
 }
+@media print {
+  html,
+  body {
+    background: var(--color-white);
+    color: var(--color-black);
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .imprimible,
+  .imprimible * {
+    visibility: visible;
+  }
+
+  .imprimible {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}

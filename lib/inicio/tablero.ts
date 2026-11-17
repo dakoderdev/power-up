@@ -10,7 +10,6 @@ import {
 } from "@/lib/db/schema";
 import { claveDia, inicioDelDia } from "@/lib/fechas";
 import { aCentavos, deCentavos } from "@/lib/moneda";
-import { UMBRAL_STOCK_BAJO } from "@/lib/stock/etiquetas";
 import { DIA } from "@/lib/ventas/listado";
 
 const DIAS_GRAFICO = 30;
@@ -120,13 +119,14 @@ async function contarBajoMinimo() {
   const [{ cantidad }] = await db
     .select({ cantidad: count() })
     .from(productos)
-    .where(and(eq(productos.activo, true), lteStock(UMBRAL_STOCK_BAJO)));
+    .where(
+      and(
+        eq(productos.activo, true),
+        sql`${productos.stock} <= ${productos.stockMinimo}`,
+      ),
+    );
 
   return cantidad;
-}
-
-function lteStock(umbral: number) {
-  return sql`${productos.stock} <= ${umbral}`;
 }
 
 // RF-T1, RF-T2 y RF-T3: indicadores del día y del mes, deuda total, productos

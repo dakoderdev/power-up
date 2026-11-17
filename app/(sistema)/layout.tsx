@@ -6,6 +6,8 @@ import { Home } from "pixelarticons/react/Home.js";
 import { Logout } from "pixelarticons/react/Logout.js";
 import { Receipt } from "pixelarticons/react/Receipt.js";
 import { Shield } from "pixelarticons/react/Shield.js";
+import { User } from "pixelarticons/react/User.js";
+import { Wallet } from "pixelarticons/react/Wallet.js";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { cerrarSesion } from "./actions";
 import { EnlaceSeccion, MarcoBarra } from "./barra-lateral";
@@ -39,6 +41,11 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
             <li>
               <EnlaceSeccion href="/clientes" icono={<Contact />}>
                 Clientes
+              </EnlaceSeccion>
+            </li>
+            <li>
+              <EnlaceSeccion href="/saldos" icono={<Wallet />}>
+                Saldos
               </EnlaceSeccion>
             </li>
             <Suspense fallback={null}>
@@ -92,15 +99,20 @@ async function PieUsuario() {
           {ETIQUETAS_ROL[usuario.rol]}
         </span>
       </div>
-      <form action={cerrarSesion}>
-        <button
-          type="submit"
-          className="flex h-9 w-full items-center gap-3 border border-transparent px-3 text-[0.9375rem] text-neutral-400 transition-colors hover:text-white"
-        >
-          <Logout aria-hidden="true" className="size-5 shrink-0" />
-          Cerrar sesión
-        </button>
-      </form>
+      <div className="flex flex-col gap-0.5">
+        <EnlaceSeccion href="/perfil" icono={<User />}>
+          Perfil
+        </EnlaceSeccion>
+        <form action={cerrarSesion}>
+          <button
+            type="submit"
+            className="flex h-9 w-full items-center gap-3 border border-transparent px-3 text-[0.9375rem] text-neutral-400 transition-colors hover:text-white"
+          >
+            <Logout aria-hidden="true" className="size-5 shrink-0" />
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

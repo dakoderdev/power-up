@@ -22,7 +22,6 @@ import {
 } from "@/lib/db/schema";
 import { inicioDelDia } from "@/lib/fechas";
 import { aCentavos, deCentavos } from "@/lib/moneda";
-import { UMBRAL_STOCK_BAJO } from "@/lib/stock/etiquetas";
 
 const LIMITE_LISTA = 5;
 const LIMITE_VENTAS = 15;
@@ -129,7 +128,7 @@ async function obtenerCuentasPorCobrar() {
 async function obtenerProductosStockBajo() {
   const stockBajo = and(
     eq(productos.activo, true),
-    lte(productos.stock, UMBRAL_STOCK_BAJO),
+    lte(productos.stock, productos.stockMinimo),
   );
 
   const [[{ cantidad }], lista] = await Promise.all([

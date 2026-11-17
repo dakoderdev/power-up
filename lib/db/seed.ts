@@ -6,6 +6,7 @@ import {
   getTableName,
   inArray,
   isNull,
+  max,
   sql,
 } from "drizzle-orm";
 import { auth } from "../auth";
@@ -674,11 +675,17 @@ async function crearVentas(usuarioId: string) {
     });
 
     if (pagos.length > 0) {
+      const [{ ultimo }] = await tx
+        .select({ ultimo: max(movimientosCuenta.reciboNumero) })
+        .from(movimientosCuenta);
+      const primero = (ultimo ?? 0) + 1;
+
       await tx.insert(movimientosCuenta).values(
-        pagos.map((pago) => ({
+        pagos.map((pago, indice) => ({
           ...pago,
           tipo: "pago" as const,
           observacion: "Pago parcial de prueba",
+          reciboNumero: primero + indice,
           usuarioId,
         })),
       );

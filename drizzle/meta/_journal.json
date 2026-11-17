@@ -22,6 +22,27 @@
       "when": 1794828707562,
       "tag": "0002_venta_tarjeta_monto",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794888649896,
+      "tag": "0003_premium_black_cat",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794888867111,
+      "tag": "0004_numerar_pagos_existentes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794920743101,
+      "tag": "0005_busy_toxin",
+      "breakpoints": true
     }
   ]
 }

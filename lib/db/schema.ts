@@ -37,6 +37,7 @@ export const productos = sqliteTable(
     nombre: text("nombre", { length: 120 }).notNull(),
     precio: dinero("precio").notNull(),
     stock: integer("stock").notNull().default(0),
+    stockMinimo: integer("stock_minimo").notNull().default(3),
     activo: booleano("activo").notNull().default(true),
     imagenUrl: text("imagen_url"),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
@@ -222,6 +223,7 @@ export const movimientosCuenta = sqliteTable(
     importe: dinero("importe").notNull(),
     ventaId: integer("venta_id").references(() => ventas.id),
     observacion: text("observacion"),
+    reciboNumero: integer("recibo_numero"),
     fecha: fecha("fecha").notNull().default(AHORA),
     usuarioId: text("usuario_id")
       .notNull()
@@ -237,6 +239,7 @@ export const movimientosCuenta = sqliteTable(
     uniqueIndex("mov_cuenta_venta_unica")
       .on(t.ventaId, t.tipo)
       .where(sql`${t.ventaId} IS NOT NULL`),
+    uniqueIndex("mov_cuenta_recibo_unico").on(t.reciboNumero),
     index("mov_cuenta_cliente_idx").on(t.clienteId),
   ],
 );

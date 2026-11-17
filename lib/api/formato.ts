@@ -1,4 +1,5 @@
 import type { PagoDetalle } from "@/lib/cuentas/pagar";
+import { formatearRecibo } from "@/lib/cuentas/recibo";
 import type { Tablero } from "@/lib/inicio/tablero";
 import { aCentavos } from "@/lib/moneda";
 import { esStockBajo } from "@/lib/stock/etiquetas";
@@ -23,6 +24,7 @@ type ProductoBase = {
   nombre: string;
   precio: string;
   stock: number;
+  stockMinimo: number;
   activo: boolean;
   imagenUrl: string | null;
   creadoEn?: Date;
@@ -35,6 +37,7 @@ export function formatearProductoApi(producto: ProductoBase) {
     descripcion: producto.nombre,
     precio: enCentavos(producto.precio),
     existencia: producto.stock,
+    stockMinimo: producto.stockMinimo,
     bajoMinimo: esStockBajo(producto),
     activo: producto.activo,
     imagenUrl: producto.imagenUrl,
@@ -109,7 +112,8 @@ export function formatearMovimientoStockApi(
     tipo: tipoMovimientoApi(movimiento),
     cantidad:
       movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad,
-    ...(existenciaResultante === undefined ? {} : { existenciaResultante }),
+    existenciaResultante:
+      existenciaResultante ?? movimiento.existenciaResultante,
     motivo: movimiento.motivo,
     referencia:
       movimiento.ventaId === null ||
@@ -219,6 +223,9 @@ export function formatearFacturaApi({
 export function formatearPagoApi(pago: PagoDetalle) {
   return {
     id: pago.id,
+    reciboNumero: pago.reciboNumero,
+    reciboFormateado:
+      pago.reciboNumero === null ? null : formatearRecibo(pago.reciboNumero),
     fecha: enIso(pago.fecha),
     cliente: { id: pago.clienteId, nombre: pago.clienteNombre },
     importe: enCentavos(pago.importe),
