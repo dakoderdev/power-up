@@ -200,7 +200,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - IN-03: se muestran hasta 5 clientes con saldo, de mayor a menor saldo.
 - IN-04: la sección Stock bajo lista productos activos con stock bajo (ST-17), de menor a mayor stock, hasta 5.
 - IN-05: el inicio muestra ventas del día y del mes (cantidad e importe), total adeudado en cuentas corrientes y cantidad de productos bajo el mínimo (RF-T1). Calculado en `GET /api/tablero` y mostrado en la pantalla.
-- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2). `[pendiente]`
+- IN-06: el inicio muestra con Chart.js las ventas diarias de los últimos 30 días y las del mes por forma de pago (RF-T2).
 - IN-07: el inicio muestra los 5 productos más vendidos del mes por unidades (RF-T3). Calculado en la API y mostrado en la pantalla.
 
 ## Consulta, filtros e impresión
