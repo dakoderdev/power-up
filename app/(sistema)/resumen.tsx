@@ -3,6 +3,13 @@ import type { ReactNode } from "react";
 import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { obtenerTablero } from "@/lib/inicio/tablero";
@@ -35,54 +42,56 @@ export async function Resumen() {
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <Seccion titulo="Indicadores" className="lg:col-span-2">
-        <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Indicador
-            etiqueta="Ventas de hoy"
-            detalle={contar({
-              cantidad: tablero.hoy.cantidad,
-              singular: "venta",
-              plural: "ventas",
-            })}
-          >
-            {formatearMoneda(tablero.hoy.importe)}
-          </Indicador>
-          <Indicador
-            etiqueta="Ventas del mes"
-            detalle={contar({
-              cantidad: tablero.mes.cantidad,
-              singular: "venta",
-              plural: "ventas",
-            })}
-          >
-            {formatearMoneda(tablero.mes.importe)}
-          </Indicador>
-          <Indicador
-            etiqueta="Total adeudado"
-            detalle={contar({
-              cantidad: tablero.cuentasCorrientes.clientesConSaldo,
-              singular: "cliente",
-              plural: "clientes",
-            })}
-            claseValor="text-red-500"
-          >
-            {formatearMoneda(tablero.cuentasCorrientes.totalAdeudado)}
-          </Indicador>
-          <Indicador
-            etiqueta="Bajo el mínimo"
-            detalle={pluralizar({
-              cantidad: tablero.bajoMinimo.cantidad,
-              singular: "producto activo",
-              plural: "productos activos",
-            })}
-            claseValor={
-              tablero.bajoMinimo.cantidad > 0 ? "text-yellow-400/75" : undefined
-            }
-          >
-            {tablero.bajoMinimo.cantidad}
-          </Indicador>
-        </dl>
-      </Seccion>
+      <div className="grid gap-4 grid-cols-2 lg:col-span-2 xl:grid-cols-4">
+        <Indicador
+          etiqueta="Ventas de hoy"
+          href="/ventas"
+          detalle={contar({
+            cantidad: tablero.hoy.cantidad,
+            singular: "venta",
+            plural: "ventas",
+          })}
+        >
+          {formatearMoneda(tablero.hoy.importe)}
+        </Indicador>
+        <Indicador
+          etiqueta="Ventas del mes"
+          href="/ventas"
+          detalle={contar({
+            cantidad: tablero.mes.cantidad,
+            singular: "venta",
+            plural: "ventas",
+          })}
+        >
+          {formatearMoneda(tablero.mes.importe)}
+        </Indicador>
+        <Indicador
+          etiqueta="Total adeudado"
+          href="/clientes/saldos"
+          detalle={contar({
+            cantidad: tablero.cuentasCorrientes.clientesConSaldo,
+            singular: "cliente",
+            plural: "clientes",
+          })}
+          claseValor="text-red-500"
+        >
+          {formatearMoneda(tablero.cuentasCorrientes.totalAdeudado)}
+        </Indicador>
+        <Indicador
+          etiqueta="Bajo el mínimo"
+          href="/stock"
+          detalle={pluralizar({
+            cantidad: tablero.bajoMinimo.cantidad,
+            singular: "producto activo",
+            plural: "productos activos",
+          })}
+          claseValor={
+            tablero.bajoMinimo.cantidad > 0 ? "text-yellow-400/75" : undefined
+          }
+        >
+          {tablero.bajoMinimo.cantidad}
+        </Indicador>
+      </div>
 
       <Seccion titulo="Ventas de 30 días" className={SEPARADOR_MOVIL}>
         <GraficoDiario dias={dias} />
@@ -145,7 +154,7 @@ export async function Resumen() {
         titulo="Cuentas por cobrar"
         className={SEPARADOR_MOVIL}
         enlace={{
-          href: "/saldos",
+          href: "/clientes/saldos",
           texto:
             cuentas.cantidad > cuentas.deudores.length
               ? `Ver los ${cuentas.cantidad} clientes`
@@ -320,22 +329,31 @@ function Seccion({
 function Indicador({
   etiqueta,
   detalle,
+  href,
   claseValor = "text-white",
   children,
 }: {
   etiqueta: string;
   detalle: string;
+  href: string;
   claseValor?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <dt className="text-sm text-neutral-400">{etiqueta}</dt>
-      <dd className={`text-[0.9375rem] font-medium tabular-nums ${claseValor}`}>
-        {children}
-      </dd>
-      <dd className="text-sm tabular-nums text-neutral-300">{detalle}</dd>
-    </div>
+    <Link
+      href={href}
+      className="group block outline-offset-2 focus-visible:outline-2 focus-visible:outline-verde"
+    >
+      <Card className="h-full border-transparent bg-transparent">
+        <CardHeader>
+          <CardDescription>{etiqueta}</CardDescription>
+          <CardTitle className={`tabular-nums sm:text-2xl ${claseValor}`}>
+            {children}
+          </CardTitle>
+        </CardHeader>
+        <CardFooter className="tabular-nums">{detalle}</CardFooter>
+      </Card>
+    </Link>
   );
 }
 

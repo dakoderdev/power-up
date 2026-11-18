@@ -6,6 +6,7 @@ import { Tapa } from "@/components/tapa";
 import { Paginacion } from "@/components/paginacion";
 import { Buscador } from "@/components/buscador";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Vacio } from "@/components/vacio";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
 import { limpiarPagina } from "@/lib/paginacion";
@@ -141,9 +142,6 @@ export async function Listado({
           <input type="hidden" name="categoria" value={categoria} />
         ) : null}
         <div className="ml-auto flex items-center gap-2">
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/productos/categorias">Categorías</Link>
-          </Button>
           <SelectorOrden orden={orden} />
           <nav aria-label="Vista" className="flex">
             {VISTAS.map((opcion) => (
@@ -175,16 +173,20 @@ export async function Listado({
         </div>
       </Buscador>
 
-      <nav aria-label="Filtrar por categoría" className="flex flex-wrap gap-2">
+      <ToggleGroup
+        type="single"
+        value={String(categoria ?? "")}
+        aria-label="Filtrar por categoría"
+      >
         {[{ id: undefined, nombre: "Todas" }, ...categorias].map((opcion) => {
           const elegida = opcion.id === categoria;
 
           return (
-            <Button
+            <ToggleGroupItem
               key={opcion.id ?? "todas"}
+              value={String(opcion.id ?? "")}
               asChild
               variant={elegida ? "outline" : "ghost"}
-              size="xs"
               className={elegida ? "text-verde" : "border border-neutral-900"}
             >
               <Link
@@ -194,14 +196,13 @@ export async function Listado({
                   orden,
                   categoria: elegida ? undefined : opcion.id,
                 })}
-                aria-current={elegida ? "page" : undefined}
               >
                 {opcion.nombre}
               </Link>
-            </Button>
+            </ToggleGroupItem>
           );
         })}
-      </nav>
+      </ToggleGroup>
 
       {lista.length === 0 ? (
         <Vacio>

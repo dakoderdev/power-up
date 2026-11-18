@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -20,9 +21,7 @@ export default function ErrorPantalla({
         Error
       </h1>
       <div className="flex max-w-2xl flex-col gap-4 border border-neutral-800 px-6 py-8">
-        <p role="alert" className="text-[0.9375rem] text-red-400">
-          No se pudo cargar esta pantalla.
-        </p>
+        <AvisoError>No se pudo cargar esta pantalla.</AvisoError>
         <p className="text-sm text-neutral-400">
           Puede ser un corte de conexión con la base de datos. Probá de nuevo y,
           si sigue fallando, avisá al administrador.

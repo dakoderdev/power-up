@@ -1,3 +1,4 @@
+import { PestanasProductos } from "@/components/pestanas-productos";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
@@ -14,10 +15,12 @@ export const metadata: Metadata = {
 export default function Categorias() {
   return (
     <Pagina>
-      <EncabezadoPagina titulo="Categorías">
+      <EncabezadoPagina titulo="Productos">
         Grupos del catálogo. Una categoría con productos activos no se puede dar
         de baja.
       </EncabezadoPagina>
+
+      <PestanasProductos actual="categorias" />
 
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Contenido />

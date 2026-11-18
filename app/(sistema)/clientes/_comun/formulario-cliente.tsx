@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
@@ -143,11 +144,7 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
         </fieldset>
       )}
 
-      {mensaje ? (
-        <p role="alert" className="text-sm text-red-400">
-          {mensaje}
-        </p>
-      ) : null}
+      {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
 
       <div className="flex flex-wrap justify-end gap-2">
         <Button asChild variant="ghost" size="lg">

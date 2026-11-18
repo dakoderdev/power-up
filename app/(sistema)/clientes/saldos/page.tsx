@@ -1,3 +1,4 @@
+import { PestanasClientes } from "@/components/pestanas-clientes";
 import { etiquetaDocumento } from "@/lib/documento";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -44,9 +45,11 @@ export default function Saldos({
 }) {
   return (
     <Pagina>
-      <EncabezadoPagina titulo="Saldos">
+      <EncabezadoPagina titulo="Clientes">
         Clientes que deben, de mayor a menor saldo.
       </EncabezadoPagina>
+
+      <PestanasClientes actual="saldos" />
 
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Deudores parametros={searchParams} />
@@ -136,7 +139,7 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
         pagina={pagina}
         paginas={paginas}
         enlace={(numero) =>
-          numero > 1 ? `/saldos?pagina=${numero}` : "/saldos"
+          numero > 1 ? `/clientes/saldos?pagina=${numero}` : "/clientes/saldos"
         }
       />
     </Seccion>

@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useId } from "react";
 import type { FormEvent } from "react";
 import { useFormulario } from "@/components/formulario";
@@ -69,11 +70,7 @@ export function AltaCliente({
           className="flex flex-col gap-6"
         >
           <CamposCliente id={id} errores={errores} enfocar />
-          {mensaje ? (
-            <p role="alert" className="text-sm text-red-400">
-              {mensaje}
-            </p>
-          ) : null}
+          {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
           <DialogFooter>
             <Button variant="ghost" size="lg" type="button" onClick={onCerrar}>
               Cancelar

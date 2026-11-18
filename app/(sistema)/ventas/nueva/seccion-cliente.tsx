@@ -59,8 +59,9 @@ export function SeccionCliente({
             </>
           )}
         />
-        <Campo etiqueta="Documento">
+        <Campo etiqueta="Documento" id="venta-documento">
           <Input
+            id="venta-documento"
             readOnly
             value={cliente ? etiquetaDocumento(cliente) : "—"}
             className="tabular-nums"

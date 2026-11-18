@@ -1,25 +1,25 @@
 import { Suspense } from "react";
-import { Archive } from "pixelarticons/react/Archive.js";
 import { Contact } from "pixelarticons/react/Contact.js";
 import { Gamepad } from "pixelarticons/react/Gamepad.js";
 import { Home } from "pixelarticons/react/Home.js";
-import { Logout } from "pixelarticons/react/Logout.js";
 import { Receipt } from "pixelarticons/react/Receipt.js";
-import { Shield } from "pixelarticons/react/Shield.js";
-import { User } from "pixelarticons/react/User.js";
-import { Wallet } from "pixelarticons/react/Wallet.js";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Users } from "pixelarticons/react/Users.js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
-import { cerrarSesion } from "./actions";
 import { EnlaceSeccion, MarcoBarra } from "./barra-lateral";
+import { MenuUsuario } from "./menu-usuario";
 
 export default function LayoutSistema({ children }: LayoutProps<"/">) {
   return (
     <div className="flex min-h-screen flex-1 flex-col lg:flex-row">
-      <MarcoBarra>
+      <MarcoBarra
+        usuario={
+          <Suspense fallback={<UsuarioCargando />}>
+            <BarraUsuario />
+          </Suspense>
+        }
+      >
         <nav aria-label="Secciones" className="px-3 pt-4 lg:pt-0">
           <ul className="flex flex-col gap-0.5">
             <li>
@@ -33,23 +33,17 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
               </EnlaceSeccion>
             </li>
             <li>
-              <EnlaceSeccion href="/productos" icono={<Gamepad />}>
+              <EnlaceSeccion
+                href="/productos"
+                tambien={["/stock"]}
+                icono={<Gamepad />}
+              >
                 Productos
-              </EnlaceSeccion>
-            </li>
-            <li>
-              <EnlaceSeccion href="/stock" icono={<Archive />}>
-                Stock
               </EnlaceSeccion>
             </li>
             <li>
               <EnlaceSeccion href="/clientes" icono={<Contact />}>
                 Clientes
-              </EnlaceSeccion>
-            </li>
-            <li>
-              <EnlaceSeccion href="/saldos" icono={<Wallet />}>
-                Saldos
               </EnlaceSeccion>
             </li>
             <Suspense fallback={null}>
@@ -60,7 +54,7 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
       </MarcoBarra>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-end gap-2 border-b border-neutral-900 px-4 sm:px-8 lg:px-12">
+        <header className="hidden h-14 items-center justify-end gap-2 border-b border-neutral-900 lg:flex lg:pl-12 lg:pr-9">
           <Suspense fallback={<UsuarioCargando />}>
             <BarraUsuario />
           </Suspense>
@@ -83,7 +77,7 @@ async function EnlaceUsuarios() {
 
   return (
     <li>
-      <EnlaceSeccion href="/usuarios" icono={<Shield />}>
+      <EnlaceSeccion href="/usuarios" icono={<Users />}>
         Usuarios
       </EnlaceSeccion>
     </li>
@@ -95,32 +89,10 @@ async function BarraUsuario() {
   const usuario = await obtenerUsuarioActual();
 
   return (
-    <>
-      <Link
-        href="/perfil"
-        aria-label={`Perfil de ${usuario.nombre}`}
-        className="mr-auto flex min-w-0 items-center gap-3 text-neutral-300 transition-colors hover:text-white lg:mr-0"
-      >
-        <User aria-hidden="true" className="size-5 shrink-0" />
-        <span className="flex min-w-0 items-baseline gap-2">
-          <span className="truncate text-sm font-medium text-neutral-100">
-            {usuario.nombre}
-          </span>
-          <span className="text-[0.8125rem] text-neutral-500">
-            {ETIQUETAS_ROL[usuario.rol]}
-          </span>
-        </span>
-      </Link>
-      <form action={cerrarSesion}>
-        <Button type="submit" variant="ghost">
-          <Logout aria-hidden="true" className="size-5" />
-          Salir
-        </Button>
-      </form>
-    </>
+    <MenuUsuario nombre={usuario.nombre} rol={ETIQUETAS_ROL[usuario.rol]} />
   );
 }
 
 function UsuarioCargando() {
-  return <Skeleton aria-hidden="true" className="h-5 w-48" />;
+  return <Skeleton aria-hidden="true" className="h-5 w-12 lg:w-48" />;
 }

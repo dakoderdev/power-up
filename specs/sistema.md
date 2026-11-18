@@ -184,7 +184,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-08: ambos roles emiten y consultan ventas, consultan productos y stock, dan de alta y editan clientes y registran pagos. Solo el administrador anula ventas, da de alta, edita y da de baja productos, registra ajustes de stock y administra usuarios (sección 3).
 - US-30: el rol se llama "Vendedor" en pantalla y `vendedor` en la API, como en la consigna; en la base se guarda como `operator`, y la API traduce en los dos sentidos.
 - US-31: las contraseñas se guardan con argon2id (sección 8); los hashes scrypt anteriores se siguen aceptando hasta que el usuario cambie la contraseña.
-- US-32: la barra superior muestra el usuario conectado, su rol, el acceso a Perfil y el botón Salir (sección 4).
+- US-32: la barra superior muestra el usuario conectado y su rol en un menú desplegable con el acceso a Perfil y Salir (sección 4).
 - US-09: la administración de usuarios es solo del administrador.
 - US-10: rol y estado activo se verifican en el servidor en cada server action que lo requiera.
 - US-11: el menú no muestra la sección de usuarios a un operador.
@@ -220,7 +220,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - CO-01: el listado de ventas se filtra por rango de fechas, cliente, forma de pago, vendedor y estado, y se busca por número o nombre del cliente (RF-V8). Disponible en `GET /api/facturas` y en la pantalla de ventas.
 - CO-02: el comprobante de venta tiene una vista imprimible con datos del comercio, número, fecha y hora, vendedor, comprador, detalle, total y forma de pago (RF-V7). Se imprime desde el detalle de la venta; los datos del comercio están en `lib/comercio.ts`.
 - CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). Se abre desde la cuenta corriente del cliente (`/pagos/[id]`) y se imprime con el diálogo del navegador.
-- CO-04: hay una pantalla de saldos (`/saldos`) con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible también en `GET /api/clientes?conDeuda=true&orden=saldo`.
+- CO-04: hay una pantalla de saldos (`/clientes/saldos`, pestaña de Clientes) con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible también en `GET /api/clientes?conDeuda=true&orden=saldo`.
 
 ## Datos iniciales
 
@@ -317,6 +317,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-17: todas las server actions pasan a `ejecutarAccion` (AP-10) y los formularios a `useFormulario` (AP-11), como piden las secciones 10.3 y 10.6. Los servicios siguen devolviendo resultados y no lanzan, para no reescribir sus reglas; cada módulo suma una función `exigir…` que traduce el resultado fallido a `ApiError`, así ruta y acción no repiten el mapeo. El login queda fuera del hook porque no valida con Zod (tiene su propia validación con progreso), pero su acción también usa `ejecutarAccion`; cerrar sesión no devuelve resultado.
 - 2026-11-17: el alta de cliente en la venta pasa a un `Dialog` (VE-53) y llama a `POST /api/clientes` (AP-13), como piden RF-V2 y la sección 11.5.
 - 2026-11-17: el seed reasigna la categoría de cada producto del catálogo de demostración en cada corrida, para que los productos creados antes de las categorías (que la migración `0007` dejó en "General") queden en la suya.
+- 2026-11-17: el menú lateral móvil pasa a un `Sheet`, el usuario de la barra superior a un `DropdownMenu` con `Avatar`, el selector de orden a `NativeSelect` y el campo de la venta a `Field`, para usar el componente de shadcn/ui en lugar de elementos sueltos (sección 10.6). Los grupos de opciones con forma de botón (estado, tipo de movimiento, forma de pago) quedan propios: un `RadioGroup` de shadcn se vería como radio, y no como los botones de DESIGN.md.
 - 2026-11-17: los gráficos pasan de `chart.js` directo a `react-chartjs-2` (`Bar`, `Doughnut`), porque la consigna lo pide explícitamente en la tabla de tecnologías ("Chart.js (con react-chartjs-2)", obligatorio).
 - 2026-11-17: se suman `AlertDialog` (confirmación de anular, dar de baja y desactivar) y avisos con `sonner` para cada operación, porque la consigna (sección 8) pide confirmar las acciones irreversibles y avisar el resultado de cada operación.
 - 2026-11-14: gráficos, filtros del listado de ventas e impresión de comprobantes y recibos dejan de estar descartados (CO-01 a CO-03, IN-06), porque la consigna los pide (RF-V7, RF-V8, RF-C5, RF-T2).
@@ -333,5 +334,6 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - 2026-11-16: el recibo se muestra en `/pagos/[id]` y reutiliza la hoja de estilos de impresión del comprobante; indica el saldo actual del cliente y no el de la fecha del pago, porque el saldo se deriva y no se guarda por movimiento. El recibo sale con el punto de venta fijo del código, igual que el comprobante nuevo.
 - 2026-11-16: la existencia resultante de cada movimiento se calcula en la consulta (suma acumulada por producto, ordenada por fecha y número) y no se guarda, igual que el saldo de las cuentas, para que no se desincronice ni requiera migración.
 - 2026-11-16: `/perfil` se abre desde el pie de la barra lateral, junto a Cerrar sesión, y no como sección del menú, porque es un dato propio del usuario y no una herramienta de trabajo; al cambiar la contraseña se cierran las demás sesiones del usuario.
+- 2026-11-17: Existencias y Categorías pasan a pestañas del módulo Productos y Saldos a pestaña del módulo Clientes (`/clientes/saldos`), y la ficha del cliente separa Datos de Cuenta corriente en pestañas, porque la consigna (sección 4) pide cinco módulos en el panel lateral y esas pestañas; el panel ya no lista Stock ni Saldos. Cada pestaña de módulo sigue siendo su propia ruta. Reemplaza `/saldos` y la parte de la decisión del 2026-11-16 que la hacía un ítem del menú.
 - 2026-11-16: los indicadores y los más vendidos del Inicio salen de `obtenerTablero`, el mismo servicio de `GET /api/tablero`, para que pantalla y API den siempre las mismas cifras; "Cuentas por cobrar" enlaza a la pantalla de saldos.
 - 2026-11-16: el stock mínimo pasa a ser un campo de cada producto (`stock_minimo`, por defecto 3), porque la consigna lo pide (RF-P1, RF-T1); reemplaza la decisión del 2026-11-08 del umbral fijo. Su regla (entero no negativo) vive en Zod y no en un check de la base, para no reconstruir la tabla.

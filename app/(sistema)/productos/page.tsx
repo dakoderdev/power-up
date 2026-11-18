@@ -1,3 +1,4 @@
+import { PestanasProductos } from "@/components/pestanas-productos";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
@@ -20,6 +21,8 @@ export default function Productos({
       <EncabezadoPagina titulo="Productos">
         Juegos y consolas del catálogo, con su precio y stock.
       </EncabezadoPagina>
+
+      <PestanasProductos actual="catalogo" />
 
       <Suspense fallback={<ListadoCargando />}>
         <Listado parametros={searchParams} />

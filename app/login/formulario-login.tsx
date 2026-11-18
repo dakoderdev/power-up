@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -177,11 +178,7 @@ export function FormularioLogin() {
             />
           ))}
         </div>
-        {errorGeneral ? (
-          <p role="alert" className="text-sm text-red-400">
-            {errorGeneral}
-          </p>
-        ) : null}
+        {errorGeneral ? <AvisoError>{errorGeneral}</AvisoError> : null}
         <Button
           variant="default"
           size="lg"

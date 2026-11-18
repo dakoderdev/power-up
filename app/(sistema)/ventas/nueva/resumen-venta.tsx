@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import Link from "next/link";
 import { useId } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -215,11 +216,13 @@ export function ResumenVenta({
       ) : null}
 
       {errores.length > 0 ? (
-        <ul role="alert" className="flex flex-col gap-2 text-sm text-red-400">
-          {errores.map((error) => (
-            <li key={error}>{error}</li>
-          ))}
-        </ul>
+        <AvisoError>
+          <ul className="flex flex-col gap-2">
+            {errores.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        </AvisoError>
       ) : null}
 
       {confirmada === null ? null : (
