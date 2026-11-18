@@ -5,8 +5,8 @@ import { Vacio } from "@/components/vacio";
 import type { ClienteVenta } from "@/lib/clientes/listado";
 import type { ProductoVendible } from "@/lib/productos/listado";
 import { contar } from "@/lib/texto";
-import { confirmarVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaVentaEntrada } from "@/lib/ventas/esquemas";
+import { confirmarVenta } from "./api-venta";
 import { BuscadorProductos } from "./buscador-productos";
 import { COLUMNAS_LINEA, FilaLinea, subtotal, type Linea } from "./linea-venta";
 import {
@@ -17,6 +17,14 @@ import {
 } from "./resumen-venta";
 import { SeccionCliente } from "./seccion-cliente";
 import { Seccion } from "./seccion-venta";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
 
 const FORMA_INICIAL: FormaPago = "contado";
 const SEPARADOR = "border-t border-neutral-900 pt-10";
@@ -41,7 +49,7 @@ export function ArmadoVenta() {
 
   function elegirCliente(elegido: ClienteVenta | null) {
     setCliente(elegido);
-    if (elegido === null && formaPago === "cuenta_corriente") {
+    if (!elegido?.cuentaCorriente && formaPago === "cuenta_corriente") {
       setFormaPago(FORMA_INICIAL);
     }
   }
@@ -124,9 +132,12 @@ export function ArmadoVenta() {
 
     setErrores([]);
     iniciarConfirmacion(async () => {
-      const respuesta = await confirmarVentaAccion(validacion.data);
+      const respuesta = await confirmarVenta(validacion.data);
 
       if (respuesta.confirmada) {
+        toast.success("Venta confirmada.", {
+          description: respuesta.comprobante,
+        });
         setConfirmada({
           comprobante: respuesta.comprobante,
           vuelto: respuesta.vuelto,
@@ -171,35 +182,33 @@ export function ArmadoVenta() {
               para sumarlo.
             </Vacio>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-                <thead>
-                  <tr className="border-b border-neutral-900">
-                    {COLUMNAS_LINEA.map((columna) => (
-                      <th
-                        key={columna.titulo}
-                        scope="col"
-                        className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                      >
-                        {columna.titulo}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineas.map((linea) => (
-                    <FilaLinea
-                      key={linea.producto.id}
-                      linea={linea}
-                      onCantidad={(texto) =>
-                        cambiarCantidad({ id: linea.producto.id, texto })
-                      }
-                      onQuitar={() => quitar(linea.producto.id)}
-                    />
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {COLUMNAS_LINEA.map((columna) => (
+                    <TableHead
+                      key={columna.titulo}
+                      scope="col"
+                      className={columna.clase}
+                    >
+                      {columna.titulo}
+                    </TableHead>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lineas.map((linea) => (
+                  <FilaLinea
+                    key={linea.producto.id}
+                    linea={linea}
+                    onCantidad={(texto) =>
+                      cambiarCantidad({ id: linea.producto.id, texto })
+                    }
+                    onQuitar={() => quitar(linea.producto.id)}
+                  />
+                ))}
+              </TableBody>
+            </Table>
           )}
         </Seccion>
       </div>
@@ -208,6 +217,7 @@ export function ArmadoVenta() {
         unidades={unidades}
         total={total}
         formaPago={formaPago}
+        conCuenta={cliente?.cuentaCorriente ?? false}
         conCliente={cliente !== null}
         montoRecibido={montoRecibido}
         tarjeta={tarjeta}

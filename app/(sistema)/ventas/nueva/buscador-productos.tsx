@@ -4,7 +4,7 @@ import { Plus } from "pixelarticons/react/Plus.js";
 import { Tapa } from "@/components/tapa";
 import { formatearMoneda } from "@/lib/moneda";
 import type { ProductoVendible } from "@/lib/productos/listado";
-import { buscarProductosAccion } from "@/lib/ventas/acciones";
+import { buscarProductos } from "./api-venta";
 import { Combobox } from "./combobox";
 
 export function BuscadorProductos({
@@ -16,7 +16,7 @@ export function BuscadorProductos({
     <Combobox
       etiqueta="Agregar producto"
       placeholder="Buscar por nombre o código"
-      buscar={buscarProductosAccion}
+      buscar={buscarProductos}
       onElegir={onElegir}
       deshabilitada={(producto) => producto.stock === 0}
       renderOpcion={(producto) => (

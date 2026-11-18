@@ -138,6 +138,7 @@ export async function buscarVentas({
       creadoEn: ventas.creadoEn,
       clienteId: ventas.clienteId,
       clienteNombre: ventas.clienteNombre,
+      clienteTipoDoc: ventas.clienteTipoDoc,
       clienteDocumento: ventas.clienteDocumento,
       formaPago: ventas.formaPago,
       total: ventas.total,

@@ -1,16 +1,12 @@
+import { etiquetaDocumento } from "@/lib/documento";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "pixelarticons/react/Search.js";
 import { UserPlus } from "pixelarticons/react/UserPlus.js";
+import { Buscador } from "@/components/buscador";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import {
-  CLASE_BADGE,
-  CLASE_CAMPO,
-  CLASE_FILA,
-  claseBoton,
-} from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { listarClientes } from "@/lib/clientes/listado";
 import { limpiarBusqueda } from "@/lib/db/busqueda";
@@ -18,6 +14,18 @@ import { aCentavos, formatearMoneda } from "@/lib/moneda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Fila, Pagina, Seccion } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Clientes · Power Up",
@@ -62,17 +70,15 @@ export default function Clientes({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Clientes">
         Clientes registrados, con el saldo de su cuenta corriente.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Listado parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -86,50 +92,25 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
   });
 
   return (
-    <section className="flex flex-col gap-4">
-      <form
-        role="search"
-        action="/clientes"
-        className="flex flex-wrap items-center gap-2"
+    <Seccion>
+      <Buscador
+        ruta="/clientes"
+        busqueda={busqueda}
+        etiqueta="Buscar por nombre o documento"
       >
-        <input
-          type="search"
-          name="q"
-          defaultValue={busqueda}
-          maxLength={120}
-          placeholder="Buscar por nombre o documento"
-          aria-label="Buscar por nombre o documento"
-          className={`${CLASE_CAMPO} max-w-md flex-1 border-neutral-800`}
-        />
-        <button
-          type="submit"
-          className={claseBoton({ variante: "secundario", enFormulario: true })}
-        >
-          <Search aria-hidden="true" className="size-5" />
-          Buscar
-        </button>
-        {busqueda ? (
-          <Link
-            href="/clientes"
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar
+        <Button asChild variant="default" size="lg" className="ml-auto">
+          <Link href="/clientes/nuevo">
+            <UserPlus aria-hidden="true" className="size-5" />
+            Nuevo cliente
           </Link>
-        ) : null}
-        <Link
-          href="/clientes/nuevo"
-          className={`${claseBoton({ variante: "primario", enFormulario: true })} ml-auto`}
-        >
-          <UserPlus aria-hidden="true" className="size-5" />
-          Nuevo cliente
-        </Link>
-      </form>
+        </Button>
+      </Buscador>
 
-      <div className="flex min-h-10 items-center">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+      <Fila className="min-h-10">
+        <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
-        </span>
-      </div>
+        </Badge>
+      </Fila>
 
       {lista.length === 0 ? (
         <Vacio>
@@ -138,52 +119,55 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
             : "Todavía no hay clientes. Cargá el primero con Nuevo cliente o durante una venta."}
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <thead>
-              <tr className="border-b border-neutral-900">
-                {COLUMNAS.map((columna) => (
-                  <th
-                    key={columna.titulo}
-                    scope="col"
-                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                  >
-                    {columna.titulo}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((cliente) => (
-                <tr key={cliente.id} className={`${CLASE_FILA} group relative`}>
-                  <td className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
-                    <Link
-                      href={`/clientes/${cliente.id}`}
-                      className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
-                    >
-                      {cliente.nombre}
-                    </Link>
-                  </td>
-                  <td
-                    className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                  >
-                    {cliente.documento}
-                  </td>
-                  <td
-                    className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                  >
-                    {cliente.telefono ?? cliente.email}
-                  </td>
-                  <td
-                    className={`text-right tabular-nums ${aCentavos(cliente.saldo) > 0 ? "text-white" : "text-neutral-300"}`}
-                  >
-                    {formatearMoneda(cliente.saldo)}
-                  </td>
-                </tr>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {COLUMNAS.map((columna) => (
+                <TableHead
+                  key={columna.titulo}
+                  scope="col"
+                  className={columna.clase}
+                >
+                  {columna.titulo}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lista.map((cliente) => (
+              <TableRow key={cliente.id} className="group relative">
+                <TableCell className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
+                  <Link
+                    href={`/clientes/${cliente.id}`}
+                    className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                  >
+                    {cliente.nombre}
+                  </Link>
+                  {cliente.activo ? null : (
+                    <Badge variant="secondary" className="ml-2">
+                      {ETIQUETAS_ESTADO.inactivo}
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                >
+                  {etiquetaDocumento(cliente)}
+                </TableCell>
+                <TableCell
+                  className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                >
+                  {cliente.telefono ?? cliente.email}
+                </TableCell>
+                <TableCell
+                  className={`text-right tabular-nums ${aCentavos(cliente.saldo) > 0 ? "text-white" : "text-neutral-300"}`}
+                >
+                  {formatearMoneda(cliente.saldo)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Paginacion
@@ -191,6 +175,6 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
         paginas={paginas}
         enlace={(numero) => enlaceListado({ busqueda, pagina: numero })}
       />
-    </section>
+    </Seccion>
   );
 }

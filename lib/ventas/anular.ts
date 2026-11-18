@@ -1,17 +1,11 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { obtenerSaldo } from "@/lib/cuentas/saldo";
+import { and, eq, isNull } from "drizzle-orm";
+import { ApiError } from "@/lib/api/errores";
 import { db } from "@/lib/db";
-import {
-  itemsVenta,
-  movimientosCuenta,
-  movimientosStock,
-  productos,
-  ventas,
-} from "@/lib/db/schema";
-import { aCentavos, formatearMoneda } from "@/lib/moneda";
+import { exigirAdministrador, type UsuarioServicio } from "@/lib/servicio";
+import { itemsVenta, movimientosCuenta, ventas } from "@/lib/db/schema";
+import { moverStock } from "@/lib/stock/mover";
 
-export type CodigoErrorAnulacion =
-  "NO_ENCONTRADO" | "FACTURA_ANULADA" | "SALDO_INSUFICIENTE";
+export type CodigoErrorAnulacion = "NO_ENCONTRADO" | "FACTURA_ANULADA";
 
 type ResultadoAnular =
   | { anulada: true }
@@ -29,12 +23,15 @@ const YA_ANULADA: ResultadoAnular = {
 export async function anularVenta({
   ventaId,
   motivo,
-  usuarioId,
+  usuario,
 }: {
   ventaId: number;
   motivo: string;
-  usuarioId: string;
+  usuario: UsuarioServicio;
 }): Promise<ResultadoAnular> {
+  exigirAdministrador(usuario);
+  const usuarioId = usuario.id;
+
   return db.transaction(async (tx) => {
     const [venta] = await tx
       .select()
@@ -56,18 +53,6 @@ export async function anularVenta({
     const clienteId =
       venta.formaPago === "cuenta_corriente" ? venta.clienteId : null;
 
-    if (clienteId !== null) {
-      const saldo = await obtenerSaldo({ consulta: tx, clienteId });
-
-      if (aCentavos(saldo) < aCentavos(venta.total)) {
-        return {
-          anulada: false,
-          codigo: "SALDO_INSUFICIENTE",
-          mensaje: `No se puede anular: el saldo de ${venta.clienteNombre} es ${formatearMoneda(saldo)} y quedaría negativo, porque ya pagó parte de esta venta.`,
-        };
-      }
-    }
-
     const [marcada] = await tx
       .update(ventas)
       .set({
@@ -87,23 +72,17 @@ export async function anularVenta({
       .from(itemsVenta)
       .where(eq(itemsVenta.ventaId, ventaId));
 
-    await tx.insert(movimientosStock).values(
-      items.map((item) => ({
+    for (const item of items) {
+      await moverStock({
+        tx,
         productoId: item.productoId,
-        tipo: "entrada" as const,
-        origen: "anulacion" as const,
+        tipo: "entrada",
+        origen: "anulacion",
         cantidad: item.cantidad,
         motivo,
         ventaId,
         usuarioId,
-      })),
-    );
-
-    for (const item of items) {
-      await tx
-        .update(productos)
-        .set({ stock: sql`${productos.stock} + ${item.cantidad}` })
-        .where(eq(productos.id, item.productoId));
+      });
     }
 
     if (clienteId !== null) {
@@ -119,4 +98,22 @@ export async function anularVenta({
 
     return { anulada: true };
   });
+}
+
+const ESTADO_ANULACION: Record<CodigoErrorAnulacion, number> = {
+  NO_ENCONTRADO: 404,
+  FACTURA_ANULADA: 409,
+};
+
+// Sección 10.4 y RF-V9: una anulación rechazada pasa a ApiError (409 FACTURA_ANULADA).
+export function exigirAnulada(resultado: ResultadoAnular) {
+  if (resultado.anulada) {
+    return;
+  }
+
+  throw new ApiError(
+    ESTADO_ANULACION[resultado.codigo],
+    resultado.codigo,
+    resultado.mensaje,
+  );
 }

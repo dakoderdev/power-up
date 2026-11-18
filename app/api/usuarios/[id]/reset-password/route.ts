@@ -5,12 +5,15 @@ import { restablecerContrasena } from "@/lib/usuarios/guardar";
 type Params = { id: string };
 
 // RF-U5: el administrador restablece una contraseña; la temporal se muestra una sola vez.
-export const POST = ruta<Params>({ admin: true }, async ({ params }) => {
-  const resultado = await restablecerContrasena(params.id);
+export const POST = ruta<Params>(
+  { admin: true },
+  async ({ usuario, params }) => {
+    const resultado = await restablecerContrasena({ usuario, id: params.id });
 
-  if (!resultado) {
-    throw noEncontrado("El usuario");
-  }
+    if (!resultado) {
+      throw noEncontrado("El usuario");
+    }
 
-  return responder(resultado);
-});
+    return responder(resultado);
+  },
+);

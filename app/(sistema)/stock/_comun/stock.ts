@@ -1,7 +1,6 @@
 import type { OrigenStock } from "@/lib/stock/listado";
 
 export const SOLO_ESCRITORIO = "hidden sm:table-cell";
-export const CLASE_COLUMNA = "h-9 text-sm font-medium text-neutral-400";
 
 export function enlaceStock({
   busqueda,

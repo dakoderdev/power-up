@@ -4,6 +4,7 @@ import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { APIError } from "better-auth/api";
 import { eq } from "drizzle-orm";
+import { hashearContrasena, verificarContrasena } from "./contrasenas";
 import { db } from "./db";
 import * as schema from "./db/schema";
 
@@ -11,7 +12,12 @@ export const auth = betterAuth({
   secret: process.env.AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, { provider: "sqlite", schema }),
-  emailAndPassword: { enabled: true, minPasswordLength: 8 },
+  emailAndPassword: {
+    enabled: true,
+    disableSignUp: true,
+    minPasswordLength: 8,
+    password: { hash: hashearContrasena, verify: verificarContrasena },
+  },
   user: {
     additionalFields: {
       role: {

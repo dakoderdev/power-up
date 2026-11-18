@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
+import { Empty, EmptyDescription } from "@/components/ui/empty";
 
 export function Vacio({ children }: { children: ReactNode }) {
   return (
-    <p className="border border-dashed border-neutral-800 px-6 py-8 text-center text-sm text-neutral-500">
-      {children}
-    </p>
+    <Empty>
+      <EmptyDescription>{children}</EmptyDescription>
+    </Empty>
   );
 }

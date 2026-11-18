@@ -1,4 +1,5 @@
 import { COMERCIO } from "@/lib/comercio";
+import { documentoDeVenta } from "@/lib/documento";
 import { formatearFechaHora } from "@/lib/fechas";
 import { formatearMoneda } from "@/lib/moneda";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
@@ -49,9 +50,10 @@ export function ComprobanteImpreso({ venta }: { venta: VentaDetalle }) {
   const lineasComercio = [COMERCIO.domicilio, COMERCIO.telefono].filter(
     (linea) => linea !== "",
   );
-  const comprador = venta.clienteDocumento
-    ? `${venta.clienteNombre} · ${venta.clienteDocumento}`
-    : venta.clienteNombre;
+  const documento = documentoDeVenta(venta);
+  const comprador = [venta.clienteNombre, documento, venta.clienteDomicilio]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="imprimible hidden bg-white p-8 text-[0.9375rem] text-black print:block">

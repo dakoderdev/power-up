@@ -1,8 +1,8 @@
+import { etiquetaDocumento } from "@/lib/documento";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Vacio } from "@/components/vacio";
 import { listarClientes } from "@/lib/clientes/listado";
@@ -10,6 +10,17 @@ import { formatearMoneda } from "@/lib/moneda";
 import { limpiarPagina } from "@/lib/paginacion";
 import { contar } from "@/lib/texto";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Fila, Linea, Pagina, Seccion, Texto } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Saldos · Power Up",
@@ -32,17 +43,15 @@ export default function Saldos({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Saldos">
         Clientes que deben, de mayor a menor saldo.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Deudores parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -67,63 +76,61 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex min-h-10 flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <span className={`${CLASE_BADGE} text-neutral-300`}>
+    <Seccion>
+      <Fila className="min-h-10 flex-wrap justify-between gap-x-6 gap-y-2">
+        <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
-        </span>
-        <p className="text-[0.9375rem] text-neutral-400">
+        </Badge>
+        <Texto tono="secundario" className="text-[0.9375rem]">
           Total adeudado:{" "}
-          <span className="font-medium tabular-nums text-red-500">
+          <Linea className="font-medium tabular-nums text-red-500">
             {formatearMoneda(totalAdeudado)}
-          </span>
-        </p>
-      </div>
+          </Linea>
+        </Texto>
+      </Fila>
 
-      <div className="overflow-x-auto">
-        <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-          <thead>
-            <tr className="border-b border-neutral-900">
-              {COLUMNAS.map((columna) => (
-                <th
-                  key={columna.titulo}
-                  scope="col"
-                  className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                >
-                  {columna.titulo}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {lista.map((cliente) => (
-              <tr key={cliente.id} className={`${CLASE_FILA} group relative`}>
-                <td className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
-                  <Link
-                    href={`/clientes/${cliente.id}`}
-                    className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
-                  >
-                    {cliente.nombre}
-                  </Link>
-                </td>
-                <td
-                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                >
-                  {cliente.documento}
-                </td>
-                <td
-                  className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
-                >
-                  {cliente.telefono ?? cliente.email}
-                </td>
-                <td className="text-right tabular-nums text-white">
-                  {formatearMoneda(cliente.saldo)}
-                </td>
-              </tr>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {COLUMNAS.map((columna) => (
+              <TableHead
+                key={columna.titulo}
+                scope="col"
+                className={columna.clase}
+              >
+                {columna.titulo}
+              </TableHead>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {lista.map((cliente) => (
+            <TableRow key={cliente.id} className="group relative">
+              <TableCell className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
+                <Link
+                  href={`/clientes/${cliente.id}`}
+                  className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                >
+                  {cliente.nombre}
+                </Link>
+              </TableCell>
+              <TableCell
+                className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+              >
+                {etiquetaDocumento(cliente)}
+              </TableCell>
+              <TableCell
+                className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+              >
+                {cliente.telefono ?? cliente.email}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-white">
+                {formatearMoneda(cliente.saldo)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <Paginacion
         pagina={pagina}
@@ -132,6 +139,6 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
           numero > 1 ? `/saldos?pagina=${numero}` : "/saldos"
         }
       />
-    </section>
+    </Seccion>
   );
 }

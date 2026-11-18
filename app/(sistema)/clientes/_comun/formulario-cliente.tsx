@@ -2,104 +2,81 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearClienteAccion,
   editarClienteAccion,
 } from "@/lib/clientes/acciones";
 import type { ClienteDetalle } from "@/lib/clientes/detalle";
-import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
-import type { ErroresCliente } from "@/lib/clientes/guardar";
+import {
+  esquemaClienteEdicion,
+  esquemaClienteNuevo,
+  type ClienteEdicion,
+} from "@/lib/clientes/esquemas";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
+import { cn } from "@/lib/utils";
+import { FieldDescription, FieldError } from "@/components/ui/field";
+import { CamposCliente, leerCliente } from "./campos-cliente";
 
-type Campo = "nombre" | "documento" | "telefono" | "email" | "limiteCredito";
-
-const CAMPOS: {
-  nombre: Campo;
-  etiqueta: string;
-  tipo: string;
-  modo?: "numeric" | "decimal";
-  ejemplo?: string;
-}[] = [
-  { nombre: "nombre", etiqueta: "Nombre o razón social", tipo: "text" },
-  { nombre: "documento", etiqueta: "Documento", tipo: "text", modo: "numeric" },
-  { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel" },
-  { nombre: "email", etiqueta: "Correo", tipo: "email" },
-  {
-    nombre: "limiteCredito",
-    etiqueta: "Límite de crédito (opcional)",
-    tipo: "text",
-    modo: "decimal",
-    ejemplo: "150000",
-  },
+const ESTADOS = [
+  { valor: true, etiqueta: ETIQUETAS_ESTADO.activo },
+  { valor: false, etiqueta: ETIQUETAS_ESTADO.inactivo },
 ];
-
-function valorInicial({
-  campo,
-  cliente,
-}: {
-  campo: Campo;
-  cliente?: ClienteDetalle;
-}) {
-  const valor = cliente?.[campo] ?? "";
-
-  return campo === "limiteCredito" ? valor.replace(".", ",") : valor;
-}
 
 export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
   const id = useId();
   const router = useRouter();
   const esAlta = cliente === undefined;
-  const [errores, setErrores] = useState<ErroresCliente>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [guardando, iniciarGuardado] = useTransition();
+  const { errores, mensaje, enviando, enviar, validar, ejecutar } =
+    useFormulario();
+  const [activo, setActivo] = useState(cliente?.activo ?? true);
+  const [pendiente, setPendiente] = useState<ClienteEdicion | null>(null);
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    const formulario = new FormData(evento.currentTarget);
-    const datos = Object.fromEntries(
-      CAMPOS.map((campo) => [
-        campo.nombre,
-        String(formulario.get(campo.nombre) ?? ""),
-      ]),
-    );
-    const validacion = esquemaClienteNuevo.safeParse(datos);
+    const datos = leerCliente(new FormData(evento.currentTarget));
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      setMensaje(null);
+    if (esAlta) {
+      enviar({
+        esquema: esquemaClienteNuevo,
+        datos,
+        accion: crearClienteAccion,
+        aviso: "Cliente creado.",
+        onListo: (creado) => router.push(`/clientes/${creado.id}`),
+      });
       return;
     }
 
-    setErrores({});
-    setMensaje(null);
-    iniciarGuardado(async () => {
-      if (esAlta) {
-        const respuesta = await crearClienteAccion(validacion.data);
+    const edicion = validar(esquemaClienteEdicion, { ...datos, activo });
 
-        if (respuesta.creado) {
-          router.push(`/clientes/${respuesta.cliente.id}`);
-          return;
-        }
+    if (!edicion) {
+      return;
+    }
 
-        setErrores(respuesta.errores);
-        return;
-      }
+    if (cliente.activo && !edicion.activo) {
+      setPendiente(edicion);
+      return;
+    }
 
-      const respuesta = await editarClienteAccion({
-        id: cliente.id,
-        datos: validacion.data,
-      });
+    guardarEdicion(edicion);
+  }
 
-      if (respuesta.guardado) {
-        router.push(`/clientes/${cliente.id}`);
-        return;
-      }
+  function guardarEdicion(datos: ClienteEdicion) {
+    if (esAlta) {
+      return;
+    }
 
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+    ejecutar({
+      accion: () => editarClienteAccion({ id: cliente.id, datos }),
+      aviso:
+        cliente.activo && !datos.activo
+          ? "Cliente dado de baja."
+          : "Cambios guardados.",
+      onListo: () => router.push(`/clientes/${cliente.id}`),
     });
   }
 
@@ -110,45 +87,61 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
       aria-label={esAlta ? "Nuevo cliente" : "Editar cliente"}
       className="flex max-w-2xl flex-col gap-6"
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        {CAMPOS.map((campo) => {
-          const error = errores[campo.nombre]?.[0];
-          const idCampo = `${id}-${campo.nombre}`;
-
-          return (
-            <div key={campo.nombre} className="flex flex-col gap-2">
-              <label
-                htmlFor={idCampo}
-                className="text-sm font-medium text-neutral-400"
-              >
-                {campo.etiqueta}
-              </label>
-              <input
-                id={idCampo}
-                name={campo.nombre}
-                type={campo.tipo}
-                inputMode={campo.modo}
-                placeholder={campo.ejemplo}
-                autoFocus={esAlta && campo.nombre === "nombre"}
-                defaultValue={valorInicial({ campo: campo.nombre, cliente })}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `${idCampo}-error` : undefined}
-                className={`${CLASE_CAMPO} ${campo.modo ? "tabular-nums" : ""} ${error ? "border-red-400" : "border-neutral-800"}`}
-              />
-              {error ? (
-                <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                  {error}
-                </p>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
+      <CamposCliente
+        id={id}
+        errores={errores}
+        cliente={cliente}
+        enfocar={esAlta}
+      />
       <p className="text-sm text-neutral-500">
-        Teléfono o correo: al menos uno de los dos. Sin límite de crédito, la
-        cuenta corriente no tiene tope. Los cambios no alteran los comprobantes
-        ya emitidos.
+        Teléfono o correo: al menos uno de los dos. Solo un cliente habilitado
+        compra en cuenta corriente. Los cambios no alteran los comprobantes ya
+        emitidos.
       </p>
+
+      {esAlta ? null : (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="pb-2 text-sm font-medium text-neutral-400">
+            Estado
+          </legend>
+          <div className="flex gap-2">
+            {ESTADOS.map((estado) => {
+              const elegido = activo === estado.valor;
+
+              return (
+                <label
+                  key={estado.etiqueta}
+                  className={cn(
+                    buttonVariants({
+                      variant: elegido ? "outline" : "ghost",
+                      size: "lg",
+                    }),
+                    `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="activo"
+                    value={String(estado.valor)}
+                    checked={elegido}
+                    onChange={() => setActivo(estado.valor)}
+                    className="sr-only"
+                  />
+                  {estado.etiqueta}
+                </label>
+              );
+            })}
+          </div>
+          {errores.activo ? (
+            <FieldError>{errores.activo[0]}</FieldError>
+          ) : (
+            <FieldDescription>
+              Un cliente dado de baja no aparece en ventas nuevas y conserva su
+              historial. Solo se puede dar de baja con saldo cero.
+            </FieldDescription>
+          )}
+        </fieldset>
+      )}
 
       {mensaje ? (
         <p role="alert" className="text-sm text-red-400">
@@ -157,24 +150,33 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Link
-          href={esAlta ? "/clientes" : `/clientes/${cliente.id}`}
-          className={claseBoton({ variante: "texto", enFormulario: true })}
-        >
-          Cancelar
-        </Link>
-        <button
-          type="submit"
-          disabled={guardando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
-        >
-          {guardando
+        <Button asChild variant="ghost" size="lg">
+          <Link href={esAlta ? "/clientes" : `/clientes/${cliente.id}`}>
+            Cancelar
+          </Link>
+        </Button>
+        <Button variant="default" size="lg" type="submit" disabled={enviando}>
+          {enviando
             ? "Guardando…"
             : esAlta
               ? "Crear cliente"
               : "Guardar cambios"}
-        </button>
+        </Button>
       </div>
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Dar de baja a ${cliente?.nombre ?? "este cliente"}?`}
+        descripcion="Deja de aparecer en ventas nuevas y conserva su historial y sus comprobantes. Lo podés volver a activar desde esta ficha."
+        accion="Dar de baja"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </form>
   );
 }

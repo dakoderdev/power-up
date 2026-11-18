@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Suspense } from "react";
+import { Fila, Grilla, Pila, Texto, Titulo } from "@/components/maquetacion";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -23,34 +24,38 @@ async function RedirigirSiHaySesion() {
 
 export default function Login() {
   return (
-    <div className="grid min-h-screen flex-1 lg:grid-cols-[auto_1fr]">
+    <Grilla className="min-h-screen flex-1 lg:grid-cols-[auto_1fr]">
       <Suspense fallback={null}>
         <RedirigirSiHaySesion />
       </Suspense>
-      <main className="flex flex-col bg-black px-6 py-8 sm:px-12 lg:w-[30rem] lg:pl-16 lg:pr-18 lg:py-12">
+      <Pila
+        as="main"
+        className="bg-black px-6 py-8 sm:px-12 lg:w-[30rem] lg:pl-16 lg:pr-18 lg:py-12"
+      >
         <Logo className="h-8 w-auto self-center text-white lg:hidden" />
 
-        <div className="flex flex-1 items-center py-16">
-          <div className="flex w-full flex-col gap-10">
-            <header className="flex flex-col gap-3">
-              <h1 className="font-pixel text-7xl leading-none tracking-[-0.01em]">
+        <Fila className="flex-1 py-16">
+          <Pila className="w-full gap-10">
+            <Pila as="header" className="gap-3">
+              <Titulo nivel={1} className="text-7xl">
                 Ingresar
-              </h1>
-              <p className="text-[0.9375rem] text-neutral-400">
+              </Titulo>
+              <Texto tono="secundario" className="text-[0.9375rem]">
                 Entrá con tu cuenta de Power Up.
-              </p>
-            </header>
+              </Texto>
+            </Pila>
 
             <FormularioLogin />
-          </div>
-        </div>
+          </Pila>
+        </Fila>
 
-        <p className="text-sm text-neutral-500">
+        <Texto tono="ayuda" className="text-sm">
           ¿No tenés cuenta? Pedísela al administrador.
-        </p>
-      </main>
+        </Texto>
+      </Pila>
 
-      <aside
+      <Pila
+        as="aside"
         aria-hidden="true"
         className="hidden bg-green-950 lg:block relative overflow-hidden"
       >
@@ -63,7 +68,7 @@ export default function Login() {
           className="object-cover object-[70%_center]"
         />
         <Logo className="h-22 absolute left-1/2 top-1/2 -translate-1/2 w-auto self-start text-white bg-black p-2" />
-      </aside>
-    </div>
+      </Pila>
+    </Grilla>
   );
 }

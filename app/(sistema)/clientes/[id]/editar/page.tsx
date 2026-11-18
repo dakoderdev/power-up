@@ -6,6 +6,8 @@ import { obtenerCliente } from "@/lib/clientes/detalle";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { FormularioCliente } from "../../_comun/formulario-cliente";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Editar cliente · Power Up",
@@ -15,19 +17,17 @@ export default function EditarCliente({
   params,
 }: PageProps<"/clientes/[id]/editar">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Editar cliente">
         Cambiá los datos de contacto o el límite de crédito.
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="esqueleto h-96 max-w-2xl" />
-        }
+        fallback={<Skeleton aria-hidden="true" className="h-96 max-w-2xl" />}
       >
         <Edicion params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 

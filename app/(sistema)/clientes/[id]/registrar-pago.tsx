@@ -1,13 +1,18 @@
 "use client";
 
-import { useId, useRef, useState, useTransition } from "react";
+import { useId, useRef } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { useFormulario } from "@/components/formulario";
+import { Button } from "@/components/ui/button";
 import { registrarPagoAccion } from "@/lib/cuentas/acciones";
-import { crearEsquemaPago, type PagoEntrada } from "@/lib/cuentas/esquemas";
-
-type Errores = Partial<Record<keyof PagoEntrada, string[]>>;
+import { crearEsquemaPago } from "@/lib/cuentas/esquemas";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { ETIQUETAS_MEDIO_PAGO } from "@/lib/cuentas/etiquetas";
 
 export function RegistrarPago({
   clienteId,
@@ -18,33 +23,23 @@ export function RegistrarPago({
 }) {
   const id = useId();
   const formulario = useRef<HTMLFormElement>(null);
-  const [errores, setErrores] = useState<Errores>({});
-  const [registrando, iniciarRegistro] = useTransition();
+  const { errores, mensaje, enviando: registrando, enviar } = useFormulario();
 
   function registrar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const datos = new FormData(evento.currentTarget);
-    const validacion = crearEsquemaPago({ saldo }).safeParse({
-      clienteId,
-      importe: String(datos.get("importe") ?? ""),
-      observacion: String(datos.get("observacion") ?? ""),
-    });
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      return;
-    }
-
-    setErrores({});
-    iniciarRegistro(async () => {
-      const respuesta = await registrarPagoAccion(validacion.data);
-
-      if (respuesta.registrado) {
-        formulario.current?.reset();
-        return;
-      }
-
-      setErrores(respuesta.errores);
+    enviar({
+      esquema: crearEsquemaPago({ saldo }),
+      datos: {
+        clienteId,
+        importe: String(datos.get("importe") ?? ""),
+        medio: String(datos.get("medio") ?? ""),
+        observacion: String(datos.get("observacion") ?? ""),
+      },
+      accion: registrarPagoAccion,
+      aviso: "Pago registrado.",
+      onListo: () => formulario.current?.reset(),
     });
   }
 
@@ -67,19 +62,35 @@ export function RegistrarPago({
       className="flex flex-col gap-4"
     >
       <div className="grid gap-4 sm:grid-cols-2">
+        <Field>
+          <FieldLabel htmlFor={`${id}-medio`}>Medio</FieldLabel>
+          <NativeSelect
+            id={`${id}-medio`}
+            name="medio"
+            defaultValue="efectivo"
+            aria-invalid={Boolean(errores.medio?.[0])}
+            aria-describedby={
+              errores.medio?.[0] ? `${id}-medio-error` : undefined
+            }
+          >
+            {Object.entries(ETIQUETAS_MEDIO_PAGO).map(([valor, etiqueta]) => (
+              <NativeSelectOption key={valor} value={valor}>
+                {etiqueta}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          {errores.medio?.[0] ? (
+            <FieldError id={`${id}-medio-error`}>{errores.medio[0]}</FieldError>
+          ) : null}
+        </Field>
         {campos.map((campo) => {
           const error = errores[campo.nombre]?.[0];
           const idCampo = `${id}-${campo.nombre}`;
 
           return (
-            <div key={campo.nombre} className="flex flex-col gap-2">
-              <label
-                htmlFor={idCampo}
-                className="text-sm font-medium text-neutral-400"
-              >
-                {campo.etiqueta}
-              </label>
-              <input
+            <Field key={campo.nombre}>
+              <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+              <Input
                 id={idCampo}
                 name={campo.nombre}
                 type="text"
@@ -87,29 +98,33 @@ export function RegistrarPago({
                 placeholder={campo.ejemplo}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? `${idCampo}-error` : undefined}
-                className={`${CLASE_CAMPO} ${campo.modo ? "tabular-nums" : ""} ${error ? "border-red-400" : "border-neutral-800"}`}
+                className={campo.modo ? "tabular-nums" : ""}
               />
               {error ? (
-                <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                  {error}
-                </p>
+                <FieldError id={`${idCampo}-error`}>{error}</FieldError>
               ) : null}
-            </div>
+            </Field>
           );
         })}
       </div>
+      {mensaje ? (
+        <p role="alert" className="text-sm text-red-400">
+          {mensaje}
+        </p>
+      ) : null}
       <p className="text-sm text-neutral-500">
         El pago resta del saldo total, no de una venta en particular, y no se
         puede editar ni anular.
       </p>
       <div className="flex justify-end">
-        <button
+        <Button
+          variant="default"
+          size="lg"
           type="submit"
           disabled={registrando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {registrando ? "Registrando…" : "Registrar pago"}
-        </button>
+        </Button>
       </div>
     </form>
   );

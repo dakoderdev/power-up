@@ -2,18 +2,20 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { ejecutarAccion } from "@/lib/acciones";
+import { ApiError, noEncontrado } from "@/lib/api/errores";
+import { validarEntrada } from "@/lib/servicio";
 import {
   esquemaCambioContrasena,
   esquemaUsuarioEdicion,
   esquemaUsuarioNuevo,
-  type ErroresContrasena,
 } from "./esquemas";
 import {
   crearUsuario,
   editarUsuario,
-  type ResultadoCrear,
-  type ResultadoEditar,
+  exigirUsuarioCreado,
+  exigirUsuarioGuardado,
+  restablecerContrasena,
 } from "./guardar";
 import {
   cambiarContrasena,
@@ -21,27 +23,25 @@ import {
   requerirAdministrador,
 } from "./sesion";
 
-export async function crearUsuarioAccion(
-  datos: unknown,
-): Promise<ResultadoCrear> {
-  await requerirAdministrador();
+const MENSAJE_ACTUAL = "La contraseña actual no coincide.";
 
-  const validacion = esquemaUsuarioNuevo.safeParse(datos);
-
-  if (!validacion.success) {
-    return {
-      creado: false,
-      errores: z.flattenError(validacion.error).fieldErrors,
-    };
+function idUsuario(id: unknown) {
+  if (typeof id !== "string" || id === "") {
+    throw noEncontrado("El usuario");
   }
 
-  const resultado = await crearUsuario(validacion.data);
+  return id;
+}
 
-  if (resultado.creado) {
+export async function crearUsuarioAccion(datos: unknown) {
+  return ejecutarAccion(async () => {
+    const usuario = await requerirAdministrador();
+    const entrada = validarEntrada(esquemaUsuarioNuevo, datos);
+    const id = exigirUsuarioCreado(await crearUsuario({ usuario, entrada }));
     revalidatePath("/usuarios");
-  }
 
-  return resultado;
+    return { id };
+  });
 }
 
 export async function editarUsuarioAccion({
@@ -50,67 +50,53 @@ export async function editarUsuarioAccion({
 }: {
   id: unknown;
   datos: unknown;
-}): Promise<ResultadoEditar> {
-  const actual = await requerirAdministrador();
-
-  if (typeof id !== "string" || id === "") {
-    return {
-      guardado: false,
-      errores: {},
-      mensaje: "El usuario no existe. Volvé al listado y elegí otro.",
-    };
-  }
-
-  const validacion = esquemaUsuarioEdicion.safeParse(datos);
-
-  if (!validacion.success) {
-    return {
-      guardado: false,
-      errores: z.flattenError(validacion.error).fieldErrors,
-    };
-  }
-
-  const resultado = await editarUsuario({
-    id,
-    entrada: validacion.data,
-    actualId: actual.id,
-  });
-
-  if (resultado.guardado) {
+}) {
+  return ejecutarAccion(async () => {
+    const usuario = await requerirAdministrador();
+    const usuarioId = idUsuario(id);
+    const entrada = validarEntrada(esquemaUsuarioEdicion, datos);
+    exigirUsuarioGuardado(
+      await editarUsuario({ id: usuarioId, entrada, usuario }),
+    );
     revalidatePath("/usuarios");
-  }
 
-  return resultado;
+    return { id: usuarioId };
+  });
+}
+
+// RF-U5 y US-31: el administrador restablece la contraseña de otro usuario con una temporal.
+export async function restablecerContrasenaAccion(id: unknown) {
+  return ejecutarAccion(async () => {
+    const usuario = await requerirAdministrador();
+    const resultado = await restablecerContrasena({
+      usuario,
+      id: idUsuario(id),
+    });
+
+    if (!resultado) {
+      throw noEncontrado("El usuario");
+    }
+
+    return resultado;
+  });
 }
 
 // RF-U5 y US-20: cada usuario cambia su propia contraseña; la actual la verifica Better Auth.
-export async function cambiarContrasenaAccion(
-  datos: unknown,
-): Promise<
-  { cambiada: true } | { cambiada: false; errores: ErroresContrasena }
-> {
-  await obtenerUsuarioActual();
+export async function cambiarContrasenaAccion(datos: unknown) {
+  return ejecutarAccion(async () => {
+    await obtenerUsuarioActual();
+    const entrada = validarEntrada(esquemaCambioContrasena, datos);
+    const resultado = await cambiarContrasena({
+      entrada,
+      headers: await headers(),
+    });
 
-  const validacion = esquemaCambioContrasena.safeParse(datos);
+    if (!resultado.cambiada) {
+      throw new ApiError(422, "CONTRASENA_ACTUAL_INCORRECTA", MENSAJE_ACTUAL, [
+        { campo: "actual", mensaje: MENSAJE_ACTUAL },
+      ]);
+    }
 
-  if (!validacion.success) {
-    return {
-      cambiada: false,
-      errores: z.flattenError(validacion.error).fieldErrors,
-    };
-  }
-
-  const resultado = await cambiarContrasena({
-    entrada: validacion.data,
-    headers: await headers(),
+    return { cambiada: true };
   });
-
-  if (!resultado.cambiada) {
-    return {
-      cambiada: false,
-      errores: { actual: ["La contraseña actual no coincide."] },
-    };
-  }
-
-  return { cambiada: true };
 }

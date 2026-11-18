@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CLASE_FILA, claseBoton } from "@/components/estilos";
+import { CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { obtenerResumenInicio } from "@/lib/inicio/resumen";
 import { obtenerTablero } from "@/lib/inicio/tablero";
@@ -168,7 +169,7 @@ export async function Resumen() {
                 >
                   <Link
                     href={`/clientes/${deudor.id}`}
-                    className="truncate text-white underline-offset-4 hover:underline"
+                    className="truncate text-white underline-offset-4 decoration-neutral-600 hover:underline"
                   >
                     {deudor.nombre}
                   </Link>
@@ -306,12 +307,9 @@ function Seccion({
           {titulo}
         </h2>
         {enlace ? (
-          <Link
-            href={enlace.href}
-            className={`${claseBoton({ variante: "texto" })} -mr-3 shrink-0`}
-          >
-            {enlace.texto}
-          </Link>
+          <Button asChild variant="ghost" className="-mr-3 shrink-0">
+            <Link href={enlace.href}>{enlace.texto}</Link>
+          </Button>
         ) : null}
       </div>
       {children}

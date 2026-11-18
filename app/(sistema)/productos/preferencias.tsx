@@ -3,13 +3,14 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
-import { claseBoton } from "@/components/estilos";
+import { buttonVariants } from "@/components/ui/button";
 import {
   COOKIE_ORDEN,
   COOKIE_VISTA,
   ORDENES,
   type Orden,
 } from "@/lib/productos/ordenes";
+import { cn } from "@/lib/utils";
 
 const UN_ANIO = 60 * 60 * 24 * 365;
 
@@ -50,7 +51,10 @@ export function SelectorOrden({ orden }: { orden: Orden }) {
         aria-label="Ordenar por"
         value={orden}
         onChange={(evento) => cambiar(evento.target.value)}
-        className={`${claseBoton({ variante: "secundario", enFormulario: true })} appearance-none bg-black pr-10`}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "lg" }),
+          "appearance-none bg-black pr-10",
+        )}
       >
         {Object.entries(ORDENES).map(([valor, etiqueta]) => (
           <option key={valor} value={valor}>

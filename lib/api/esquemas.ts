@@ -1,7 +1,10 @@
 import { z } from "zod";
-import { esquemaClienteNuevo } from "@/lib/clientes/esquemas";
+import {
+  esquemaClienteEdicion,
+  esquemaClienteNuevo,
+} from "@/lib/clientes/esquemas";
 import { esquemaPago } from "@/lib/cuentas/esquemas";
-import { FORMAS_PAGO, ROLES } from "@/lib/db/schema";
+import { FORMAS_PAGO, MEDIOS_PAGO, TIPOS_DOCUMENTO } from "@/lib/db/schema";
 import { deCentavos } from "@/lib/moneda";
 import {
   esquemaProductoEdicion,
@@ -43,6 +46,21 @@ const idPositivo = z
 
 const texto = z.string("Debe ser texto.");
 
+// Sección 11.1: la API habla de "vendedor"; en la base el rol se guarda como "operator".
+export const ROLES_API = ["admin", "vendedor"] as const;
+
+export type RolApi = (typeof ROLES_API)[number];
+
+const ROL_INTERNO = { admin: "admin", vendedor: "operator" } as const;
+
+export function aRolApi(rol: "admin" | "operator"): RolApi {
+  return rol === "admin" ? "admin" : "vendedor";
+}
+
+const rolApi = z
+  .enum(ROLES_API, "El rol es admin o vendedor.")
+  .transform((rol) => ROL_INTERNO[rol]);
+
 export const esquemaLoginApi = z.strictObject({
   email: texto.trim().min(1, "El correo es obligatorio."),
   password: texto.min(1, "La contraseña es obligatoria."),
@@ -56,7 +74,7 @@ export const esquemaUsuarioNuevoApi = z
   .strictObject({
     nombre: texto,
     email: texto,
-    rol: z.enum(ROLES, "Rol inválido."),
+    rol: rolApi,
     password: texto,
   })
   .transform(({ email, password, ...resto }) => ({
@@ -69,7 +87,7 @@ export const esquemaUsuarioNuevoApi = z
 export const esquemaUsuarioPatchApi = z.strictObject({
   nombre: texto.optional(),
   email: texto.optional(),
-  rol: z.enum(ROLES, "Rol inválido.").optional(),
+  rol: rolApi.optional(),
   activo: z.boolean().optional(),
 });
 
@@ -92,6 +110,7 @@ export const esquemaProductoNuevoApi = z
   .strictObject({
     codigo: texto,
     descripcion: texto,
+    categoriaId: idPositivo,
     precio: centavos,
     stockInicial: enteroNoNegativo.optional(),
     stockMinimo: enteroNoNegativo.optional(),
@@ -101,6 +120,7 @@ export const esquemaProductoNuevoApi = z
   .transform((producto): z.input<typeof esquemaProductoNuevo> => ({
     codigo: producto.codigo,
     nombre: producto.descripcion,
+    categoriaId: producto.categoriaId,
     precio: deCentavos(producto.precio),
     stock: producto.stockInicial ?? 0,
     stockMinimo: producto.stockMinimo ?? STOCK_MINIMO_INICIAL,
@@ -112,6 +132,7 @@ export const esquemaProductoNuevoApi = z
 export const esquemaProductoPatchApi = z.strictObject({
   codigo: texto.optional(),
   descripcion: texto.optional(),
+  categoriaId: idPositivo.optional(),
   precio: centavos.optional(),
   stockMinimo: enteroNoNegativo.optional(),
   imagenUrl: texto.nullish(),
@@ -125,6 +146,7 @@ export function fusionarProducto({
   actual: {
     codigo: string;
     nombre: string;
+    categoriaId: number | null;
     precio: string;
     stockMinimo: number;
     imagenUrl: string | null;
@@ -135,6 +157,7 @@ export function fusionarProducto({
   return esquemaProductoEdicion.safeParse({
     codigo: cambios.codigo ?? actual.codigo,
     nombre: cambios.descripcion ?? actual.nombre,
+    categoriaId: cambios.categoriaId ?? actual.categoriaId,
     precio:
       cambios.precio === undefined ? actual.precio : deCentavos(cambios.precio),
     stockMinimo: cambios.stockMinimo ?? actual.stockMinimo,
@@ -170,32 +193,44 @@ export function aAjusteManual({
   });
 }
 
+const tipoDoc = z.enum(TIPOS_DOCUMENTO, "El tipo de documento es DNI o CUIT.");
+
 const camposCliente = {
+  tipoDoc,
   nroDoc: texto,
   nombre: texto,
+  domicilio: texto.nullish(),
   telefono: texto.nullish(),
   email: texto.nullish(),
+  cuentaCorriente: z.boolean().optional(),
   limiteCredito: centavos.nullish(),
 };
 
 export const esquemaClienteNuevoApi = z
   .strictObject(camposCliente)
   .transform((cliente): z.input<typeof esquemaClienteNuevo> => ({
+    tipoDoc: cliente.tipoDoc,
     nombre: cliente.nombre,
     documento: cliente.nroDoc,
+    domicilio: cliente.domicilio ?? null,
     telefono: cliente.telefono ?? null,
     email: cliente.email ?? null,
+    cuentaCorriente: cliente.cuentaCorriente ?? false,
     limiteCredito:
       cliente.limiteCredito == null ? null : deCentavos(cliente.limiteCredito),
   }))
   .pipe(esquemaClienteNuevo);
 
 export const esquemaClientePatchApi = z.strictObject({
+  tipoDoc: tipoDoc.optional(),
   nroDoc: texto.optional(),
   nombre: texto.optional(),
+  domicilio: texto.nullish(),
   telefono: texto.nullish(),
   email: texto.nullish(),
+  cuentaCorriente: z.boolean().optional(),
   limiteCredito: centavos.nullish(),
+  activo: z.boolean().optional(),
 });
 
 export function fusionarCliente({
@@ -203,17 +238,26 @@ export function fusionarCliente({
   cambios,
 }: {
   actual: {
+    tipoDoc: (typeof TIPOS_DOCUMENTO)[number];
     nombre: string;
     documento: string;
+    domicilio: string | null;
     telefono: string | null;
     email: string | null;
+    cuentaCorriente: boolean;
     limiteCredito: string | null;
+    activo: boolean;
   };
   cambios: z.infer<typeof esquemaClientePatchApi>;
 }) {
-  return esquemaClienteNuevo.safeParse({
+  return esquemaClienteEdicion.safeParse({
+    activo: cambios.activo ?? actual.activo,
+    tipoDoc: cambios.tipoDoc ?? actual.tipoDoc,
     nombre: cambios.nombre ?? actual.nombre,
     documento: cambios.nroDoc ?? actual.documento,
+    domicilio:
+      cambios.domicilio === undefined ? actual.domicilio : cambios.domicilio,
+    cuentaCorriente: cambios.cuentaCorriente ?? actual.cuentaCorriente,
     telefono:
       cambios.telefono === undefined ? actual.telefono : cambios.telefono,
     email: cambios.email === undefined ? actual.email : cambios.email,
@@ -228,6 +272,10 @@ export function fusionarCliente({
 
 export const esquemaPagoApi = z.strictObject({
   importe: centavos,
+  medio: z.enum(
+    MEDIOS_PAGO,
+    "El medio es efectivo, transferencia o tarjeta_debito.",
+  ),
   observacion: texto.nullish(),
 });
 
@@ -241,6 +289,7 @@ export function aPagoEntrada({
   return esquemaPago.safeParse({
     clienteId,
     importe: deCentavos(entrada.importe),
+    medio: entrada.medio,
     observacion: entrada.observacion ?? null,
   });
 }

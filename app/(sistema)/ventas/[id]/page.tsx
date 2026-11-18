@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
+import { documentoDeVenta } from "@/lib/documento";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
+import {
+  Columna,
+  Dato,
+  Fila,
+  ListaDatos,
+  Pagina,
+  Seccion,
+  Texto,
+} from "@/components/maquetacion";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
 import { formatearMoneda } from "@/lib/moneda";
@@ -19,6 +28,17 @@ import { calcularVuelto } from "@/lib/ventas/vuelto";
 import { AnularVenta } from "./anular-venta";
 import { BotonImprimir } from "./boton-imprimir";
 import { ComprobanteImpreso } from "./comprobante-impreso";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Comprobante · Power Up",
@@ -36,17 +56,15 @@ const COLUMNAS = [
 
 export default function Comprobante({ params }: PageProps<"/ventas/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Comprobante">
         Copia de la venta tal como se confirmó.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Detalle params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -62,10 +80,10 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex max-w-4xl flex-col gap-10">
-        <div className="flex justify-end">
+      <Columna>
+        <Fila className="justify-end">
           <BotonImprimir />
-        </div>
+        </Fila>
         <Datos venta={venta} />
         <Items venta={venta} />
         {venta.anuladaEn ? (
@@ -73,7 +91,7 @@ async function Detalle({ params }: { params: Promise<{ id: string }> }) {
         ) : usuario.esAdministrador ? (
           <AnularVenta ventaId={venta.id} />
         ) : null}
-      </div>
+      </Columna>
       <ComprobanteImpreso venta={venta} />
     </>
   );
@@ -85,9 +103,9 @@ function Datos({ venta }: { venta: VentaDetalle }) {
     { termino: "Fecha", valor: formatearFechaHora(venta.creadoEn) },
     {
       termino: "Cliente",
-      valor: venta.clienteDocumento
-        ? `${venta.clienteNombre} · ${venta.clienteDocumento}`
-        : venta.clienteNombre,
+      valor: [venta.clienteNombre, documentoDeVenta(venta)]
+        .filter(Boolean)
+        .join(" · "),
     },
     ...(venta.tarjetaTipo
       ? [
@@ -108,107 +126,98 @@ function Datos({ venta }: { venta: VentaDetalle }) {
   ];
 
   return (
-    <dl className="grid gap-4 sm:grid-cols-2">
+    <ListaDatos>
       {datos.map((dato) => (
-        <div key={dato.termino} className="flex flex-col gap-2">
-          <dt className="text-sm text-neutral-400">{dato.termino}</dt>
-          <dd className="tabular-nums text-white">{dato.valor}</dd>
-        </div>
+        <Dato
+          key={dato.termino}
+          termino={dato.termino}
+          className="tabular-nums"
+        >
+          {dato.valor}
+        </Dato>
       ))}
-      <div className="flex flex-col gap-2">
-        <dt className="text-sm text-neutral-400">Forma de pago</dt>
-        <dd className="flex gap-2">
-          <span
-            className={`${CLASE_BADGE} ${COLORES_FORMA_PAGO[venta.formaPago]}`}
-          >
-            {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
-          </span>
-          {venta.anuladaEn ? (
-            <span className={`${CLASE_BADGE} text-neutral-400`}>
-              {ETIQUETA_ANULADA}
-            </span>
-          ) : null}
-        </dd>
-      </div>
-    </dl>
+      <Dato termino="Forma de pago" className="flex gap-2">
+        <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
+          {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
+        </Badge>
+        {venta.anuladaEn ? (
+          <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
+        ) : null}
+      </Dato>
+    </ListaDatos>
   );
 }
 
 function Items({ venta }: { venta: VentaDetalle }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-        <thead>
-          <tr className="border-b border-neutral-900">
-            {COLUMNAS.map((columna) => (
-              <th
-                key={columna.titulo}
-                scope="col"
-                className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-              >
-                {columna.titulo}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {venta.items.map((item) => (
-            <tr key={item.id} className={CLASE_FILA}>
-              <td className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
-                {item.codigo}
-              </td>
-              <td className="max-w-40 truncate pr-3 text-white sm:max-w-96 sm:pr-6">
-                {item.descripcion}
-              </td>
-              <td className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
-                {item.cantidad}
-              </td>
-              <td
-                className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-              >
-                {formatearMoneda(item.precioUnitario)}
-              </td>
-              <td className="text-right tabular-nums text-white">
-                {formatearMoneda(item.subtotal)}
-              </td>
-            </tr>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {COLUMNAS.map((columna) => (
+            <TableHead
+              key={columna.titulo}
+              scope="col"
+              className={columna.clase}
+            >
+              {columna.titulo}
+            </TableHead>
           ))}
-        </tbody>
-        <tfoot>
-          <tr className="h-11 border-t border-neutral-800">
-            <th
-              scope="row"
-              colSpan={COLUMNAS.length - 1}
-              className="text-right font-medium text-neutral-400"
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {venta.items.map((item) => (
+          <TableRow key={item.id}>
+            <TableCell className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
+              {item.codigo}
+            </TableCell>
+            <TableCell className="max-w-40 truncate pr-3 text-white sm:max-w-96 sm:pr-6">
+              {item.descripcion}
+            </TableCell>
+            <TableCell className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
+              {item.cantidad}
+            </TableCell>
+            <TableCell
+              className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
             >
-              Total
-            </th>
-            <td
-              className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
-            >
-              {formatearMoneda(venta.total)}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+              {formatearMoneda(item.precioUnitario)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums text-white">
+              {formatearMoneda(item.subtotal)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow className="border-t border-neutral-800">
+          <TableHead
+            scope="row"
+            colSpan={COLUMNAS.length - 1}
+            className="h-auto pr-3 text-right text-[0.9375rem] sm:pr-6"
+          >
+            Total
+          </TableHead>
+          <TableCell
+            className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
+          >
+            {formatearMoneda(venta.total)}
+          </TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
   );
 }
 
 function Anulacion({ venta }: { venta: VentaDetalle }) {
   return (
-    <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-      <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em]">
-        Anulación
-      </h2>
-      <p className="text-[0.9375rem] text-neutral-300">
+    <Seccion titulo="Anulación" separada>
+      <Texto tono="tenue" className="text-[0.9375rem]">
         Anulada el {formatearFechaHora(venta.anuladaEn!)} por{" "}
         {venta.anuladaPor ?? "un usuario"}. Motivo: {venta.motivoAnulacion}
-      </p>
-      <p className="text-sm text-neutral-400">
+      </Texto>
+      <Texto tono="secundario" className="text-sm">
         El stock se devolvió y, si fue en cuenta corriente, el total se restó
         del saldo del cliente.
-      </p>
-    </section>
+      </Texto>
+    </Seccion>
   );
 }

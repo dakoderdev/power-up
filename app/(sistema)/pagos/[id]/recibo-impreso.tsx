@@ -1,4 +1,5 @@
 import { COMERCIO } from "@/lib/comercio";
+import { etiquetaMedio } from "@/lib/cuentas/etiquetas";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import type { PagoDetalle } from "@/lib/cuentas/pagar";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -19,6 +20,7 @@ export function ReciboImpreso({
     { termino: "Número", valor: `N.º ${formatearRecibo(numero)}` },
     { termino: "Fecha y hora", valor: formatearFechaHora(pago.fecha) },
     { termino: "Cliente", valor: pago.clienteNombre },
+    { termino: "Medio", valor: etiquetaMedio(pago.medio) },
     { termino: "Recibido por", valor: pago.usuarioNombre },
   ];
 

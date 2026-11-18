@@ -1,0 +1,1 @@
+ALTER TABLE `clientes` ADD `activo` integer DEFAULT true NOT NULL;

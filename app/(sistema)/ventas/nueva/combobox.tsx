@@ -3,7 +3,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent, ReactNode } from "react";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
-import { CLASE_CAMPO } from "@/components/estilos";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { FieldLabel } from "@/components/ui/field";
 
 const ESPERA_BUSQUEDA = 250;
 const SELECTOR_OPCION = "[data-opcion]:not(:disabled)";
@@ -143,11 +145,9 @@ export function Combobox<T extends { id: number }>({
       onKeyDown={manejarTeclas}
       className="relative flex flex-col gap-2"
     >
-      <label htmlFor={idCampo} className="text-sm font-medium text-neutral-400">
-        {etiqueta}
-      </label>
+      <FieldLabel htmlFor={idCampo}>{etiqueta}</FieldLabel>
       <div className="relative">
-        <input
+        <Input
           ref={campo}
           id={idCampo}
           type="text"
@@ -161,7 +161,7 @@ export function Combobox<T extends { id: number }>({
           maxLength={120}
           placeholder={abierto && elegido ? elegido : placeholder}
           autoComplete="off"
-          className={`${CLASE_CAMPO} border-neutral-800 pr-10`}
+          className="pr-10"
         />
         <ChevronDown
           aria-hidden="true"
@@ -191,7 +191,9 @@ export function Combobox<T extends { id: number }>({
               </li>
             ) : null}
             {encontrados === null ? (
-              <li aria-hidden="true" className="esqueleto mt-2 h-32" />
+              <li aria-hidden="true" className="mt-2">
+                <Skeleton className="h-32" />
+              </li>
             ) : encontrados.length === 0 ? (
               <li className="pt-3 text-sm text-neutral-500">
                 No hay resultados para la búsqueda.

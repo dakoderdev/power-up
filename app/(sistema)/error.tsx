@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { claseBoton } from "@/components/estilos";
+import { Button } from "@/components/ui/button";
 
 export default function ErrorPantalla({
   error,
@@ -28,16 +28,9 @@ export default function ErrorPantalla({
           si sigue fallando, avisá al administrador.
         </p>
         <div>
-          <button
-            type="button"
-            onClick={retry}
-            className={claseBoton({
-              variante: "secundario",
-              enFormulario: true,
-            })}
-          >
+          <Button variant="outline" size="lg" type="button" onClick={retry}>
             Reintentar
-          </button>
+          </Button>
         </div>
       </div>
     </div>

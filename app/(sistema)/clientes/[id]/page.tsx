@@ -4,15 +4,28 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
+import {
+  Columna,
+  Dato,
+  Fila,
+  Linea,
+  ListaDatos,
+  Pagina,
+  Seccion,
+  Titulo,
+} from "@/components/maquetacion";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import {
   obtenerCliente,
   obtenerCuenta,
+  obtenerUltimasVentas,
   type ClienteDetalle,
   type CuentaCliente,
 } from "@/lib/clientes/detalle";
-import { ETIQUETAS_TIPO_CUENTA } from "@/lib/cuentas/etiquetas";
+import { ETIQUETAS_TIPO_CUENTA, etiquetaMedio } from "@/lib/cuentas/etiquetas";
+import { etiquetaDocumento } from "@/lib/documento";
+import { ETIQUETA_ANULADA, ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -20,6 +33,18 @@ import { aCentavos, formatearMoneda } from "@/lib/moneda";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { RegistrarPago } from "./registrar-pago";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { ETIQUETAS_ESTADO } from "@/lib/estados";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Cliente · Power Up",
@@ -34,23 +59,19 @@ const COLUMNAS = [
   { titulo: "Saldo", clase: `w-px text-right ${SOLO_ESCRITORIO}` },
 ];
 
-const CLASE_H2 = "font-pixel text-3xl leading-none tracking-[-0.01em]";
-
 export default function Cliente({ params }: PageProps<"/clientes/[id]">) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Cliente">
         Datos de contacto y cuenta corriente.
       </EncabezadoPagina>
 
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="esqueleto h-96 max-w-4xl" />
-        }
+        fallback={<Skeleton aria-hidden="true" className="h-96 max-w-4xl" />}
       >
         <Ficha params={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -64,159 +85,236 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const cuenta = await obtenerCuenta(cliente.id);
+  const [cuenta, ultimas] = await Promise.all([
+    obtenerCuenta(cliente.id),
+    obtenerUltimasVentas(cliente.id),
+  ]);
   const debe = aCentavos(cuenta.saldo) > 0;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-10">
+    <Columna>
       <Datos cliente={cliente} saldo={cuenta.saldo} />
 
-      <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-        <div className="flex min-h-10 items-center">
-          <h2 className={CLASE_H2}>Registrar pago</h2>
-        </div>
+      <UltimasFacturas ventas={ultimas} />
+
+      <Seccion titulo="Registrar pago" separada>
         {debe ? (
           <RegistrarPago clienteId={cliente.id} saldo={cuenta.saldo} />
         ) : (
           <Vacio>
-            El cliente no tiene saldo adeudado, así que no admite pagos.
+            {cliente.cuentaCorriente
+              ? "El cliente no tiene saldo adeudado, así que no admite pagos."
+              : "El cliente no tiene cuenta corriente habilitada. Editalo para habilitarla."}
           </Vacio>
         )}
-      </section>
+      </Seccion>
 
       <Historial cuenta={cuenta} />
-    </div>
+    </Columna>
   );
 }
 
 function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
   const datos = [
     { termino: "Nombre o razón social", valor: cliente.nombre },
-    { termino: "Documento", valor: cliente.documento },
+    { termino: "Documento", valor: etiquetaDocumento(cliente) },
+    { termino: "Domicilio", valor: cliente.domicilio ?? "Sin domicilio" },
     { termino: "Teléfono", valor: cliente.telefono ?? "Sin teléfono" },
     { termino: "Correo", valor: cliente.email ?? "Sin correo" },
     {
+      termino: "Cuenta corriente",
+      valor: cliente.cuentaCorriente ? "Habilitada" : "No habilitada",
+    },
+    {
       termino: "Límite de crédito",
-      valor: cliente.limiteCredito
-        ? formatearMoneda(cliente.limiteCredito)
-        : "Sin límite",
+      valor: !cliente.cuentaCorriente
+        ? "—"
+        : cliente.limiteCredito
+          ? formatearMoneda(cliente.limiteCredito)
+          : "Sin límite",
     },
   ];
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex min-h-10 items-center justify-between gap-4">
-        <h2 className={`${CLASE_H2} truncate`}>{cliente.nombre}</h2>
-        <Link
-          href={`/clientes/${cliente.id}/editar`}
-          className={claseBoton({ variante: "texto" })}
-        >
-          <Pencil aria-hidden="true" className="size-5" />
-          Editar
-        </Link>
-      </div>
-      <dl className="grid gap-4 sm:grid-cols-2">
+    <Seccion
+      titulo={
+        <Fila className="min-w-0 gap-3">
+          <Titulo className="truncate">{cliente.nombre}</Titulo>
+          {cliente.activo ? null : (
+            <Badge variant="secondary">{ETIQUETAS_ESTADO.inactivo}</Badge>
+          )}
+        </Fila>
+      }
+      accion={
+        <Button asChild variant="ghost">
+          <Link href={`/clientes/${cliente.id}/editar`}>
+            <Pencil aria-hidden="true" className="size-5" />
+            Editar
+          </Link>
+        </Button>
+      }
+    >
+      <ListaDatos>
         {datos.map((dato) => (
-          <div key={dato.termino} className="flex flex-col gap-2">
-            <dt className="text-sm text-neutral-400">{dato.termino}</dt>
-            <dd className="truncate tabular-nums text-white">{dato.valor}</dd>
-          </div>
-        ))}
-        <div className="flex flex-col gap-2">
-          <dt className="text-sm text-neutral-400">Saldo adeudado</dt>
-          <dd
-            className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-white"}`}
+          <Dato
+            key={dato.termino}
+            termino={dato.termino}
+            className="truncate tabular-nums"
           >
-            {formatearMoneda(saldo)}
-          </dd>
-        </div>
-      </dl>
-    </section>
+            {dato.valor}
+          </Dato>
+        ))}
+        <Dato
+          termino="Saldo adeudado"
+          className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-white"}`}
+        >
+          {formatearMoneda(saldo)}
+        </Dato>
+      </ListaDatos>
+    </Seccion>
+  );
+}
+
+type UltimaVenta = Awaited<ReturnType<typeof obtenerUltimasVentas>>[number];
+
+// RF-C3: las últimas facturas del cliente, con acceso al detalle.
+function UltimasFacturas({ ventas }: { ventas: UltimaVenta[] }) {
+  return (
+    <Seccion titulo="Últimas facturas" separada>
+      {ventas.length === 0 ? (
+        <Vacio>Todavía no hay facturas a nombre de este cliente.</Vacio>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col" className="pr-3 sm:pr-6">
+                Comprobante
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Fecha
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Forma de pago
+              </TableHead>
+              <TableHead scope="col" className="w-px text-right">
+                Total
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ventas.map((venta) => (
+              <TableRow key={venta.id} className="group relative">
+                <TableCell className="pr-3 tabular-nums sm:pr-6">
+                  <Linea className="flex items-center gap-2">
+                    <Link
+                      href={`/ventas/${venta.id}`}
+                      className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                    >
+                      {formatearComprobante(venta)}
+                    </Link>
+                    {venta.anuladaEn ? (
+                      <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
+                    ) : null}
+                  </Linea>
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                >
+                  {formatearFechaHora(venta.creadoEn)}
+                </TableCell>
+                <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                  <Badge>{ETIQUETAS_FORMA_PAGO[venta.formaPago]}</Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatearMoneda(venta.total)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Seccion>
   );
 }
 
 function Historial({ cuenta }: { cuenta: CuentaCliente }) {
   return (
-    <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-      <div className="flex min-h-10 items-center">
-        <h2 className={CLASE_H2}>Cuenta corriente</h2>
-      </div>
+    <Seccion titulo="Cuenta corriente" separada>
       {cuenta.movimientos.length === 0 ? (
         <Vacio>
           Todavía no hay ventas en cuenta corriente ni pagos de este cliente.
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <caption className="sr-only">
-              Ventas en cuenta corriente, anulaciones y pagos, del más antiguo
-              al más reciente
-            </caption>
-            <thead>
-              <tr className="border-b border-neutral-900">
-                {COLUMNAS.map((columna) => (
-                  <th
-                    key={columna.titulo}
-                    scope="col"
-                    className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-                  >
-                    {columna.titulo}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cuenta.movimientos.map((movimiento) => (
-                <tr key={movimiento.id} className={CLASE_FILA}>
-                  <td className="pr-3 tabular-nums text-neutral-300 sm:pr-6">
-                    {formatearFechaHora(movimiento.fecha)}
-                  </td>
-                  <td className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
-                    <span className="flex items-center gap-2">
-                      <span className={`${CLASE_BADGE} text-neutral-300`}>
-                        {ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}
-                      </span>
-                      {movimiento.ventaId && movimiento.numero !== null ? (
-                        <Link
-                          href={`/ventas/${movimiento.ventaId}`}
-                          className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
-                        >
-                          N.º{" "}
-                          {formatearComprobante({
-                            puntoVenta: movimiento.puntoVenta ?? 1,
-                            numero: movimiento.numero,
-                          })}
-                        </Link>
-                      ) : movimiento.tipo === "pago" &&
-                        movimiento.reciboNumero !== null ? (
-                        <Link
-                          href={`/pagos/${movimiento.id}`}
-                          className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
-                        >
-                          Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
-                        </Link>
-                      ) : (
-                        <span className="truncate text-neutral-300">
-                          {movimiento.observacion}
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="pr-3 text-right tabular-nums text-white sm:pr-6">
-                    {movimiento.tipo === "venta" ? "" : "−"}
-                    {formatearMoneda(movimiento.importe)}
-                  </td>
-                  <td
-                    className={`text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-                  >
-                    {formatearMoneda(movimiento.saldo)}
-                  </td>
-                </tr>
+        <Table>
+          <TableCaption className="sr-only">
+            Ventas en cuenta corriente, anulaciones y pagos, del más antiguo al
+            más reciente
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              {COLUMNAS.map((columna) => (
+                <TableHead
+                  key={columna.titulo}
+                  scope="col"
+                  className={columna.clase}
+                >
+                  {columna.titulo}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {cuenta.movimientos.map((movimiento) => (
+              <TableRow key={movimiento.id}>
+                <TableCell className="pr-3 tabular-nums text-neutral-300 sm:pr-6">
+                  {formatearFechaHora(movimiento.fecha)}
+                </TableCell>
+                <TableCell className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
+                  <Linea className="flex items-center gap-2">
+                    <Badge>{ETIQUETAS_TIPO_CUENTA[movimiento.tipo]}</Badge>
+                    {movimiento.ventaId && movimiento.numero !== null ? (
+                      <Link
+                        href={`/ventas/${movimiento.ventaId}`}
+                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                      >
+                        N.º{" "}
+                        {formatearComprobante({
+                          puntoVenta: movimiento.puntoVenta ?? 1,
+                          numero: movimiento.numero,
+                        })}
+                      </Link>
+                    ) : movimiento.tipo === "pago" &&
+                      movimiento.reciboNumero !== null ? (
+                      <Link
+                        href={`/pagos/${movimiento.id}`}
+                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                      >
+                        Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
+                        {movimiento.medio
+                          ? ` · ${etiquetaMedio(movimiento.medio)}`
+                          : ""}
+                      </Link>
+                    ) : (
+                      <Linea tono="tenue" className="truncate">
+                        {movimiento.observacion}
+                      </Linea>
+                    )}
+                  </Linea>
+                </TableCell>
+                <TableCell className="pr-3 text-right tabular-nums text-white sm:pr-6">
+                  {movimiento.tipo === "venta" ? "" : "−"}
+                  {formatearMoneda(movimiento.importe)}
+                </TableCell>
+                <TableCell
+                  className={`text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                >
+                  {formatearMoneda(movimiento.saldo)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
-    </section>
+    </Seccion>
   );
 }

@@ -18,6 +18,12 @@ export const TIPOS_TARJETA = ["debito", "credito"] as const;
 export const TIPOS_STOCK = ["entrada", "salida"] as const;
 export const ORIGENES_STOCK = ["manual", "venta", "anulacion"] as const;
 export const TIPOS_CUENTA = ["venta", "pago", "anulacion"] as const;
+export const TIPOS_DOCUMENTO = ["DNI", "CUIT"] as const;
+export const MEDIOS_PAGO = [
+  "efectivo",
+  "transferencia",
+  "tarjeta_debito",
+] as const;
 
 const dinero = customType<{ data: string; driverData: number }>({
   dataType: () => "integer",
@@ -29,12 +35,26 @@ function id() {
   return integer("id").primaryKey({ autoIncrement: true });
 }
 
+export const categorias = sqliteTable(
+  "categorias",
+  {
+    id: id(),
+    nombre: text("nombre", { length: 60 }).notNull().unique(),
+    activa: booleano("activa").notNull().default(true),
+    creadoEn: fecha("creado_en").notNull().default(AHORA),
+  },
+  (t) => [
+    check("categorias_nombre_no_vacio", sql`length(trim(${t.nombre})) > 0`),
+  ],
+);
+
 export const productos = sqliteTable(
   "productos",
   {
     id: id(),
     codigo: text("codigo", { length: 30 }).notNull().unique(),
     nombre: text("nombre", { length: 120 }).notNull(),
+    categoriaId: integer("categoria_id").references(() => categorias.id),
     precio: dinero("precio").notNull(),
     stock: integer("stock").notNull().default(0),
     stockMinimo: integer("stock_minimo").notNull().default(3),
@@ -56,10 +76,16 @@ export const clientes = sqliteTable(
   {
     id: id(),
     nombre: text("nombre").notNull(),
+    tipoDoc: text("tipo_doc", { enum: TIPOS_DOCUMENTO })
+      .notNull()
+      .default("DNI"),
     documento: text("documento").notNull().unique(),
+    domicilio: text("domicilio"),
     telefono: text("telefono"),
     email: text("email"),
+    cuentaCorriente: booleano("cuenta_corriente").notNull().default(false),
     limiteCredito: dinero("limite_credito"),
+    activo: booleano("activo").notNull().default(true),
     creadoEn: fecha("creado_en").notNull().default(AHORA),
   },
   (t) => [
@@ -89,7 +115,9 @@ export const ventas = sqliteTable(
     creadoEn: fecha("creado_en").notNull().default(AHORA),
     clienteId: integer("cliente_id").references(() => clientes.id),
     clienteNombre: text("cliente_nombre").notNull(),
+    clienteTipoDoc: text("cliente_tipo_doc", { enum: TIPOS_DOCUMENTO }),
     clienteDocumento: text("cliente_documento"),
+    clienteDomicilio: text("cliente_domicilio"),
     formaPago: text("forma_pago", { enum: FORMAS_PAGO }).notNull(),
     total: dinero("total").notNull(),
     montoRecibido: dinero("monto_recibido"),
@@ -224,6 +252,7 @@ export const movimientosCuenta = sqliteTable(
     ventaId: integer("venta_id").references(() => ventas.id),
     observacion: text("observacion"),
     reciboNumero: integer("recibo_numero"),
+    medio: text("medio", { enum: MEDIOS_PAGO }),
     fecha: fecha("fecha").notNull().default(AHORA),
     usuarioId: text("usuario_id")
       .notNull()

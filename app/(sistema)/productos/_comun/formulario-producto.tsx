@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition } from "react";
+import { useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearProductoAccion,
   editarProductoAccion,
@@ -19,13 +21,31 @@ import {
 } from "@/lib/productos/esquemas";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
-import type { ErroresProducto } from "@/lib/productos/guardar";
+import { cn } from "@/lib/utils";
 import { VistaPrevia, type Borrador } from "./vista-previa";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 
 type Campo =
-  "codigo" | "nombre" | "precio" | "stock" | "stockMinimo" | "imagenUrl";
+  | "codigo"
+  | "nombre"
+  | "categoriaId"
+  | "precio"
+  | "stock"
+  | "stockMinimo"
+  | "imagenUrl";
 
-const CLASE_AYUDA = "text-sm text-neutral-500";
+type CategoriaOpcion = { id: number; nombre: string };
+
 const CLASE_ENLACE_AYUDA =
   "text-neutral-400 underline underline-offset-4 transition-colors hover:text-white";
 
@@ -47,6 +67,7 @@ const CAMPOS: {
     completo: true,
   },
   { nombre: "codigo", etiqueta: "Código", tipo: "text", maximo: CODIGO_MAXIMO },
+  { nombre: "categoriaId", etiqueta: "Categoría", tipo: "select" },
   {
     nombre: "precio",
     etiqueta: "Precio de venta",
@@ -66,7 +87,6 @@ const CAMPOS: {
     etiqueta: "Stock mínimo",
     tipo: "text",
     modo: "numeric",
-    ayuda: "Con esta cantidad o menos, el producto figura con stock bajo.",
   },
   {
     nombre: "imagenUrl",
@@ -101,10 +121,12 @@ function leerFormulario(formulario: FormData) {
   const texto = (campo: string) => String(formulario.get(campo) ?? "");
   const stock = texto("stock").trim();
   const minimo = texto("stockMinimo").trim();
+  const categoria = texto("categoriaId");
 
   return {
     codigo: texto("codigo"),
     nombre: texto("nombre"),
+    categoriaId: categoria === "" ? undefined : Number(categoria),
     precio: texto("precio"),
     imagenUrl: texto("imagenUrl"),
     stock: stock === "" ? 0 : Number(stock),
@@ -143,24 +165,42 @@ function valorInicial({
     return producto?.precio.replace(".", ",") ?? "";
   }
 
+  if (campo === "categoriaId") {
+    return producto?.categoriaId ? String(producto.categoriaId) : "";
+  }
+
   return producto?.[campo] ?? "";
 }
 
-export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
+export function FormularioProducto({
+  producto,
+  categorias,
+}: {
+  producto?: ProductoFila;
+  categorias: CategoriaOpcion[];
+}) {
   const id = useId();
   const router = useRouter();
   const esAlta = producto === undefined;
-  const [errores, setErrores] = useState<ErroresProducto>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
+  const {
+    errores,
+    mensaje,
+    enviando: guardando,
+    enviar,
+    validar,
+    ejecutar,
+    limpiar,
+  } = useFormulario();
   const [borrador, setBorrador] = useState(() => borradorInicial(producto));
-  const [guardando, iniciarGuardado] = useTransition();
   const formulario = useRef<HTMLFormElement>(null);
+  const [pendiente, setPendiente] = useState<z.infer<
+    typeof esquemaProductoEdicion
+  > | null>(null);
 
   function reiniciar() {
     formulario.current?.reset();
     setBorrador(borradorInicial(producto));
-    setErrores({});
-    setMensaje(null);
+    limpiar();
   }
 
   function actualizar(evento: FormEvent<HTMLFormElement>) {
@@ -171,41 +211,47 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const datos = leerFormulario(new FormData(evento.currentTarget));
-    const validacion = esAlta
-      ? esquemaProductoNuevo.safeParse(datos)
-      : esquemaProductoEdicion.safeParse(datos);
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      setMensaje(null);
+    if (esAlta) {
+      enviar({
+        esquema: esquemaProductoNuevo,
+        datos,
+        accion: crearProductoAccion,
+        aviso: "Producto creado.",
+        onListo: () => {
+          reiniciar();
+          router.push(`/productos?${new URLSearchParams({ q: datos.codigo })}`);
+        },
+      });
       return;
     }
 
-    setErrores({});
-    setMensaje(null);
-    iniciarGuardado(async () => {
-      const respuesta = esAlta
-        ? await crearProductoAccion(validacion.data)
-        : await editarProductoAccion({
-            id: producto.id,
-            datos: validacion.data,
-          });
+    const edicion = validar(esquemaProductoEdicion, datos);
 
-      if (respuesta.guardado) {
-        if (esAlta) {
-          reiniciar();
-        }
+    if (!edicion) {
+      return;
+    }
 
-        router.push(
-          esAlta
-            ? `/productos?${new URLSearchParams({ q: validacion.data.codigo })}`
-            : "/productos",
-        );
-        return;
-      }
+    if (producto.activo && !edicion.activo) {
+      setPendiente(edicion);
+      return;
+    }
 
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+    guardarEdicion(edicion);
+  }
+
+  function guardarEdicion(datos: z.infer<typeof esquemaProductoEdicion>) {
+    if (esAlta) {
+      return;
+    }
+
+    ejecutar({
+      accion: () => editarProductoAccion({ id: producto.id, datos }),
+      aviso:
+        producto.activo && !datos.activo
+          ? "Producto dado de baja."
+          : "Cambios guardados.",
+      onListo: () => router.push("/productos"),
     });
   }
 
@@ -228,6 +274,37 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
               error ? `${idCampo}-error` : null,
             ].filter(Boolean);
 
+            if (campo.tipo === "select") {
+              return (
+                <Field key={campo.nombre}>
+                  <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+                  <NativeSelect
+                    id={idCampo}
+                    name={campo.nombre}
+                    defaultValue={valorInicial({
+                      campo: campo.nombre,
+                      producto,
+                    })}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${idCampo}-error` : undefined}
+                  >
+                    <NativeSelectOption value="">Elegí una</NativeSelectOption>
+                    {categorias.map((categoria) => (
+                      <NativeSelectOption
+                        key={categoria.id}
+                        value={categoria.id}
+                      >
+                        {categoria.nombre}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  {error ? (
+                    <FieldError id={`${idCampo}-error`}>{error}</FieldError>
+                  ) : null}
+                </Field>
+              );
+            }
+
             if (campo.nombre === "stock" && !esAlta) {
               return (
                 <div key={campo.nombre} className="flex flex-col gap-2">
@@ -237,23 +314,20 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                   <p className="flex h-11 items-center text-[0.9375rem] tabular-nums">
                     {producto.stock} unidades
                   </p>
-                  <p className={CLASE_AYUDA}>Cambia solo con movimientos.</p>
+                  <FieldDescription>
+                    Cambia solo con movimientos.
+                  </FieldDescription>
                 </div>
               );
             }
 
             return (
-              <div
+              <Field
                 key={campo.nombre}
-                className={`flex flex-col gap-2 ${campo.completo ? "lg:col-span-full" : ""}`}
+                className={campo.completo ? "lg:col-span-full" : ""}
               >
-                <label
-                  htmlFor={idCampo}
-                  className="text-sm font-medium text-neutral-400"
-                >
-                  {campo.etiqueta}
-                </label>
-                <input
+                <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+                <Input
                   id={idCampo}
                   name={campo.nombre}
                   type={campo.tipo}
@@ -268,19 +342,17 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                       ? descripciones.join(" ")
                       : undefined
                   }
-                  className={`${CLASE_CAMPO} ${campo.modo ? "tabular-nums" : ""} ${error ? "border-red-400" : "border-neutral-800"}`}
+                  className={campo.modo ? "tabular-nums" : ""}
                 />
                 {campo.ayuda ? (
-                  <p id={`${idCampo}-ayuda`} className={CLASE_AYUDA}>
+                  <FieldDescription id={`${idCampo}-ayuda`}>
                     {campo.ayuda}
-                  </p>
+                  </FieldDescription>
                 ) : null}
                 {error ? (
-                  <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                    {error}
-                  </p>
+                  <FieldError id={`${idCampo}-error`}>{error}</FieldError>
                 ) : null}
-              </div>
+              </Field>
             );
           })}
         </div>
@@ -297,7 +369,13 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                 return (
                   <label
                     key={estado.etiqueta}
-                    className={`${claseBoton({ variante: elegido ? "secundario" : "texto", enFormulario: true })} ${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`}
+                    className={cn(
+                      buttonVariants({
+                        variant: elegido ? "outline" : "ghost",
+                        size: "lg",
+                      }),
+                      `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                    )}
                   >
                     <input
                       type="radio"
@@ -311,10 +389,10 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
                 );
               })}
             </div>
-            <p className={CLASE_AYUDA}>
+            <FieldDescription>
               Un producto inactivo no entra en ventas nuevas y sigue en los
               comprobantes anteriores.
-            </p>
+            </FieldDescription>
           </fieldset>
         )}
 
@@ -325,28 +403,41 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
         ) : null}
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Link
-            href="/productos"
-            onClick={reiniciar}
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Cancelar
-          </Link>
-          <button
+          <Button asChild variant="ghost" size="lg">
+            <Link href="/productos" onClick={reiniciar}>
+              Cancelar
+            </Link>
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
             type="submit"
             disabled={guardando}
-            className={claseBoton({ variante: "primario", enFormulario: true })}
           >
             {guardando
               ? "Guardando…"
               : esAlta
                 ? "Crear producto"
                 : "Guardar cambios"}
-          </button>
+          </Button>
         </div>
       </form>
 
       <VistaPrevia borrador={borrador} />
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Dar de baja ${producto?.nombre ?? "el producto"}?`}
+        descripcion="Deja de ofrecerse en ventas nuevas y sigue en los comprobantes viejos. Lo podés volver a activar desde esta ficha."
+        accion="Dar de baja"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </div>
   );
 }

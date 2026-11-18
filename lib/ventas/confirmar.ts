@@ -1,15 +1,15 @@
-import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { obtenerSaldo } from "@/lib/cuentas/saldo";
 import { db, type Transaccion } from "@/lib/db";
 import {
   clientes,
   itemsVenta,
   movimientosCuenta,
-  movimientosStock,
   productos,
   ventas,
 } from "@/lib/db/schema";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
+import { moverStock } from "@/lib/stock/mover";
 import { formatearComprobante, PUNTO_VENTA } from "./comprobante";
 import type { VentaEntrada } from "./esquemas";
 import { CONSUMIDOR_FINAL } from "./etiquetas";
@@ -18,6 +18,7 @@ import { calcularVuelto } from "./vuelto";
 
 export type CodigoErrorVenta =
   | "CLIENTE_INEXISTENTE"
+  | "CLIENTE_INACTIVO"
   | "CUENTA_CORRIENTE_NO_HABILITADA"
   | "PRODUCTO_INEXISTENTE"
   | "PRODUCTO_INACTIVO"
@@ -151,14 +152,31 @@ export async function confirmarVenta({
         };
       }
 
-      if (entrada.formaPago === "cuenta_corriente" && !cliente) {
+      if (cliente && !cliente.activo) {
+        return {
+          confirmada: false,
+          errores: [
+            {
+              codigo: "CLIENTE_INACTIVO",
+              mensaje:
+                "El cliente está dado de baja. Elegí otro o vendé a consumidor final.",
+            },
+          ],
+        };
+      }
+
+      if (
+        entrada.formaPago === "cuenta_corriente" &&
+        (!cliente || !cliente.cuentaCorriente)
+      ) {
         return {
           confirmada: false,
           errores: [
             {
               codigo: "CUENTA_CORRIENTE_NO_HABILITADA",
-              mensaje:
-                "Cuenta corriente solo se admite con cliente registrado.",
+              mensaje: cliente
+                ? `${cliente.nombre} no tiene cuenta corriente habilitada.`
+                : "Cuenta corriente solo se admite con cliente registrado.",
             },
           ],
         };
@@ -243,7 +261,9 @@ export async function confirmarVenta({
           numero: siguienteNumero(PUNTO_VENTA),
           clienteId: cliente?.id ?? null,
           clienteNombre: cliente?.nombre ?? CONSUMIDOR_FINAL,
+          clienteTipoDoc: cliente?.tipoDoc ?? null,
           clienteDocumento: cliente?.documento ?? null,
+          clienteDomicilio: cliente?.domicilio ?? null,
           formaPago: entrada.formaPago,
           total,
           montoRecibido: recibido,
@@ -266,30 +286,18 @@ export async function confirmarVenta({
         })),
       );
 
-      await tx.insert(movimientosStock).values(
-        lineas.map((linea) => ({
+      for (const linea of lineas) {
+        const movido = await moverStock({
+          tx,
           productoId: linea.producto.id,
-          tipo: "salida" as const,
-          origen: "venta" as const,
+          tipo: "salida",
+          origen: "venta",
           cantidad: linea.cantidad,
           ventaId,
           usuarioId,
-        })),
-      );
+        });
 
-      for (const linea of lineas) {
-        const [descontado] = await tx
-          .update(productos)
-          .set({ stock: sql`${productos.stock} - ${linea.cantidad}` })
-          .where(
-            and(
-              eq(productos.id, linea.producto.id),
-              gte(productos.stock, linea.cantidad),
-            ),
-          )
-          .returning({ id: productos.id });
-
-        if (!descontado) {
+        if (!movido) {
           throw new StockAgotado({
             productoId: linea.producto.id,
             nombre: linea.producto.nombre,

@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { obtenerUsuario } from "@/lib/usuarios/detalle";
 import { FormularioUsuario } from "../../_comun/formulario-usuario";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagina } from "@/components/maquetacion";
+import { RestablecerContrasena } from "./restablecer-contrasena";
 
 export const metadata: Metadata = {
   title: "Editar usuario · Power Up",
@@ -15,17 +18,15 @@ export default function EditarUsuario({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Editar usuario">
         Cambiá nombre, correo, rol o estado.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Formulario parametros={params} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -42,6 +43,17 @@ async function Formulario({
   }
 
   return (
-    <FormularioUsuario usuario={detalle.usuario} esActual={detalle.esActual} />
+    <>
+      <FormularioUsuario
+        usuario={detalle.usuario}
+        esActual={detalle.esActual}
+      />
+      {detalle.esActual ? null : (
+        <RestablecerContrasena
+          id={detalle.usuario.id}
+          nombre={detalle.usuario.nombre}
+        />
+      )}
+    </>
   );
 }

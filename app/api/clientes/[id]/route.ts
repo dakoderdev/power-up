@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { ApiError, noEncontrado } from "@/lib/api/errores";
+import { noEncontrado } from "@/lib/api/errores";
 import { esquemaClientePatchApi, fusionarCliente } from "@/lib/api/esquemas";
 import { formatearClienteApi, enCentavos, enIso } from "@/lib/api/formato";
 import {
@@ -11,7 +11,7 @@ import {
   validar,
 } from "@/lib/api/ruta";
 import { obtenerCliente, obtenerUltimasVentas } from "@/lib/clientes/detalle";
-import { editarCliente } from "@/lib/clientes/guardar";
+import { editarCliente, exigirClienteGuardado } from "@/lib/clientes/guardar";
 import { obtenerSaldo } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
@@ -45,7 +45,7 @@ export const GET = ruta<Params>({}, async ({ params }) => {
   });
 });
 
-// RF-C2: edición parcial del cliente.
+// RF-C2 y RF-C7: edición parcial del cliente; la baja es lógica (activo: false).
 export const PATCH = ruta<Params>({}, async ({ solicitud, params }) => {
   const id = leerId(params.id);
   const actual = await obtenerCliente(id);
@@ -56,19 +56,7 @@ export const PATCH = ruta<Params>({}, async ({ solicitud, params }) => {
 
   const cambios = validar(esquemaClientePatchApi, await leerJson(solicitud));
   const entrada = exigir(fusionarCliente({ actual, cambios }));
-  const resultado = await editarCliente({ id, entrada });
-
-  if (!resultado.guardado) {
-    if (resultado.errores.documento) {
-      throw new ApiError(
-        409,
-        "DOCUMENTO_DUPLICADO",
-        resultado.errores.documento[0],
-      );
-    }
-
-    throw noEncontrado("El cliente");
-  }
+  exigirClienteGuardado(await editarCliente({ id, entrada }));
 
   const editado = await obtenerCliente(id);
 

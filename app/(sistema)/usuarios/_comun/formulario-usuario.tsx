@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
+import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/db/schema";
 import {
   crearUsuarioAccion,
@@ -16,11 +18,17 @@ import {
   esquemaUsuarioEdicion,
   esquemaUsuarioNuevo,
 } from "@/lib/usuarios/esquemas";
-import type { ErroresUsuario } from "@/lib/usuarios/guardar";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ETIQUETAS_ROL = {
   admin: "Administrador",
-  operator: "Operador",
+  operator: "Vendedor",
 } as const;
 
 export function FormularioUsuario({
@@ -36,9 +44,17 @@ export function FormularioUsuario({
     usuario?.rol ?? "operator",
   );
   const [activo, setActivo] = useState(usuario?.activo ?? true);
-  const [errores, setErrores] = useState<ErroresUsuario>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [guardando, iniciarGuardado] = useTransition();
+  const {
+    errores,
+    mensaje,
+    enviando: guardando,
+    enviar,
+    validar,
+    ejecutar,
+  } = useFormulario();
+  const [pendiente, setPendiente] = useState<z.infer<
+    typeof esquemaUsuarioEdicion
+  > | null>(null);
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -46,61 +62,53 @@ export function FormularioUsuario({
     const nombre = String(formulario.get("nombre") ?? "");
     const correo = String(formulario.get("correo") ?? "");
 
-    setErrores({});
-    setMensaje(null);
-
     if (usuario === undefined) {
-      const contrasena = String(formulario.get("contrasena") ?? "");
-      const validacion = esquemaUsuarioNuevo.safeParse({
-        nombre,
-        correo,
-        rol,
-        contrasena,
-      });
-
-      if (!validacion.success) {
-        setErrores(z.flattenError(validacion.error).fieldErrors);
-        return;
-      }
-
-      iniciarGuardado(async () => {
-        const respuesta = await crearUsuarioAccion(validacion.data);
-
-        if (respuesta.creado) {
-          router.push("/usuarios");
-          return;
-        }
-
-        setErrores(respuesta.errores);
+      enviar({
+        esquema: esquemaUsuarioNuevo,
+        datos: {
+          nombre,
+          correo,
+          rol,
+          contrasena: String(formulario.get("contrasena") ?? ""),
+        },
+        accion: crearUsuarioAccion,
+        aviso: "Usuario creado.",
+        onListo: () => router.push("/usuarios"),
       });
       return;
     }
 
-    const validacion = esquemaUsuarioEdicion.safeParse({
+    const edicion = validar(esquemaUsuarioEdicion, {
       nombre,
       correo,
       rol,
       activo,
     });
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
+    if (!edicion) {
       return;
     }
 
-    iniciarGuardado(async () => {
-      const respuesta = await editarUsuarioAccion({
-        id: usuario.id,
-        datos: validacion.data,
-      });
+    if (usuario.activo && !edicion.activo) {
+      setPendiente(edicion);
+      return;
+    }
 
-      if (respuesta.guardado) {
-        router.push("/usuarios");
-        return;
-      }
+    guardarEdicion(edicion);
+  }
 
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+  function guardarEdicion(datos: z.infer<typeof esquemaUsuarioEdicion>) {
+    if (usuario === undefined) {
+      return;
+    }
+
+    ejecutar({
+      accion: () => editarUsuarioAccion({ id: usuario.id, datos }),
+      aviso:
+        usuario.activo && !datos.activo
+          ? "Usuario desactivado."
+          : "Cambios guardados.",
+      onListo: () => router.push("/usuarios"),
     });
   }
 
@@ -123,14 +131,9 @@ export function FormularioUsuario({
     const idCampo = `${id}-${nombre}`;
 
     return (
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor={idCampo}
-          className="text-sm font-medium text-neutral-400"
-        >
-          {etiqueta}
-        </label>
-        <input
+      <Field>
+        <FieldLabel htmlFor={idCampo}>{etiqueta}</FieldLabel>
+        <Input
           id={idCampo}
           name={nombre}
           type={tipo}
@@ -139,14 +142,11 @@ export function FormularioUsuario({
           defaultValue={valor}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${idCampo}-error` : undefined}
-          className={`${CLASE_CAMPO} ${error ? "border-red-400" : "border-neutral-800"}`}
         />
         {error ? (
-          <p id={`${idCampo}-error`} className="text-sm text-red-400">
-            {error}
-          </p>
+          <FieldError id={`${idCampo}-error`}>{error}</FieldError>
         ) : null}
-      </div>
+      </Field>
     );
   }
 
@@ -174,14 +174,9 @@ export function FormularioUsuario({
           autoComplete: "off",
         })}
 
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor={`${id}-rol`}
-            className="text-sm font-medium text-neutral-400"
-          >
-            Rol
-          </label>
-          <select
+        <Field>
+          <FieldLabel htmlFor={`${id}-rol`}>Rol</FieldLabel>
+          <NativeSelect
             id={`${id}-rol`}
             value={rol}
             onChange={(evento) =>
@@ -189,16 +184,15 @@ export function FormularioUsuario({
             }
             disabled={esActual}
             aria-invalid={Boolean(errorRol)}
-            className={`${CLASE_CAMPO} border-neutral-800 disabled:text-neutral-400`}
           >
             {ROLES.map((valor) => (
-              <option key={valor} value={valor}>
+              <NativeSelectOption key={valor} value={valor}>
                 {ETIQUETAS_ROL[valor]}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
-          {errorRol ? <p className="text-sm text-red-400">{errorRol}</p> : null}
-        </div>
+          </NativeSelect>
+          {errorRol ? <FieldError>{errorRol}</FieldError> : null}
+        </Field>
 
         {esAlta
           ? campoTexto({
@@ -211,16 +205,20 @@ export function FormularioUsuario({
       </div>
 
       {esAlta ? null : (
-        <label className="flex items-center gap-3 text-[0.9375rem] text-white">
-          <input
-            type="checkbox"
+        <Field orientation="horizontal" data-disabled={esActual}>
+          <Checkbox
+            id={`${id}-activo`}
             checked={activo}
-            onChange={(evento) => setActivo(evento.target.checked)}
+            onCheckedChange={(marcado) => setActivo(marcado === true)}
             disabled={esActual}
-            className="size-5 accent-verde"
           />
-          Usuario activo
-        </label>
+          <FieldLabel
+            htmlFor={`${id}-activo`}
+            className="text-[0.9375rem] font-normal text-white"
+          >
+            Usuario activo
+          </FieldLabel>
+        </Field>
       )}
 
       <p className="text-sm text-neutral-500">
@@ -238,24 +236,31 @@ export function FormularioUsuario({
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Link
-          href="/usuarios"
-          className={claseBoton({ variante: "texto", enFormulario: true })}
-        >
-          Cancelar
-        </Link>
-        <button
-          type="submit"
-          disabled={guardando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
-        >
+        <Button asChild variant="ghost" size="lg">
+          <Link href="/usuarios">Cancelar</Link>
+        </Button>
+        <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando
             ? "Guardando…"
             : esAlta
               ? "Crear usuario"
               : "Guardar cambios"}
-        </button>
+        </Button>
       </div>
+      <ConfirmarAccion
+        abierto={pendiente !== null}
+        onCerrar={() => setPendiente(null)}
+        titulo={`¿Desactivar a ${usuario?.nombre ?? "este usuario"}?`}
+        descripcion="Se cierran sus sesiones abiertas y no puede volver a entrar hasta que otro administrador lo reactive."
+        accion="Desactivar"
+        onConfirmar={() => {
+          if (pendiente) {
+            guardarEdicion(pendiente);
+          }
+
+          setPendiente(null);
+        }}
+      />
     </form>
   );
 }

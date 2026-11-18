@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
-import { CLASE_BADGE } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Vacio } from "@/components/vacio";
 import { etiquetaDia } from "@/lib/fechas";
@@ -13,6 +12,9 @@ import { enlaceVentas, leerFiltros } from "@/lib/ventas/filtros";
 import { listarOpcionesFiltro, listarVentas } from "@/lib/ventas/listado";
 import { TablaVentas } from "../tabla-ventas";
 import { FiltrosVentas } from "./filtros-ventas";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Fila, Linea, Pagina, Pila, Seccion } from "@/components/maquetacion";
 
 export const metadata: Metadata = {
   title: "Ventas · Power Up",
@@ -26,17 +28,15 @@ export default function Ventas({
   searchParams: Promise<Parametros>;
 }) {
   return (
-    <div className="flex flex-col gap-8">
+    <Pagina>
       <EncabezadoPagina titulo="Ventas">
         Historial de ventas, de la más reciente a la más antigua.
       </EncabezadoPagina>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="esqueleto h-96" />}
-      >
+      <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Lista parametros={searchParams} />
       </Suspense>
-    </div>
+    </Pagina>
   );
 }
 
@@ -73,7 +73,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
   const ahora = new Date();
 
   return (
-    <section className="flex flex-col gap-8">
+    <Seccion className="gap-8">
       <FiltrosVentas
         valores={valores}
         activos={activos}
@@ -82,14 +82,14 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
       />
 
       {activos ? (
-        <div className="flex min-h-10 items-center gap-4">
-          <span className={CLASE_BADGE}>
+        <Fila className="min-h-10 gap-4">
+          <Badge className="text-inherit">
             {contar({ cantidad, singular: "venta", plural: "ventas" })}
-          </span>
-          <span className="text-sm text-neutral-400 tabular-nums">
+          </Badge>
+          <Linea tono="secundario" className="text-sm tabular-nums">
             Total emitido: {formatearMoneda(totalEmitido)}
-          </span>
-        </div>
+          </Linea>
+        </Fila>
       ) : null}
 
       {grupos.length === 0 ? (
@@ -97,7 +97,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
           Ninguna venta coincide con los filtros. Probá con otros o limpialos.
         </Vacio>
       ) : (
-        <div className="flex flex-col gap-4">
+        <Pila className="gap-4">
           <TablaVentas
             grupos={grupos.map((grupo) => ({
               clave: grupo.dia,
@@ -115,8 +115,8 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
             paginas={paginas}
             enlace={(numero) => enlaceVentas({ valores, pagina: numero })}
           />
-        </div>
+        </Pila>
       )}
-    </section>
+    </Seccion>
   );
 }

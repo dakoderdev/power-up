@@ -2,8 +2,18 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { Button } from "@/components/ui/button";
 import { iniciarSesion } from "./actions";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Eye } from "pixelarticons/react/Eye.js";
+import { EyeOff } from "pixelarticons/react/EyeOff.js";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 const FORMATO_CORREO = /^\S+@\S+\.\S{2,}$/;
 const BLOQUES_CAMPO = 10;
@@ -77,8 +87,8 @@ export function FormularioLogin() {
       iniciar(async () => {
         const respuesta = await iniciarSesion({ correo, clave });
 
-        if (respuesta?.error) {
-          setErrorGeneral(respuesta.error);
+        if (!respuesta.ok) {
+          setErrorGeneral(respuesta.error.message);
         }
       });
     }
@@ -91,14 +101,11 @@ export function FormularioLogin() {
       className="@container flex flex-col gap-6"
     >
       <div className="grid items-start gap-6 @lg:grid-cols-2 @lg:gap-4">
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="correo"
-            className="text-sm font-medium text-neutral-200"
-          >
+        <Field>
+          <FieldLabel htmlFor="correo" className="text-neutral-200">
             Correo electrónico
-          </label>
-          <input
+          </FieldLabel>
+          <Input
             ref={campoCorreo}
             id="correo"
             name="correo"
@@ -112,24 +119,18 @@ export function FormularioLogin() {
             }}
             aria-invalid={errores.correo ? true : undefined}
             aria-describedby={errores.correo ? "error-correo" : undefined}
-            className={`${CLASE_CAMPO} ${errores.correo ? "border-red-400" : "border-neutral-800"}`}
           />
           {errores.correo ? (
-            <p id="error-correo" className="text-sm text-red-400">
-              {errores.correo}
-            </p>
+            <FieldError id="error-correo">{errores.correo}</FieldError>
           ) : null}
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="clave"
-            className="text-sm font-medium text-neutral-200"
-          >
+        <Field>
+          <FieldLabel htmlFor="clave" className="text-neutral-200">
             Contraseña
-          </label>
-          <div className="relative">
-            <input
+          </FieldLabel>
+          <InputGroup>
+            <InputGroupInput
               ref={campoClave}
               id="clave"
               name="clave"
@@ -142,24 +143,29 @@ export function FormularioLogin() {
               }}
               aria-invalid={errores.clave ? true : undefined}
               aria-describedby={errores.clave ? "error-clave" : undefined}
-              className={`${CLASE_CAMPO} pr-20 ${errores.clave ? "border-red-400" : "border-neutral-800"}`}
             />
-            <button
-              type="button"
-              onClick={() => setVisible(!visible)}
-              aria-pressed={visible}
-              aria-controls="clave"
-              className="absolute inset-y-0 right-0 px-3 text-sm text-neutral-400 transition-colors hover:text-white"
-            >
-              {visible ? "Ocultar" : "Mostrar"}
-            </button>
-          </div>
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon"
+                onClick={() => setVisible(!visible)}
+                aria-pressed={visible}
+                aria-controls="clave"
+                aria-label={
+                  visible ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+              >
+                {visible ? (
+                  <EyeOff aria-hidden="true" />
+                ) : (
+                  <Eye aria-hidden="true" />
+                )}
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
           {errores.clave ? (
-            <p id="error-clave" className="text-sm text-red-400">
-              {errores.clave}
-            </p>
+            <FieldError id="error-clave">{errores.clave}</FieldError>
           ) : null}
-        </div>
+        </Field>
       </div>
 
       <div className="flex flex-col gap-3 pt-2">
@@ -176,13 +182,15 @@ export function FormularioLogin() {
             {errorGeneral}
           </p>
         ) : null}
-        <button
+        <Button
+          variant="default"
+          size="lg"
           type="submit"
           disabled={pendiente}
-          className={`${claseBoton({ variante: "primario", enFormulario: true })} w-full`}
+          className="w-full"
         >
           {pendiente ? "Ingresando…" : "Ingresar"}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useId } from "react";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { importePositivo } from "@/lib/esquemas-comunes";
 import { aCentavos, deCentavos, formatearMoneda } from "@/lib/moneda";
 import { contar } from "@/lib/texto";
+import { cn } from "@/lib/utils";
 import {
   ETIQUETAS_FORMA_PAGO,
   ETIQUETAS_TIPO_TARJETA,
@@ -13,6 +14,12 @@ import {
 } from "@/lib/ventas/etiquetas";
 import { calcularVuelto } from "@/lib/ventas/vuelto";
 import { Dato, Seccion } from "./seccion-venta";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 export type FormaPago = keyof typeof ETIQUETAS_FORMA_PAGO;
 
@@ -24,14 +31,12 @@ export type DatosTarjeta = {
 
 export type VentaConfirmada = { comprobante: string; vuelto: string | null };
 
-const CLASE_ETIQUETA = "text-sm font-medium text-neutral-400";
-const BORDE_CAMPO = "border-neutral-800";
-
 export function ResumenVenta({
   unidades,
   total,
   formaPago,
   conCliente,
+  conCuenta,
   montoRecibido,
   tarjeta,
   errores,
@@ -47,6 +52,7 @@ export function ResumenVenta({
   total: number;
   formaPago: FormaPago;
   conCliente: boolean;
+  conCuenta: boolean;
   montoRecibido: string;
   tarjeta: DatosTarjeta;
   errores: string[];
@@ -88,12 +94,18 @@ export function ResumenVenta({
         <div className="flex flex-wrap gap-2">
           {Object.entries(ETIQUETAS_FORMA_PAGO).map(([valor, etiqueta]) => {
             const elegida = formaPago === valor;
-            const bloqueada = valor === "cuenta_corriente" && !conCliente;
+            const bloqueada = valor === "cuenta_corriente" && !conCuenta;
 
             return (
               <label
                 key={valor}
-                className={`${claseBoton({ variante: elegida ? "secundario" : "texto", enFormulario: true })} ${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`}
+                className={cn(
+                  buttonVariants({
+                    variant: elegida ? "outline" : "ghost",
+                    size: "lg",
+                  }),
+                  `${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                )}
               >
                 <input
                   type="radio"
@@ -109,41 +121,40 @@ export function ResumenVenta({
             );
           })}
         </div>
-        {conCliente ? null : (
+        {conCuenta ? null : (
           <p className="text-sm text-neutral-500">
-            Elegí un cliente registrado para usar cuenta corriente.
+            {conCliente
+              ? "Este cliente no tiene cuenta corriente habilitada."
+              : "Elegí un cliente registrado y habilitado para usar cuenta corriente."}
           </p>
         )}
       </fieldset>
 
       {formaPago === "contado" ? (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={`${id}-recibido`} className={CLASE_ETIQUETA}>
+        <Field>
+          <FieldLabel htmlFor={`${id}-recibido`}>
             Monto recibido (opcional)
-          </label>
-          <input
+          </FieldLabel>
+          <Input
             id={`${id}-recibido`}
             inputMode="decimal"
             value={montoRecibido}
             onChange={(evento) => onMontoRecibido(evento.target.value)}
             placeholder={formatearMoneda(deCentavos(total))}
-            className={`${CLASE_CAMPO} ${BORDE_CAMPO}`}
           />
           <p className="text-sm text-neutral-500">
             {vuelto === null
               ? "Si lo dejás vacío, se toma el total."
               : `Vuelto: ${formatearMoneda(vuelto)}`}
           </p>
-        </div>
+        </Field>
       ) : null}
 
       {formaPago === "tarjeta" ? (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor={`${id}-tipo`} className={CLASE_ETIQUETA}>
-              Tipo
-            </label>
-            <select
+          <Field>
+            <FieldLabel htmlFor={`${id}-tipo`}>Tipo</FieldLabel>
+            <NativeSelect
               id={`${id}-tipo`}
               value={tarjeta.tipo}
               onChange={(evento) =>
@@ -152,22 +163,19 @@ export function ResumenVenta({
                   tipo: evento.target.value as DatosTarjeta["tipo"],
                 })
               }
-              className={`${CLASE_CAMPO} ${BORDE_CAMPO}`}
             >
               {Object.entries(ETIQUETAS_TIPO_TARJETA).map(
                 ([valor, etiqueta]) => (
-                  <option key={valor} value={valor}>
+                  <NativeSelectOption key={valor} value={valor}>
                     {etiqueta}
-                  </option>
+                  </NativeSelectOption>
                 ),
               )}
-            </select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor={`${id}-marca`} className={CLASE_ETIQUETA}>
-              Marca
-            </label>
-            <input
+            </NativeSelect>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${id}-marca`}>Marca</FieldLabel>
+            <Input
               id={`${id}-marca`}
               list={`${id}-marcas`}
               value={tarjeta.marca}
@@ -175,19 +183,18 @@ export function ResumenVenta({
               onChange={(evento) =>
                 onTarjeta({ ...tarjeta, marca: evento.target.value })
               }
-              className={`${CLASE_CAMPO} ${BORDE_CAMPO}`}
             />
             <datalist id={`${id}-marcas`}>
               {MARCAS_TARJETA.map((marca) => (
                 <option key={marca} value={marca} />
               ))}
             </datalist>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor={`${id}-ultimos4`} className={CLASE_ETIQUETA}>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${id}-ultimos4`}>
               Últimos 4 dígitos
-            </label>
-            <input
+            </FieldLabel>
+            <Input
               id={`${id}-ultimos4`}
               inputMode="numeric"
               autoComplete="off"
@@ -199,12 +206,11 @@ export function ResumenVenta({
                   ultimos4: evento.target.value.replace(/\D/g, ""),
                 })
               }
-              className={`${CLASE_CAMPO} ${BORDE_CAMPO}`}
             />
             <p className="text-sm text-neutral-500">
               Nunca se pide ni se guarda el número completo.
             </p>
-          </div>
+          </Field>
         </div>
       ) : null}
 
@@ -222,21 +228,25 @@ export function ResumenVenta({
           {confirmada.vuelto === null
             ? ""
             : ` Vuelto: ${formatearMoneda(confirmada.vuelto)}.`}{" "}
-          <Link href="/ventas" className="underline-offset-4 hover:underline">
+          <Link
+            href="/ventas"
+            className="underline-offset-4 decoration-neutral-600 hover:underline"
+          >
             Ver ventas
           </Link>
         </p>
       )}
 
       <div className="flex flex-col gap-2">
-        <button
+        <Button
+          variant="default"
+          size="lg"
           type="button"
           onClick={onConfirmar}
           disabled={confirmando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
         >
           {confirmando ? "Confirmando…" : "Confirmar venta"}
-        </button>
+        </Button>
         <p className="text-sm text-neutral-500">
           Al confirmar se verifican y descuentan las existencias.
         </p>

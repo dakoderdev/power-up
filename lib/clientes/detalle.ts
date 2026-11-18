@@ -6,6 +6,7 @@ import { aCentavos, deCentavos } from "@/lib/moneda";
 
 const ULTIMAS_VENTAS = 6;
 
+// RF-C3: datos del cliente para su ficha.
 export async function obtenerCliente(id: number) {
   const [cliente] = await db.select().from(clientes).where(eq(clientes.id, id));
 
@@ -18,6 +19,7 @@ type MovimientoConSaldo = {
   importe: string;
   observacion: string | null;
   reciboNumero: number | null;
+  medio: "efectivo" | "transferencia" | "tarjeta_debito" | null;
   fecha: Date;
   ventaId: number | null;
   puntoVenta: number | null;
@@ -33,6 +35,7 @@ async function obtenerMovimientos(clienteId: number) {
       importe: movimientosCuenta.importe,
       observacion: movimientosCuenta.observacion,
       reciboNumero: movimientosCuenta.reciboNumero,
+      medio: movimientosCuenta.medio,
       fecha: movimientosCuenta.fecha,
       ventaId: movimientosCuenta.ventaId,
       puntoVenta: ventas.puntoVenta,

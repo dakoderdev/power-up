@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CLASE_BADGE, CLASE_FILA } from "@/components/estilos";
 import { Tapa } from "@/components/tapa";
 import { formatearHora } from "@/lib/fechas";
 import type { obtenerResumenInicio } from "@/lib/inicio/resumen";
@@ -11,6 +10,15 @@ import {
   ETIQUETAS_FORMA_PAGO,
 } from "@/lib/ventas/etiquetas";
 import { MasJuegos } from "./mas-juegos";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Resumen = Awaited<ReturnType<typeof obtenerResumenInicio>>;
 type VentaFila = Resumen["ventasHoy"]["ultimas"][number];
@@ -37,104 +45,94 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
   const agrupada = grupos.some((grupo) => grupo.titulo);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-        {agrupada ? null : (
-          <thead>
-            <FilaColumnas />
-          </thead>
-        )}
-        {grupos.map((grupo, indice) => {
-          const primero = indice === 0;
+    <Table>
+      {agrupada ? null : (
+        <TableHeader>
+          <FilaColumnas />
+        </TableHeader>
+      )}
+      {grupos.map((grupo, indice) => {
+        const primero = indice === 0;
 
-          return (
-            <tbody key={grupo.clave}>
-              {grupo.titulo ? (
-                <tr>
-                  <th
-                    scope="colgroup"
-                    colSpan={COLUMNAS.length}
-                    className={`text-left font-normal ${primero ? "pb-2" : "pb-2 pt-10"}`}
-                  >
-                    <div className="flex items-baseline justify-between gap-6">
-                      <span className="text-[0.9375rem] font-medium text-white">
-                        {grupo.titulo}
-                      </span>
-                      <span className="text-sm tabular-nums text-neutral-400">
-                        {grupo.detalle}
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              ) : null}
-              {grupo.titulo ? <FilaColumnas /> : null}
-              {grupo.ventas.map((venta) => (
-                <tr key={venta.id} className={CLASE_FILA}>
-                  <td className="pr-3 sm:pr-6">
-                    <JuegosVenta items={venta.items} />
-                  </td>
-                  <td className={`pr-6 tabular-nums ${SOLO_ESCRITORIO}`}>
-                    <Link
-                      href={`/ventas/${venta.id}`}
-                      className="text-neutral-300 transition-colors hover:text-white"
-                    >
-                      N.º {formatearComprobante(venta)}
-                    </Link>
-                  </td>
-                  <td
-                    className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
-                  >
-                    {formatearHora(venta.creadoEn)}
-                  </td>
-                  <td className="max-w-20 truncate pr-3 text-white sm:max-w-64 sm:pr-6">
-                    {venta.clienteNombre}
-                  </td>
-                  <td className={`pr-6 ${SOLO_ESCRITORIO}`}>
-                    <span
-                      className={`${CLASE_BADGE} ${COLORES_FORMA_PAGO[venta.formaPago]}`}
-                    >
-                      {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
+        return (
+          <TableBody key={grupo.clave}>
+            {grupo.titulo ? (
+              <TableRow className="h-auto border-b-0">
+                <th
+                  scope="colgroup"
+                  colSpan={COLUMNAS.length}
+                  className={`text-left font-normal ${primero ? "pb-2" : "pb-2 pt-10"}`}
+                >
+                  <div className="flex items-baseline justify-between gap-6">
+                    <span className="text-[0.9375rem] font-medium text-white">
+                      {grupo.titulo}
                     </span>
-                  </td>
-                  <td className="text-right tabular-nums">
-                    {venta.anuladaEn ? (
-                      <span className="flex items-center justify-end gap-2">
-                        <span className={`${CLASE_BADGE} text-neutral-400`}>
-                          {ETIQUETA_ANULADA}
-                        </span>
-                        <span className="text-neutral-400 line-through">
-                          {formatearMoneda(venta.total)}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-white">
+                    <span className="text-sm tabular-nums text-neutral-400">
+                      {grupo.detalle}
+                    </span>
+                  </div>
+                </th>
+              </TableRow>
+            ) : null}
+            {grupo.titulo ? <FilaColumnas /> : null}
+            {grupo.ventas.map((venta) => (
+              <TableRow key={venta.id}>
+                <TableCell className="pr-3 sm:pr-6">
+                  <JuegosVenta items={venta.items} />
+                </TableCell>
+                <TableCell className={`pr-6 tabular-nums ${SOLO_ESCRITORIO}`}>
+                  <Link
+                    href={`/ventas/${venta.id}`}
+                    className="text-neutral-300 transition-colors hover:text-white"
+                  >
+                    N.º {formatearComprobante(venta)}
+                  </Link>
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                >
+                  {formatearHora(venta.creadoEn)}
+                </TableCell>
+                <TableCell className="max-w-20 truncate pr-3 text-white sm:max-w-64 sm:pr-6">
+                  {venta.clienteNombre}
+                </TableCell>
+                <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                  <Badge className={COLORES_FORMA_PAGO[venta.formaPago]}>
+                    {ETIQUETAS_FORMA_PAGO[venta.formaPago]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {venta.anuladaEn ? (
+                    <span className="flex items-center justify-end gap-2">
+                      <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
+                      <span className="text-neutral-400 line-through">
                         {formatearMoneda(venta.total)}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          );
-        })}
-      </table>
-    </div>
+                    </span>
+                  ) : (
+                    <span className="text-white">
+                      {formatearMoneda(venta.total)}
+                    </span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        );
+      })}
+    </Table>
   );
 }
 
 function FilaColumnas() {
   return (
-    <tr className="border-b border-neutral-900">
+    <TableRow className="h-auto">
       {COLUMNAS.map((columna) => (
-        <th
-          key={columna.titulo}
-          scope="col"
-          className={`h-9 text-sm font-medium text-neutral-400 ${columna.clase}`}
-        >
+        <TableHead key={columna.titulo} scope="col" className={columna.clase}>
           {columna.titulo}
-        </th>
+        </TableHead>
       ))}
-    </tr>
+    </TableRow>
   );
 }
 

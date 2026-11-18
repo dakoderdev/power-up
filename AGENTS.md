@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, API REST con Route Handlers, deploy en Vercel. La consigna del parcial exige además shadcn/ui y Chart.js; la UI usa componentes propios sobre Tailwind, Chart.js se incorpora en el hito de cierre y shadcn/ui no se usa por decisión del equipo (ver README). Moneda única: pesos argentinos.
+Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cuentas corrientes, usuarios). Next.js, Tailwind, Drizzle sobre Turso (libSQL/SQLite), Better Auth, Zod + drizzle-zod, API REST con Route Handlers, deploy en Vercel. La consigna del parcial exige además shadcn/ui y Chart.js; los componentes de shadcn/ui se suman de a uno en `components/ui/`, tal cual salen y tematizados por tokens en `app/globals.css` según `DESIGN.md` (DI-46; nombres en inglés, sin traducir), y Chart.js ya muestra los gráficos del inicio (IN-06, ver README). Moneda única: pesos argentinos.
 
 ## Reglas
 
@@ -14,6 +14,10 @@ Sistema de ventas y gestión comercial (ventas, productos y stock, clientes y cu
 - Credenciales y claves solo en variables de entorno (`.env`, ignorado por git); nunca en el código. Mantené `.env.example` al día.
 - Prioridad de entrega: primero el flujo de venta integrado (venta → comprobante → stock → cuenta corriente), después productos y clientes, después usuarios, al final lo opcional.
 - Al empezar una tarea que edita archivos existentes, corré git fetch y git status -sb. Si la rama está atrasada respecto del remoto, avisame y esperá a que haga pull antes de editar.
+
+## Al sumar un componente de shadcn/ui
+
+`components.json` tiene `cssVariables: false` a propósito (con `true` el CLI puede pisar los tokens de `app/globals.css`). Por eso `npx shadcn add` trae colores fijos (`oklch(...)`, `dark:...`) y hay que pasarlos a mano a los tokens (`bg-primary`, `border-border`, `text-muted-foreground`…) y a `DESIGN.md`. Además, el CLI importa `cn` desde `"cn"` e instala un paquete `cn` que no corresponde: cambiá el import a `@/lib/utils` y corré `pnpm remove cn`. Si pregunta por sobrescribir un archivo existente (`button.tsx`, `input.tsx`…), respondé que no. Los íconos van con pixelarticons, no `lucide-react`.
 
 ## No construir
 

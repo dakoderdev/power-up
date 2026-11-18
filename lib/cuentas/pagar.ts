@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { ApiError, detallesDeCampos } from "@/lib/api/errores";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { clientes, movimientosCuenta, user } from "@/lib/db/schema";
@@ -10,6 +11,7 @@ export type ResultadoPago =
   | { registrado: true; pagoId: number; saldo: string }
   | {
       registrado: false;
+      codigo?: "CUENTA_CORRIENTE_NO_HABILITADA";
       errores: Partial<Record<keyof PagoEntrada, string[]>>;
     };
 
@@ -24,7 +26,7 @@ export async function registrarPago({
 }): Promise<ResultadoPago> {
   return db.transaction(async (tx) => {
     const [cliente] = await tx
-      .select({ id: clientes.id })
+      .select({ id: clientes.id, cuentaCorriente: clientes.cuentaCorriente })
       .from(clientes)
       .where(eq(clientes.id, entrada.clienteId));
 
@@ -32,6 +34,16 @@ export async function registrarPago({
       return {
         registrado: false,
         errores: { importe: ["El cliente no existe."] },
+      };
+    }
+
+    if (!cliente.cuentaCorriente) {
+      return {
+        registrado: false,
+        codigo: "CUENTA_CORRIENTE_NO_HABILITADA",
+        errores: {
+          importe: ["El cliente no tiene cuenta corriente habilitada."],
+        },
       };
     }
 
@@ -51,6 +63,7 @@ export async function registrarPago({
         clienteId: cliente.id,
         tipo: "pago",
         importe: validacion.data.importe,
+        medio: validacion.data.medio,
         observacion: validacion.data.observacion ?? null,
         reciboNumero: siguienteRecibo(),
         usuarioId,
@@ -74,6 +87,7 @@ export async function obtenerPago(id: number) {
       reciboNumero: movimientosCuenta.reciboNumero,
       fecha: movimientosCuenta.fecha,
       importe: movimientosCuenta.importe,
+      medio: movimientosCuenta.medio,
       observacion: movimientosCuenta.observacion,
       clienteId: clientes.id,
       clienteNombre: clientes.nombre,
@@ -100,3 +114,19 @@ export async function obtenerPago(id: number) {
 }
 
 export type PagoDetalle = NonNullable<Awaited<ReturnType<typeof obtenerPago>>>;
+
+// Sección 10.4 y regla 8: un pago rechazado pasa a ApiError (422 PAGO_SUPERA_DEUDA o CUENTA_CORRIENTE_NO_HABILITADA).
+export function exigirPagoRegistrado(resultado: ResultadoPago) {
+  if (resultado.registrado) {
+    return { pagoId: resultado.pagoId, saldo: resultado.saldo };
+  }
+
+  const detalles = detallesDeCampos(resultado.errores);
+
+  throw new ApiError(
+    422,
+    resultado.codigo ?? "PAGO_SUPERA_DEUDA",
+    detalles[0]?.mensaje ?? "El pago no puede superar el saldo adeudado.",
+    detalles,
+  );
+}

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "pixelarticons/react/ArrowLeft.js";
-import { CLASE_BADGE, CLASE_FILA, claseBoton } from "@/components/estilos";
 import { Paginacion } from "@/components/paginacion";
 import { Tapa } from "@/components/tapa";
+import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { formatearFechaHora } from "@/lib/fechas";
+import { formatearMoneda } from "@/lib/moneda";
 import { esStockBajo, ETIQUETAS_ORIGEN } from "@/lib/stock/etiquetas";
 import {
   listarMovimientos,
@@ -16,7 +17,16 @@ import {
 import { contar } from "@/lib/texto";
 import { formatearComprobante } from "@/lib/ventas/comprobante";
 import { AjustarStock } from "./ajustar-stock";
-import { CLASE_COLUMNA, enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
+import { enlaceStock, SOLO_ESCRITORIO } from "./_comun/stock";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const FILTROS: { valor?: OrigenStock; etiqueta: string }[] = [
   { etiqueta: "Todos" },
@@ -50,13 +60,12 @@ export async function MovimientosProducto({
 
   return (
     <section className="flex flex-col gap-4">
-      <Link
-        href="/stock"
-        className={`${claseBoton({ variante: "texto" })} -ml-3 self-start`}
-      >
-        <ArrowLeft aria-hidden="true" className="size-5" />
-        Todo el stock
-      </Link>
+      <Button asChild variant="ghost" className="-ml-3 self-start">
+        <Link href="/stock">
+          <ArrowLeft aria-hidden="true" className="size-5" />
+          Todo el stock
+        </Link>
+      </Button>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -66,7 +75,8 @@ export async function MovimientosProducto({
               {producto.nombre}
             </h2>
             <p className="text-sm tabular-nums text-neutral-400">
-              {producto.codigo}
+              {producto.codigo} · {producto.categoriaNombre ?? "Sin categoría"}{" "}
+              · {formatearMoneda(producto.precio)}
               {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
             </p>
           </div>
@@ -89,12 +99,11 @@ export async function MovimientosProducto({
             </span>
           ) : null}
         </p>
-        <Link
-          href={`/productos/${producto.id}`}
-          className={`${claseBoton({ variante: "texto" })} sm:ml-auto`}
-        >
-          Ver producto
-        </Link>
+        {puedeAjustar ? (
+          <Button asChild variant="ghost" className="sm:ml-auto">
+            <Link href={`/productos/${producto.id}`}>Editar producto</Link>
+          </Button>
+        ) : null}
       </div>
 
       {puedeAjustar ? (
@@ -112,14 +121,19 @@ export async function MovimientosProducto({
           const activo = filtro.valor === origen;
 
           return (
-            <Link
+            <Button
               key={filtro.etiqueta}
-              href={enlaceStock({ productoId, origen: filtro.valor })}
-              aria-current={activo ? "page" : undefined}
-              className={`${claseBoton({ variante: activo ? "secundario" : "texto" })} ${activo ? "" : "border border-transparent"}`}
+              asChild
+              variant={activo ? "outline" : "ghost"}
+              className={activo ? "" : "border border-transparent"}
             >
-              {filtro.etiqueta}
-            </Link>
+              <Link
+                href={enlaceStock({ productoId, origen: filtro.valor })}
+                aria-current={activo ? "page" : undefined}
+              >
+                {filtro.etiqueta}
+              </Link>
+            </Button>
           );
         })}
       </nav>
@@ -131,82 +145,71 @@ export async function MovimientosProducto({
             : "Este producto todavía no tiene movimientos de stock. Registrá una entrada con Ajustar stock."}
         </Vacio>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full whitespace-nowrap text-left text-[0.9375rem]">
-            <thead>
-              <tr className="border-b border-neutral-900">
-                <th scope="col" className={`${CLASE_COLUMNA} w-px pr-6`}>
-                  Fecha
-                </th>
-                <th scope="col" className={`${CLASE_COLUMNA} w-px pr-6`}>
-                  Origen
-                </th>
-                <th
-                  scope="col"
-                  className={`${CLASE_COLUMNA} pr-6 ${SOLO_ESCRITORIO}`}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col" className="w-px pr-6">
+                Fecha
+              </TableHead>
+              <TableHead scope="col" className="w-px pr-6">
+                Origen
+              </TableHead>
+              <TableHead scope="col" className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                Detalle
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Usuario
+              </TableHead>
+              <TableHead scope="col" className="w-px text-right">
+                Cantidad
+              </TableHead>
+              <TableHead scope="col" className="w-px pl-6 text-right">
+                Existencia
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {movimientos.map((movimiento) => (
+              <TableRow key={movimiento.id}>
+                <TableCell className="pr-6 tabular-nums text-neutral-300">
+                  {formatearFechaHora(new Date(movimiento.creadoEn))}
+                </TableCell>
+                <TableCell className="pr-6">
+                  <Badge>{ETIQUETAS_ORIGEN[movimiento.origen]}</Badge>
+                </TableCell>
+                <TableCell
+                  className={`max-w-80 truncate pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}
                 >
-                  Detalle
-                </th>
-                <th
-                  scope="col"
-                  className={`${CLASE_COLUMNA} w-px pr-6 ${SOLO_ESCRITORIO}`}
+                  {movimiento.ventaId && movimiento.numeroVenta ? (
+                    <Link
+                      href={`/ventas/${movimiento.ventaId}`}
+                      className="transition-colors hover:text-white"
+                    >
+                      {formatearComprobante({
+                        puntoVenta: movimiento.puntoVenta ?? 1,
+                        numero: movimiento.numeroVenta,
+                      })}
+                    </Link>
+                  ) : (
+                    (movimiento.motivo ?? "—")
+                  )}
+                </TableCell>
+                <TableCell
+                  className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}
                 >
-                  Usuario
-                </th>
-                <th scope="col" className={`${CLASE_COLUMNA} w-px text-right`}>
-                  Cantidad
-                </th>
-                <th
-                  scope="col"
-                  className={`${CLASE_COLUMNA} w-px pl-6 text-right`}
-                >
-                  Existencia
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {movimientos.map((movimiento) => (
-                <tr key={movimiento.id} className={CLASE_FILA}>
-                  <td className="pr-6 tabular-nums text-neutral-300">
-                    {formatearFechaHora(new Date(movimiento.creadoEn))}
-                  </td>
-                  <td className="pr-6">
-                    <span className={`${CLASE_BADGE} text-neutral-300`}>
-                      {ETIQUETAS_ORIGEN[movimiento.origen]}
-                    </span>
-                  </td>
-                  <td
-                    className={`max-w-80 truncate pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}
-                  >
-                    {movimiento.ventaId && movimiento.numeroVenta ? (
-                      <Link
-                        href={`/ventas/${movimiento.ventaId}`}
-                        className="transition-colors hover:text-white"
-                      >
-                        {formatearComprobante({
-                          puntoVenta: movimiento.puntoVenta ?? 1,
-                          numero: movimiento.numeroVenta,
-                        })}
-                      </Link>
-                    ) : (
-                      (movimiento.motivo ?? "—")
-                    )}
-                  </td>
-                  <td className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
-                    {movimiento.usuarioNombre}
-                  </td>
-                  <td className="text-right tabular-nums text-white">
-                    {movimiento.tipo === "entrada" ? "+" : "−"}
-                    {movimiento.cantidad}
-                  </td>
-                  <td className="pl-6 text-right tabular-nums text-neutral-300">
-                    {movimiento.existenciaResultante}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  {movimiento.usuarioNombre}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-white">
+                  {movimiento.tipo === "entrada" ? "+" : "−"}
+                  {movimiento.cantidad}
+                </TableCell>
+                <TableCell className="pl-6 text-right tabular-nums text-neutral-300">
+                  {movimiento.existenciaResultante}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       <Paginacion

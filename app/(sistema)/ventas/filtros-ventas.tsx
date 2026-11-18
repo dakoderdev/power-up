@@ -1,10 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
-import { claseBoton, CLASE_CAMPO } from "@/components/estilos";
+import { Button } from "@/components/ui/button";
 import { FORMAS_PAGO } from "@/lib/db/schema";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import type { ValoresFiltro } from "@/lib/ventas/filtros";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 type Opcion = { valor: string; etiqueta: string };
 
@@ -25,12 +30,12 @@ function Campo({
   children: ReactNode;
 }) {
   return (
-    <div className={`flex flex-col gap-2 ${claseExtra}`}>
-      <label htmlFor={nombre} className="text-sm text-neutral-400">
+    <Field className={claseExtra}>
+      <FieldLabel htmlFor={nombre} className="font-normal">
         {etiqueta}
-      </label>
+      </FieldLabel>
       {children}
-    </div>
+    </Field>
   );
 }
 
@@ -47,25 +52,14 @@ function Selector({
 }) {
   return (
     <Campo etiqueta={etiqueta} nombre={nombre}>
-      <div className="relative">
-        <select
-          id={nombre}
-          name={nombre}
-          defaultValue={valor}
-          className={`${CLASE_CAMPO} w-full appearance-none pr-10`}
-        >
-          <option value="">Todos</option>
-          {opciones.map((opcion) => (
-            <option key={opcion.valor} value={opcion.valor}>
-              {opcion.etiqueta}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-neutral-400"
-        />
-      </div>
+      <NativeSelect id={nombre} name={nombre} defaultValue={valor}>
+        <NativeSelectOption value="">Todos</NativeSelectOption>
+        {opciones.map((opcion) => (
+          <NativeSelectOption key={opcion.valor} value={opcion.valor}>
+            {opcion.etiqueta}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
     </Campo>
   );
 }
@@ -90,32 +84,29 @@ export function FiltrosVentas({
     >
       <div className="grid gap-4 lg:grid-cols-4">
         <Campo etiqueta="Buscar" nombre="q" claseExtra="lg:col-span-2">
-          <input
+          <Input
             id="q"
             name="q"
             type="search"
             defaultValue={valores.q}
             placeholder="Número o nombre del cliente"
             autoComplete="off"
-            className={`${CLASE_CAMPO} w-full`}
           />
         </Campo>
         <Campo etiqueta="Desde" nombre="desde">
-          <input
+          <Input
             id="desde"
             name="desde"
             type="date"
             defaultValue={valores.desde}
-            className={`${CLASE_CAMPO} w-full`}
           />
         </Campo>
         <Campo etiqueta="Hasta" nombre="hasta">
-          <input
+          <Input
             id="hasta"
             name="hasta"
             type="date"
             defaultValue={valores.hasta}
-            className={`${CLASE_CAMPO} w-full`}
           />
         </Campo>
         <Selector
@@ -153,19 +144,13 @@ export function FiltrosVentas({
         />
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <button
-          type="submit"
-          className={claseBoton({ variante: "primario", enFormulario: true })}
-        >
+        <Button variant="default" size="lg" type="submit">
           Filtrar
-        </button>
+        </Button>
         {activos ? (
-          <Link
-            href="/ventas"
-            className={claseBoton({ variante: "texto", enFormulario: true })}
-          >
-            Limpiar filtros
-          </Link>
+          <Button asChild variant="ghost" size="lg">
+            <Link href="/ventas">Limpiar filtros</Link>
+          </Button>
         ) : null}
       </div>
     </form>

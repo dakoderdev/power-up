@@ -1,14 +1,13 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
-import { CLASE_CAMPO, claseBoton } from "@/components/estilos";
+import { useFormulario } from "@/components/formulario";
+import { Button } from "@/components/ui/button";
 import { cambiarContrasenaAccion } from "@/lib/usuarios/acciones";
-import {
-  esquemaCambioContrasena,
-  type ErroresContrasena,
-} from "@/lib/usuarios/esquemas";
+import { esquemaCambioContrasena } from "@/lib/usuarios/esquemas";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 const CAMPOS = [
   {
@@ -25,38 +24,22 @@ const CAMPOS = [
 
 export function CambiarContrasena() {
   const id = useId();
-  const [errores, setErrores] = useState<ErroresContrasena>({});
-  const [listo, setListo] = useState(false);
-  const [guardando, iniciarGuardado] = useTransition();
+  const { errores, mensaje, enviando: guardando, enviar } = useFormulario();
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const formulario = evento.currentTarget;
     const datos = new FormData(formulario);
 
-    setListo(false);
-
-    const validacion = esquemaCambioContrasena.safeParse({
-      actual: String(datos.get("actual") ?? ""),
-      nueva: String(datos.get("nueva") ?? ""),
-    });
-
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      return;
-    }
-
-    setErrores({});
-    iniciarGuardado(async () => {
-      const respuesta = await cambiarContrasenaAccion(validacion.data);
-
-      if (respuesta.cambiada) {
-        formulario.reset();
-        setListo(true);
-        return;
-      }
-
-      setErrores(respuesta.errores);
+    enviar({
+      esquema: esquemaCambioContrasena,
+      datos: {
+        actual: String(datos.get("actual") ?? ""),
+        nueva: String(datos.get("nueva") ?? ""),
+      },
+      accion: cambiarContrasenaAccion,
+      aviso: "Contraseña actualizada.",
+      onListo: () => formulario.reset(),
     });
   }
 
@@ -73,28 +56,20 @@ export function CambiarContrasena() {
           const idCampo = `${id}-${campo.nombre}`;
 
           return (
-            <div key={campo.nombre} className="flex flex-col gap-2">
-              <label
-                htmlFor={idCampo}
-                className="text-sm font-medium text-neutral-400"
-              >
-                {campo.etiqueta}
-              </label>
-              <input
+            <Field key={campo.nombre}>
+              <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+              <Input
                 id={idCampo}
                 name={campo.nombre}
                 type="password"
                 autoComplete={campo.autoComplete}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? `${idCampo}-error` : undefined}
-                className={`${CLASE_CAMPO} ${error ? "border-red-400" : "border-neutral-800"}`}
               />
               {error ? (
-                <p id={`${idCampo}-error`} className="text-sm text-red-400">
-                  {error}
-                </p>
+                <FieldError id={`${idCampo}-error`}>{error}</FieldError>
               ) : null}
-            </div>
+            </Field>
           );
         })}
       </div>
@@ -104,20 +79,15 @@ export function CambiarContrasena() {
         tus otras sesiones abiertas.
       </p>
 
-      {listo ? (
-        <p role="status" className="text-sm text-neutral-300">
-          Contraseña actualizada.
+      {mensaje ? (
+        <p role="alert" className="text-sm text-red-400">
+          {mensaje}
         </p>
       ) : null}
-
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={guardando}
-          className={claseBoton({ variante: "primario", enFormulario: true })}
-        >
+        <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Cambiar contraseña"}
-        </button>
+        </Button>
       </div>
     </form>
   );
