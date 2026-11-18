@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useState } from "react";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
 import { useFormulario } from "@/components/formulario";
@@ -51,11 +52,7 @@ export function RestablecerContrasena({
           de {nombre}. Después la puede cambiar desde su perfil.
         </p>
       )}
-      {mensaje ? (
-        <p role="alert" className="text-sm text-red-400">
-          {mensaje}
-        </p>
-      ) : null}
+      {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <Button
         variant="outline"
         size="lg"

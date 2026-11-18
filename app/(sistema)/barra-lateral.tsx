@@ -4,12 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
-import { Close } from "pixelarticons/react/Close.js";
 import { Menu } from "pixelarticons/react/Menu.js";
 import { Isotipo } from "@/components/isotipo";
 import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-export function MarcoBarra({ children }: { children: ReactNode }) {
+export function MarcoBarra({
+  usuario,
+  children,
+}: {
+  usuario: ReactNode;
+  children: ReactNode;
+}) {
   const [abierto, setAbierto] = useState(false);
 
   function cerrarAlNavegar(evento: MouseEvent<HTMLElement>) {
@@ -24,31 +38,46 @@ export function MarcoBarra({ children }: { children: ReactNode }) {
         <Link href="/" aria-label="Power Up: ir al inicio">
           <Isotipo className="h-8 w-auto text-white" />
         </Link>
-        <button
-          type="button"
-          onClick={() => setAbierto(!abierto)}
-          aria-expanded={abierto}
-          aria-controls="barra-lateral"
-          aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
-          className="-mr-2 grid size-10 place-items-center text-neutral-300 transition-colors hover:text-white"
-        >
-          {abierto ? (
-            <Close className="size-6" aria-hidden="true" />
-          ) : (
-            <Menu className="size-6" aria-hidden="true" />
-          )}
-        </button>
+        <div className="flex items-center gap-1">
+          {usuario}
+          <Sheet open={abierto} onOpenChange={setAbierto}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Abrir menú"
+                className="-mr-2"
+              >
+                <Menu aria-hidden="true" className="size-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              onClick={cerrarAlNavegar}
+              className="w-72 gap-0 overflow-y-auto p-0 sm:max-w-72"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Menú</SheetTitle>
+                <SheetDescription>Secciones del sistema</SheetDescription>
+              </SheetHeader>
+              <Link
+                href="/"
+                aria-label="Power Up: ir al inicio"
+                className="px-6 pb-8 pt-6"
+              >
+                <Logo className="h-7 w-auto text-white" />
+              </Link>
+              {children}
+            </SheetContent>
+          </Sheet>
+        </div>
       </header>
 
-      <aside
-        id="barra-lateral"
-        onClick={cerrarAlNavegar}
-        className={`${abierto ? "flex" : "hidden"} fixed inset-x-0 bottom-0 top-14 z-20 flex-col overflow-y-auto bg-black lg:static lg:flex lg:h-full lg:w-60 lg:border-r lg:border-neutral-950`}
-      >
+      <aside className="hidden h-full w-60 flex-col border-r border-neutral-950 bg-black lg:flex">
         <Link
           href="/"
           aria-label="Power Up: ir al inicio"
-          className="hidden px-6 pb-8 pt-6 lg:block"
+          className="px-6 pb-8 pt-6"
         >
           <Logo className="h-7 w-auto text-white" />
         </Link>
@@ -60,6 +89,7 @@ export function MarcoBarra({ children }: { children: ReactNode }) {
 
 type PropsEnlace = {
   href: string;
+  tambien?: string[];
   icono: ReactNode;
   children: ReactNode;
 };
@@ -75,7 +105,11 @@ export function EnlaceSeccion(props: PropsEnlace) {
 function EnlaceSegunRuta(props: PropsEnlace) {
   const ruta = usePathname();
   const activo =
-    props.href === "/" ? ruta === "/" : ruta.startsWith(props.href);
+    props.href === "/"
+      ? ruta === "/"
+      : [props.href, ...(props.tambien ?? [])].some((prefijo) =>
+          ruta.startsWith(prefijo),
+        );
 
   return <Enlace {...props} activo={activo} />;
 }

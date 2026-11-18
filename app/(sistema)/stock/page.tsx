@@ -1,3 +1,4 @@
+import { PestanasProductos } from "@/components/pestanas-productos";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -53,10 +54,12 @@ export default function Stock({
 }) {
   return (
     <Pagina>
-      <EncabezadoPagina titulo="Stock">
+      <EncabezadoPagina titulo="Productos">
         Stock actual de cada producto, de menor a mayor. Entrá a uno para ver
         sus movimientos.
       </EncabezadoPagina>
+
+      <PestanasProductos actual="existencias" />
 
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Contenido parametros={searchParams} />

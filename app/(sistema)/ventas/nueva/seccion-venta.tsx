@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-
-const CLASE_ETIQUETA = "text-sm font-medium text-neutral-400";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 export function Seccion({
   titulo,
@@ -28,16 +27,18 @@ export function Seccion({
 
 export function Campo({
   etiqueta,
+  id,
   children,
 }: {
   etiqueta: string;
+  id: string;
   children: ReactNode;
 }) {
   return (
-    <label className="flex flex-col gap-2">
-      <span className={CLASE_ETIQUETA}>{etiqueta}</span>
+    <Field>
+      <FieldLabel htmlFor={id}>{etiqueta}</FieldLabel>
       {children}
-    </label>
+    </Field>
   );
 }
 

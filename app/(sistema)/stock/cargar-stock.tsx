@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
@@ -141,11 +142,7 @@ export function CargarStock({
               <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
             ) : null}
           </Field>
-          {mensaje ? (
-            <p role="alert" className="text-sm text-red-400">
-              {mensaje}
-            </p>
-          ) : null}
+          {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
           <Button variant="default" size="lg" type="submit" disabled={cargando}>
             {cargando ? "Registrando…" : "Registrar entrada"}
           </Button>

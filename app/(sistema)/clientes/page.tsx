@@ -1,3 +1,4 @@
+import { PestanasClientes } from "@/components/pestanas-clientes";
 import { etiquetaDocumento } from "@/lib/documento";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -74,6 +75,8 @@ export default function Clientes({
       <EncabezadoPagina titulo="Clientes">
         Clientes registrados, con el saldo de su cuenta corriente.
       </EncabezadoPagina>
+
+      <PestanasClientes actual="listado" />
 
       <Suspense fallback={<Skeleton aria-hidden="true" className="h-96" />}>
         <Listado parametros={searchParams} />

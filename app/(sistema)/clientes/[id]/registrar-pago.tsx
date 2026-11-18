@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useId, useRef } from "react";
 import type { FormEvent } from "react";
 import { useFormulario } from "@/components/formulario";
@@ -28,7 +29,6 @@ export function RegistrarPago({
   function registrar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const datos = new FormData(evento.currentTarget);
-
     enviar({
       esquema: crearEsquemaPago({ saldo }),
       datos: {
@@ -107,11 +107,7 @@ export function RegistrarPago({
           );
         })}
       </div>
-      {mensaje ? (
-        <p role="alert" className="text-sm text-red-400">
-          {mensaje}
-        </p>
-      ) : null}
+      {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <p className="text-sm text-neutral-500">
         El pago resta del saldo total, no de una venta en particular, y no se
         puede editar ni anular.

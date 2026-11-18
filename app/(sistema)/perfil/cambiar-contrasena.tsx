@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useId } from "react";
 import type { FormEvent } from "react";
 import { useFormulario } from "@/components/formulario";
@@ -79,11 +80,7 @@ export function CambiarContrasena() {
         tus otras sesiones abiertas.
       </p>
 
-      {mensaje ? (
-        <p role="alert" className="text-sm text-red-400">
-          {mensaje}
-        </p>
-      ) : null}
+      {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <div className="flex justify-end">
         <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Cambiar contraseña"}

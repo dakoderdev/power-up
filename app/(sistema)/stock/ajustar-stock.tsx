@@ -1,5 +1,6 @@
 "use client";
 
+import { AvisoError } from "@/components/aviso-error";
 import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useFormulario } from "@/components/formulario";
@@ -150,11 +151,7 @@ export function AjustarStock({
           <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
         ) : null}
       </Field>
-      {mensaje ? (
-        <p role="alert" className="text-sm text-red-400">
-          {mensaje}
-        </p>
-      ) : null}
+      {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <div className="flex flex-wrap items-center justify-end gap-4">
         <p role="status" className="mr-auto text-sm text-neutral-400">
           El ajuste queda en el historial y no se puede editar ni borrar.

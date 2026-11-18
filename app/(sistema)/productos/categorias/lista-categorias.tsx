@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { AvisoError } from "@/components/aviso-error";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft } from "pixelarticons/react/ArrowLeft.js";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
 import { useFormulario } from "@/components/formulario";
 import { Badge } from "@/components/ui/badge";
@@ -95,13 +94,6 @@ export function ListaCategorias({
 
   return (
     <section className="flex max-w-4xl flex-col gap-6">
-      <Button asChild variant="ghost" className="-ml-3 self-start">
-        <Link href="/productos">
-          <ArrowLeft aria-hidden="true" className="size-5" />
-          Catálogo
-        </Link>
-      </Button>
-
       {puedeEditar ? (
         <form
           onSubmit={crear}
@@ -130,11 +122,7 @@ export function ListaCategorias({
         </form>
       ) : null}
 
-      {errorBaja ? (
-        <p role="alert" className="text-sm text-red-400">
-          {errorBaja}
-        </p>
-      ) : null}
+      {errorBaja ? <AvisoError>{errorBaja}</AvisoError> : null}
 
       {categorias.length === 0 ? (
         <Vacio>

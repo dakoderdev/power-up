@@ -1,3 +1,6 @@
+import { User } from "pixelarticons/react/User.js";
+import { Wallet } from "pixelarticons/react/Wallet.js";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,7 +8,6 @@ import { Suspense } from "react";
 import { Pencil } from "pixelarticons/react/Pencil.js";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import {
-  Columna,
   Dato,
   Fila,
   Linea,
@@ -92,25 +94,40 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
   const debe = aCentavos(cuenta.saldo) > 0;
 
   return (
-    <Columna>
-      <Datos cliente={cliente} saldo={cuenta.saldo} />
+    <Tabs defaultValue="datos" className="max-w-4xl">
+      <TabsList aria-label="Secciones del cliente">
+        <TabsTrigger value="datos">
+          <User aria-hidden="true" data-icon="inline-start" />
+          Datos
+        </TabsTrigger>
+        <TabsTrigger value="cuenta">
+          <Wallet aria-hidden="true" data-icon="inline-start" />
+          Cuenta corriente
+        </TabsTrigger>
+      </TabsList>
 
-      <UltimasFacturas ventas={ultimas} />
+      <TabsContent value="datos">
+        <Datos cliente={cliente} saldo={cuenta.saldo} />
 
-      <Seccion titulo="Registrar pago" separada>
-        {debe ? (
-          <RegistrarPago clienteId={cliente.id} saldo={cuenta.saldo} />
-        ) : (
-          <Vacio>
-            {cliente.cuentaCorriente
-              ? "El cliente no tiene saldo adeudado, así que no admite pagos."
-              : "El cliente no tiene cuenta corriente habilitada. Editalo para habilitarla."}
-          </Vacio>
-        )}
-      </Seccion>
+        <UltimasFacturas ventas={ultimas} />
+      </TabsContent>
 
-      <Historial cuenta={cuenta} />
-    </Columna>
+      <TabsContent value="cuenta">
+        <Seccion titulo="Registrar pago">
+          {debe ? (
+            <RegistrarPago clienteId={cliente.id} saldo={cuenta.saldo} />
+          ) : (
+            <Vacio>
+              {cliente.cuentaCorriente
+                ? "El cliente no tiene saldo adeudado, así que no admite pagos."
+                : "El cliente no tiene cuenta corriente habilitada. Editalo para habilitarla."}
+            </Vacio>
+          )}
+        </Seccion>
+
+        <Historial cuenta={cuenta} />
+      </TabsContent>
+    </Tabs>
   );
 }
 
