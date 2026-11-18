@@ -87,8 +87,8 @@ export function FormularioLogin() {
       iniciar(async () => {
         const respuesta = await iniciarSesion({ correo, clave });
 
-        if (respuesta?.error) {
-          setErrorGeneral(respuesta.error);
+        if (!respuesta.ok) {
+          setErrorGeneral(respuesta.error.message);
         }
       });
     }

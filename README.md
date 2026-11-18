@@ -8,28 +8,36 @@ Stack: Next.js (App Router), Tailwind, Drizzle ORM sobre Turso (libSQL/SQLite), 
 
 La consigna final del parcial (29/10/2026) lista shadcn/ui y Chart.js (`react-chartjs-2`) como tecnologías obligatorias. En el material "segundo-parcial-enunciado-y-mockup.html", Chart.js figuraba como opcional y shadcn/ui no se mencionaba, y el proyecto arrancó con esa lectura: la interfaz se construyó con componentes propios sobre Tailwind (`components/`, valores en `DESIGN.md`) y sin gráficos.
 
-Ninguna de las dos ausencias es un descuido:
-
 - **Chart.js**, con `react-chartjs-2`, ya muestra en el inicio las ventas diarias y las del mes por forma de pago (RF-T2, IN-06).
 - **shadcn/ui** se incorpora componente por componente, adaptado al diseño propio: cada pieza entra con la estructura de shadcn (`components/ui/`, `cva`, `cn` de `lib/utils.ts`, `asChild`) y tematizada con los tokens de `app/globals.css` (paleta de `DESIGN.md`) en lugar del tema por defecto. Ya están en `components/ui/` el botón, los campos de formulario, badges, tablas, estados vacío y de carga, popover, tooltip y paginación (detalle en `specs/sistema.md`, Decisiones).
 
 El estado de cada requerimiento está en [`specs/sistema.md`](specs/sistema.md); lo que falta está marcado `[pendiente]`.
 
-Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El diseño visual está en [`DESIGN.md`](DESIGN.md).
+Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El diseño visual está en [`DESIGN.md`](DESIGN.md). El enunciado completo del parcial está en [`docs/consigna.md`](docs/consigna.md).
 
-## Credenciales de evaluación
+## Integrantes
 
-| Rol           | Correo              | Contraseña     |
-| ------------- | ------------------- | -------------- |
-| Administrador | `admin@ejemplo.com` | `PowerUp2026!` |
+- David Konevky
+- Maria Victoria Peralta
 
-Son credenciales de demostración de un proyecto de evaluación. No se usan en ningún entorno real.
+## URL pública
 
-Hoy el seed solo crea el administrador. El usuario operador (vendedor) de prueba está pendiente (PE-04 en la spec); mientras tanto, el administrador puede crearlo desde Usuarios.
+<!-- Completar con la URL de Vercel, conectada a Turso y con el seed cargado. -->
+
+_Pendiente de completar._
+
+## Usuarios de prueba
+
+| Rol           | Correo                 | Contraseña     |
+| ------------- | ---------------------- | -------------- |
+| Administrador | `admin@ejemplo.com`    | `PowerUp2026!` |
+| Vendedor      | `vendedor@ejemplo.com` | `PowerUp2026!` |
+
+Los crea `pnpm run db:seed` con las variables `SEED_ADMIN_*` y `SEED_VENDEDOR_*` de `.env.example`. Son credenciales de demostración de un proyecto de evaluación; no se usan en ningún entorno real.
 
 ## Requisitos
 
-- Node.js 20 o superior
+- Node.js 24.7 o superior (las contraseñas se hashean con argon2id de `node:crypto`)
 - pnpm (`npm install -g pnpm` o `corepack enable`)
 - Una base en Turso (plan gratuito). En desarrollo también sirve un archivo local: `TURSO_DATABASE_URL=file:local.db`, sin token
 
@@ -43,23 +51,26 @@ pnpm run db:seed
 pnpm run dev
 ```
 
-Después de copiar `.env.example`, completar las variables de `.env` (ver tabla abajo). Para desarrollo alcanza con `TURSO_DATABASE_URL=file:local.db`. Abrir [http://localhost:3000](http://localhost:3000) e iniciar sesión con las credenciales de evaluación.
+`.env.example` ya trae valores de desarrollo (`file:local.db` y los usuarios de prueba), así que estos cinco comandos alcanzan, sin pasos manuales. Abrir [http://localhost:3000](http://localhost:3000) e iniciar sesión con un usuario de prueba. En producción, cambiar `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET` y `BETTER_AUTH_URL`.
 
 ## Variables de entorno
 
 Las credenciales y claves van solo en variables de entorno (`.env`, ignorado por git). Nunca en el código.
 
-| Variable              | Descripción                                                                               |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| `TURSO_DATABASE_URL`  | URL de la base en Turso (`libsql://...`) o `file:local.db`                                |
-| `TURSO_AUTH_TOKEN`    | Token de la base en Turso (no hace falta con un archivo local)                            |
-| `AUTH_SECRET`         | Secreto de Better Auth para firmar sesiones                                               |
-| `BETTER_AUTH_URL`     | URL base del sistema (`http://localhost:3000` en desarrollo)                              |
-| `SEED_ADMIN_EMAIL`    | Correo del administrador que crea el seed                                                 |
-| `SEED_ADMIN_PASSWORD` | Contraseña del administrador (mínimo 8 caracteres)                                        |
-| `SEED_ADMIN_NAME`     | Nombre del administrador (opcional, por defecto `Administrador`)                          |
-| `IGDB_CLIENT_ID`      | Opcional: cuenta de IGDB para cargar juegos en bloque con el asistente (la app no la lee) |
-| `IGDB_CLIENT_SECRET`  | Opcional: secreto de la cuenta de IGDB (ídem)                                             |
+| Variable                 | Descripción                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `TURSO_DATABASE_URL`     | URL de la base en Turso (`libsql://...`) o `file:local.db`                                |
+| `TURSO_AUTH_TOKEN`       | Token de la base en Turso (no hace falta con un archivo local)                            |
+| `AUTH_SECRET`            | Secreto de Better Auth para firmar sesiones                                               |
+| `BETTER_AUTH_URL`        | URL base del sistema (`http://localhost:3000` en desarrollo)                              |
+| `SEED_ADMIN_EMAIL`       | Correo del administrador que crea el seed                                                 |
+| `SEED_ADMIN_PASSWORD`    | Contraseña del administrador (mínimo 8 caracteres)                                        |
+| `SEED_ADMIN_NAME`        | Nombre del administrador (opcional, por defecto `Administrador`)                          |
+| `SEED_VENDEDOR_EMAIL`    | Correo del vendedor de prueba que crea el seed                                            |
+| `SEED_VENDEDOR_PASSWORD` | Contraseña del vendedor de prueba (mínimo 8 caracteres)                                   |
+| `SEED_VENDEDOR_NAME`     | Nombre del vendedor (opcional, por defecto `Vendedor`)                                    |
+| `IGDB_CLIENT_ID`         | Opcional: cuenta de IGDB para cargar juegos en bloque con el asistente (la app no la lee) |
+| `IGDB_CLIENT_SECRET`     | Opcional: secreto de la cuenta de IGDB (ídem)                                             |
 
 Para que el seed cree el usuario de evaluación, usar estos valores:
 
@@ -72,11 +83,12 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 
 `pnpm run db:seed` hace lo siguiente:
 
-- Crea el administrador con las variables `SEED_ADMIN_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
-- Crea 25 productos de demostración con stock al azar (siempre algunos sin stock y otros con stock bajo), con su movimiento de stock inicial.
-- Crea clientes (algunos con límite de crédito), ventas (la mayoría de hoy, el resto de los días anteriores) (contado, tarjeta y cuenta corriente), pagos parciales y ajustes manuales de stock, todo al azar en cada corrida. Las cantidades y rangos se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
+- Crea el administrador y el vendedor de prueba con las variables `SEED_ADMIN_*` y `SEED_VENDEDOR_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
+- Crea 5 categorías y 30 productos con stock al azar (siempre uno sin stock y algunos bajo el mínimo).
+- Crea 10 clientes (algunos con cuenta corriente y límite de crédito) y 50 facturas repartidas en los últimos 30 días, con las tres formas de pago y los dos vendedores, más pagos parciales, ajustes manuales de stock y 2 anulaciones.
+- Todo pasa por los mismos servicios que la aplicación (`crearProducto`, `confirmarVenta`, `registrarPago`, `ajustarStock`, `anularVenta`…), como pide la sección 10.7; después se corren las fechas hacia atrás. Las cantidades se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
 - Es seguro volver a correrlo: no duplica productos, y si ya hay ventas no agrega más.
-- `pnpm run db:seed --reiniciar` borra productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
+- `pnpm run db:seed --reiniciar` borra categorías, productos, clientes, ventas, pagos y movimientos (no los usuarios) y los vuelve a generar. Muestra a qué base apunta antes de borrar y no corre en Vercel. Usalo solo contra una base de desarrollo.
 
 ## Uso de inteligencia artificial
 
@@ -102,7 +114,7 @@ Errores del agente que se detectaron y corrigieron:
 | Rol           | Valor interno | Alcance                                                                                                      |
 | ------------- | ------------- | ------------------------------------------------------------------------------------------------------------ |
 | Administrador | `admin`       | Todo: además anula ventas, da de alta y edita productos, registra ajustes de stock y administra usuarios     |
-| Operador      | `operator`    | El "vendedor" de la consigna: emite y consulta ventas, consulta productos y stock, gestiona clientes y pagos |
+| Vendedor      | `operator`    | El "vendedor" de la consigna: emite y consulta ventas, consulta productos y stock, gestiona clientes y pagos |
 
 El rol y el estado activo se verifican en el servidor en cada pedido. Un usuario inactivo no puede iniciar sesión.
 
@@ -124,7 +136,7 @@ curl -c cookie.txt -H "Content-Type: application/json" -d '{"email":"admin@ejemp
 curl -b cookie.txt http://localhost:3000/api/tablero
 ```
 
-Las rutas de categorías y los campos que dependen de cambios de esquema (stock mínimo, medio de pago, recibo numerado) están pendientes; ver `specs/sistema.md`.
+Están las 31 rutas de la sección 11.2. En la API el rol del vendedor se llama `vendedor` (en la base se guarda como `operator`), y los identificadores de usuario son texto porque los genera Better Auth; el resto son enteros.
 
 ## Scripts
 

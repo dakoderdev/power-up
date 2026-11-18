@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, like, or, sql } from "drizzle-orm";
 import { SALDO } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
@@ -12,13 +12,26 @@ export const ORDENES_CLIENTES = ["nombre", "saldo"] as const;
 
 export type OrdenClientes = (typeof ORDENES_CLIENTES)[number];
 
+const SEPARADORES = /[.\-\s]/g;
+const SOLO_DIGITOS = /^\d+$/;
+
+// RF-C1 y sección 11.5: busca por nombre o documento, sin importar puntos ni guiones.
 function filtrar(busqueda: string) {
-  return busqueda
-    ? coincideBusqueda({
-        columnas: [clientes.nombre, clientes.documento],
-        busqueda,
-      })
-    : undefined;
+  if (!busqueda) {
+    return undefined;
+  }
+
+  const digitos = busqueda.replace(SEPARADORES, "");
+
+  return or(
+    coincideBusqueda({
+      columnas: [clientes.nombre, clientes.documento],
+      busqueda,
+    }),
+    SOLO_DIGITOS.test(digitos)
+      ? like(clientes.documento, `%${digitos}%`)
+      : undefined,
+  );
 }
 
 // RF-V2, CL-05 y RF-C7: búsqueda rápida para la venta; un cliente dado de baja no aparece.
@@ -27,7 +40,9 @@ export async function buscarClientes(busqueda: string) {
     .select({
       id: clientes.id,
       nombre: clientes.nombre,
+      tipoDoc: clientes.tipoDoc,
       documento: clientes.documento,
+      cuentaCorriente: clientes.cuentaCorriente,
     })
     .from(clientes)
     .where(and(eq(clientes.activo, true), filtrar(busqueda)))
@@ -80,7 +95,10 @@ export async function listarClientes({
     .select({
       id: clientes.id,
       nombre: clientes.nombre,
+      tipoDoc: clientes.tipoDoc,
       documento: clientes.documento,
+      domicilio: clientes.domicilio,
+      cuentaCorriente: clientes.cuentaCorriente,
       telefono: clientes.telefono,
       email: clientes.email,
       limiteCredito: clientes.limiteCredito,

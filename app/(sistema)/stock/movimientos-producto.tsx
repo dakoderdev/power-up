@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Vacio } from "@/components/vacio";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { formatearFechaHora } from "@/lib/fechas";
+import { formatearMoneda } from "@/lib/moneda";
 import { esStockBajo, ETIQUETAS_ORIGEN } from "@/lib/stock/etiquetas";
 import {
   listarMovimientos,
@@ -74,7 +75,8 @@ export async function MovimientosProducto({
               {producto.nombre}
             </h2>
             <p className="text-sm tabular-nums text-neutral-400">
-              {producto.codigo}
+              {producto.codigo} · {producto.categoriaNombre ?? "Sin categoría"}{" "}
+              · {formatearMoneda(producto.precio)}
               {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
             </p>
           </div>
@@ -97,9 +99,11 @@ export async function MovimientosProducto({
             </span>
           ) : null}
         </p>
-        <Button asChild variant="ghost" className="sm:ml-auto">
-          <Link href={`/productos/${producto.id}`}>Ver producto</Link>
-        </Button>
+        {puedeAjustar ? (
+          <Button asChild variant="ghost" className="sm:ml-auto">
+            <Link href={`/productos/${producto.id}`}>Editar producto</Link>
+          </Button>
+        ) : null}
       </div>
 
       {puedeAjustar ? (

@@ -50,6 +50,13 @@
       "when": 1794947463711,
       "tag": "0006_clientes_activo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794952874077,
+      "tag": "0007_categorias_clientes_medio",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { movimientosCuenta } from "@/lib/db/schema";
+import { MEDIOS_PAGO, movimientosCuenta } from "@/lib/db/schema";
 import {
   idPositivo,
   importePositivo,
@@ -16,6 +16,7 @@ export const esquemaPago = base
   .pick({ clienteId: true, importe: true, observacion: true })
   .extend({
     clienteId: idPositivo,
+    medio: z.enum(MEDIOS_PAGO, "Elegí el medio de pago."),
     observacion: textoOpcional,
   });
 

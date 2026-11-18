@@ -1,3 +1,4 @@
+import { etiquetaDocumento } from "@/lib/documento";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -116,7 +117,7 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
               <TableCell
                 className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
               >
-                {cliente.documento}
+                {etiquetaDocumento(cliente)}
               </TableCell>
               <TableCell
                 className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}

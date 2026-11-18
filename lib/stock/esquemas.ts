@@ -27,6 +27,17 @@ export const esquemaAjusteManual = base
       ),
   });
 
+// RF-P5 y regla 1: con el stock a la vista, una salida no lo supera; el servidor lo vuelve a verificar en moverStock.
+export function crearEsquemaAjuste(stock: number) {
+  return esquemaAjusteManual.refine(
+    (ajuste) => ajuste.tipo !== "salida" || ajuste.cantidad <= stock,
+    {
+      message: `No se puede sacar más que el stock actual (${stock}).`,
+      path: ["cantidad"],
+    },
+  );
+}
+
 export const esquemaMovimientoRegistro = base
   .omit({ id: true, creadoEn: true })
   .refine(

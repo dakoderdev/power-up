@@ -1,29 +1,19 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
+import { useFormulario } from "@/components/formulario";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { TIPOS_STOCK } from "@/lib/db/schema";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
-import {
-  ANCLA_AJUSTE,
-  avisoAjuste,
-  MENSAJE_FALLA,
-} from "@/lib/stock/etiquetas";
-import {
-  esquemaAjusteManual,
-  MOTIVO_MAXIMO,
-  type AjusteManual,
-} from "@/lib/stock/esquemas";
+import { ANCLA_AJUSTE, avisoAjuste } from "@/lib/stock/etiquetas";
+import { crearEsquemaAjuste, MOTIVO_MAXIMO } from "@/lib/stock/esquemas";
 import { cn } from "@/lib/utils";
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { toast } from "sonner";
 
-type Errores = Partial<Record<keyof AjusteManual, string[]>>;
 type Tipo = (typeof TIPOS_STOCK)[number];
 
 const ETIQUETAS_TIPO: Record<Tipo, string> = {
@@ -43,9 +33,13 @@ export function AjustarStock({
   const cantidad = useRef<HTMLInputElement>(null);
   const motivo = useRef<HTMLTextAreaElement>(null);
   const [tipo, setTipo] = useState<Tipo>("entrada");
-  const [errores, setErrores] = useState<Errores>({});
-  const [falla, setFalla] = useState(false);
-  const [ajustando, iniciarAjuste] = useTransition();
+  const {
+    errores,
+    mensaje,
+    enviando: ajustando,
+    enviar,
+    limpiar,
+  } = useFormulario();
 
   useEffect(() => {
     if (window.location.hash === `#${ANCLA_AJUSTE}`) {
@@ -64,41 +58,20 @@ export function AjustarStock({
     evento.preventDefault();
     const datos = new FormData(evento.currentTarget);
     const texto = String(datos.get("cantidad") ?? "").trim();
-    const validacion = esquemaAjusteManual.safeParse({
+    const entrada = {
       productoId,
       tipo,
       cantidad: texto === "" ? Number.NaN : Number(texto),
       motivo: String(datos.get("motivo") ?? ""),
-    });
+    };
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      return;
-    }
-
-    if (validacion.data.tipo === "salida" && validacion.data.cantidad > stock) {
-      setErrores({
-        cantidad: [`No se puede sacar más que el stock actual (${stock}).`],
-      });
-      return;
-    }
-
-    setErrores({});
-    setFalla(false);
-    iniciarAjuste(async () => {
-      try {
-        const respuesta = await ajustarStockAccion(validacion.data);
-
-        if (respuesta.ajustado) {
-          formulario.current?.reset();
-          toast.success(avisoAjuste(validacion.data));
-          return;
-        }
-
-        setErrores(respuesta.errores);
-      } catch {
-        setFalla(true);
-      }
+    enviar({
+      esquema: crearEsquemaAjuste(stock),
+      datos: entrada,
+      accion: ajustarStockAccion,
+      aviso: () =>
+        avisoAjuste({ tipo: entrada.tipo, cantidad: entrada.cantidad }),
+      onListo: () => formulario.current?.reset(),
     });
   }
 
@@ -135,7 +108,7 @@ export function AjustarStock({
               checked={tipo === opcion}
               onChange={() => {
                 setTipo(opcion);
-                setErrores({});
+                limpiar();
               }}
               className="sr-only"
             />
@@ -177,9 +150,9 @@ export function AjustarStock({
           <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
         ) : null}
       </Field>
-      {falla ? (
+      {mensaje ? (
         <p role="alert" className="text-sm text-red-400">
-          {MENSAJE_FALLA}
+          {mensaje}
         </p>
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-4">

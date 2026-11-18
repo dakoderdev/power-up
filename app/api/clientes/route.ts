@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { ApiError, noEncontrado } from "@/lib/api/errores";
+import { noEncontrado } from "@/lib/api/errores";
 import { esquemaClienteNuevoApi } from "@/lib/api/esquemas";
 import {
   enCentavos,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/api/parametros";
 import { leerJson, responder, ruta, validar } from "@/lib/api/ruta";
 import { obtenerCliente } from "@/lib/clientes/detalle";
-import { crearCliente } from "@/lib/clientes/guardar";
+import { crearCliente, exigirClienteCreado } from "@/lib/clientes/guardar";
 import { listarClientes, ORDENES_CLIENTES } from "@/lib/clientes/listado";
 import { obtenerSaldo } from "@/lib/cuentas/saldo";
 import { db } from "@/lib/db";
@@ -53,18 +53,8 @@ export const GET = ruta({}, async ({ solicitud }) => {
 // RF-C2 y RF-V2: alta de cliente; la misma ruta sirve al alta rápida desde Nueva venta.
 export const POST = ruta({}, async ({ solicitud }) => {
   const entrada = validar(esquemaClienteNuevoApi, await leerJson(solicitud));
-  const resultado = await crearCliente(entrada);
-
-  if (!resultado.creado) {
-    throw new ApiError(
-      409,
-      "DOCUMENTO_DUPLICADO",
-      resultado.errores.documento?.[0] ??
-        "Ya hay un cliente con ese documento.",
-    );
-  }
-
-  const cliente = await obtenerCliente(resultado.cliente.id);
+  const creado = exigirClienteCreado(await crearCliente(entrada));
+  const cliente = await obtenerCliente(creado.id);
 
   if (!cliente) {
     throw noEncontrado("El cliente");

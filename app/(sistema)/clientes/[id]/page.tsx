@@ -19,10 +19,13 @@ import { Vacio } from "@/components/vacio";
 import {
   obtenerCliente,
   obtenerCuenta,
+  obtenerUltimasVentas,
   type ClienteDetalle,
   type CuentaCliente,
 } from "@/lib/clientes/detalle";
-import { ETIQUETAS_TIPO_CUENTA } from "@/lib/cuentas/etiquetas";
+import { ETIQUETAS_TIPO_CUENTA, etiquetaMedio } from "@/lib/cuentas/etiquetas";
+import { etiquetaDocumento } from "@/lib/documento";
+import { ETIQUETA_ANULADA, ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -82,19 +85,26 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const cuenta = await obtenerCuenta(cliente.id);
+  const [cuenta, ultimas] = await Promise.all([
+    obtenerCuenta(cliente.id),
+    obtenerUltimasVentas(cliente.id),
+  ]);
   const debe = aCentavos(cuenta.saldo) > 0;
 
   return (
     <Columna>
       <Datos cliente={cliente} saldo={cuenta.saldo} />
 
+      <UltimasFacturas ventas={ultimas} />
+
       <Seccion titulo="Registrar pago" separada>
         {debe ? (
           <RegistrarPago clienteId={cliente.id} saldo={cuenta.saldo} />
         ) : (
           <Vacio>
-            El cliente no tiene saldo adeudado, así que no admite pagos.
+            {cliente.cuentaCorriente
+              ? "El cliente no tiene saldo adeudado, así que no admite pagos."
+              : "El cliente no tiene cuenta corriente habilitada. Editalo para habilitarla."}
           </Vacio>
         )}
       </Seccion>
@@ -107,14 +117,21 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
 function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
   const datos = [
     { termino: "Nombre o razón social", valor: cliente.nombre },
-    { termino: "Documento", valor: cliente.documento },
+    { termino: "Documento", valor: etiquetaDocumento(cliente) },
+    { termino: "Domicilio", valor: cliente.domicilio ?? "Sin domicilio" },
     { termino: "Teléfono", valor: cliente.telefono ?? "Sin teléfono" },
     { termino: "Correo", valor: cliente.email ?? "Sin correo" },
     {
+      termino: "Cuenta corriente",
+      valor: cliente.cuentaCorriente ? "Habilitada" : "No habilitada",
+    },
+    {
       termino: "Límite de crédito",
-      valor: cliente.limiteCredito
-        ? formatearMoneda(cliente.limiteCredito)
-        : "Sin límite",
+      valor: !cliente.cuentaCorriente
+        ? "—"
+        : cliente.limiteCredito
+          ? formatearMoneda(cliente.limiteCredito)
+          : "Sin límite",
     },
   ];
 
@@ -154,6 +171,68 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
           {formatearMoneda(saldo)}
         </Dato>
       </ListaDatos>
+    </Seccion>
+  );
+}
+
+type UltimaVenta = Awaited<ReturnType<typeof obtenerUltimasVentas>>[number];
+
+// RF-C3: las últimas facturas del cliente, con acceso al detalle.
+function UltimasFacturas({ ventas }: { ventas: UltimaVenta[] }) {
+  return (
+    <Seccion titulo="Últimas facturas" separada>
+      {ventas.length === 0 ? (
+        <Vacio>Todavía no hay facturas a nombre de este cliente.</Vacio>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col" className="pr-3 sm:pr-6">
+                Comprobante
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Fecha
+              </TableHead>
+              <TableHead scope="col" className={`w-px pr-6 ${SOLO_ESCRITORIO}`}>
+                Forma de pago
+              </TableHead>
+              <TableHead scope="col" className="w-px text-right">
+                Total
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ventas.map((venta) => (
+              <TableRow key={venta.id} className="group relative">
+                <TableCell className="pr-3 tabular-nums sm:pr-6">
+                  <Linea className="flex items-center gap-2">
+                    <Link
+                      href={`/ventas/${venta.id}`}
+                      className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                    >
+                      {formatearComprobante(venta)}
+                    </Link>
+                    {venta.anuladaEn ? (
+                      <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
+                    ) : null}
+                  </Linea>
+                </TableCell>
+                <TableCell
+                  className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                >
+                  {formatearFechaHora(venta.creadoEn)}
+                </TableCell>
+                <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
+                  <Badge>{ETIQUETAS_FORMA_PAGO[venta.formaPago]}</Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatearMoneda(venta.total)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </Seccion>
   );
 }
@@ -211,6 +290,9 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                         className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
                       >
                         Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
+                        {movimiento.medio
+                          ? ` · ${etiquetaMedio(movimiento.medio)}`
+                          : ""}
                       </Link>
                     ) : (
                       <Linea tono="tenue" className="truncate">

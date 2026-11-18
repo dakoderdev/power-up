@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
 import { Button } from "@/components/ui/button";
-import { buscarClientesAccion } from "@/lib/clientes/acciones";
 import type { ClienteVenta } from "@/lib/clientes/listado";
+import { etiquetaDocumento } from "@/lib/documento";
+import { buscarClientes } from "./api-venta";
 import { CONSUMIDOR_FINAL } from "@/lib/ventas/etiquetas";
 import { AltaCliente } from "./alta-cliente";
 import { Combobox } from "./combobox";
@@ -24,54 +25,48 @@ export function SeccionCliente({
     <Seccion
       titulo="Cliente"
       accion={
-        creando ? null : (
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={() => setCreando(true)}
-          >
-            <Plus aria-hidden="true" className="size-5" />
-            Nuevo cliente
-          </Button>
-        )
+        <Button variant="ghost" type="button" onClick={() => setCreando(true)}>
+          <Plus aria-hidden="true" className="size-5" />
+          Nuevo cliente
+        </Button>
       }
     >
-      {creando ? (
-        <AltaCliente
-          onCreado={(nuevo) => {
-            onCliente(nuevo);
-            setCreando(false);
+      <AltaCliente
+        abierto={creando}
+        onCreado={(nuevo) => {
+          onCliente(nuevo);
+          setCreando(false);
+        }}
+        onCerrar={() => setCreando(false)}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Combobox
+          etiqueta="Cliente"
+          placeholder="Buscar por nombre o documento"
+          elegido={cliente?.nombre ?? CONSUMIDOR_FINAL}
+          buscar={buscarClientes}
+          onElegir={onCliente}
+          opcionFija={{
+            etiqueta: CONSUMIDOR_FINAL,
+            onElegir: () => onCliente(null),
           }}
-          onCancelar={() => setCreando(false)}
+          renderOpcion={(opcion) => (
+            <>
+              <span className="min-w-0 flex-1 truncate">{opcion.nombre}</span>
+              <span className="text-sm tabular-nums">
+                {etiquetaDocumento(opcion)}
+              </span>
+            </>
+          )}
         />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Combobox
-            etiqueta="Cliente"
-            placeholder="Buscar por nombre o documento"
-            elegido={cliente?.nombre ?? CONSUMIDOR_FINAL}
-            buscar={buscarClientesAccion}
-            onElegir={onCliente}
-            opcionFija={{
-              etiqueta: CONSUMIDOR_FINAL,
-              onElegir: () => onCliente(null),
-            }}
-            renderOpcion={(opcion) => (
-              <>
-                <span className="min-w-0 flex-1 truncate">{opcion.nombre}</span>
-                <span className="text-sm tabular-nums">{opcion.documento}</span>
-              </>
-            )}
+        <Campo etiqueta="Documento">
+          <Input
+            readOnly
+            value={cliente ? etiquetaDocumento(cliente) : "—"}
+            className="tabular-nums"
           />
-          <Campo etiqueta="Documento">
-            <Input
-              readOnly
-              value={cliente?.documento ?? "—"}
-              className="tabular-nums"
-            />
-          </Campo>
-        </div>
-      )}
+        </Campo>
+      </div>
     </Seccion>
   );
 }

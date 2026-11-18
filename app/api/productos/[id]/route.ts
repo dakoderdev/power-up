@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { ApiError, detallesDeCampos, noEncontrado } from "@/lib/api/errores";
+import { noEncontrado } from "@/lib/api/errores";
 import { esquemaProductoPatchApi, fusionarProducto } from "@/lib/api/esquemas";
 import { formatearProductoApi } from "@/lib/api/formato";
 import {
@@ -10,7 +10,11 @@ import {
   ruta,
   validar,
 } from "@/lib/api/ruta";
-import { editarProducto, obtenerProducto } from "@/lib/productos/guardar";
+import {
+  editarProducto,
+  exigirProductoGuardado,
+  obtenerProducto,
+} from "@/lib/productos/guardar";
 
 type Params = { id: string };
 
@@ -28,7 +32,7 @@ export const GET = ruta<Params>({}, async ({ params }) => {
 // RF-P2 y RF-P3: edición parcial y baja lógica; existencia no se acepta (admin).
 export const PATCH = ruta<Params>(
   { admin: true },
-  async ({ solicitud, params }) => {
+  async ({ solicitud, usuario, params }) => {
     const id = leerId(params.id);
     const actual = await obtenerProducto(id);
 
@@ -38,24 +42,7 @@ export const PATCH = ruta<Params>(
 
     const cambios = validar(esquemaProductoPatchApi, await leerJson(solicitud));
     const entrada = exigir(fusionarProducto({ actual, cambios }));
-    const resultado = await editarProducto({ id, entrada });
-
-    if (!resultado.guardado) {
-      if (resultado.errores.codigo) {
-        throw new ApiError(
-          409,
-          "CODIGO_DUPLICADO",
-          resultado.errores.codigo[0],
-        );
-      }
-
-      throw new ApiError(
-        422,
-        "VALIDACION",
-        resultado.mensaje ?? "Hay campos con errores.",
-        detallesDeCampos(resultado.errores),
-      );
-    }
+    exigirProductoGuardado(await editarProducto({ id, entrada, usuario }));
 
     const editado = await obtenerProducto(id);
 

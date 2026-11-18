@@ -1,9 +1,9 @@
 "use client";
 
-import { useId, useRef, useState, useTransition } from "react";
+import { useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Plus } from "pixelarticons/react/Plus.js";
-import { z } from "zod";
+import { useFormulario } from "@/components/formulario";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -11,24 +11,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ajustarStockAccion } from "@/lib/stock/acciones";
-import {
-  esquemaAjusteManual,
-  MOTIVO_MAXIMO,
-  type AjusteManual,
-} from "@/lib/stock/esquemas";
-import {
-  avisoAjuste,
-  MENSAJE_FALLA,
-  MOTIVOS_SUGERIDOS,
-} from "@/lib/stock/etiquetas";
+import { esquemaAjusteManual, MOTIVO_MAXIMO } from "@/lib/stock/esquemas";
+import { avisoAjuste, MOTIVOS_SUGERIDOS } from "@/lib/stock/etiquetas";
 import { MotivosSugeridos } from "./_comun/motivos-sugeridos";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { toast } from "sonner";
 
 const MOTIVO_INICIAL = MOTIVOS_SUGERIDOS.entrada[0];
-
-type Errores = Partial<Record<keyof AjusteManual, string[]>>;
 
 export function CargarStock({
   productoId,
@@ -40,17 +29,20 @@ export function CargarStock({
   const id = useId();
   const cantidad = useRef<HTMLInputElement>(null);
   const motivo = useRef<HTMLInputElement>(null);
-  const [errores, setErrores] = useState<Errores>({});
-  const [falla, setFalla] = useState(false);
+  const {
+    errores,
+    mensaje,
+    enviando: cargando,
+    enviar,
+    limpiar,
+  } = useFormulario();
   const [abierto, setAbierto] = useState(false);
-  const [cargando, iniciarCarga] = useTransition();
 
   function cambiarAbierto(quedaAbierto: boolean) {
     setAbierto(quedaAbierto);
 
     if (!quedaAbierto) {
-      setErrores({});
-      setFalla(false);
+      limpiar();
     }
   }
 
@@ -65,34 +57,19 @@ export function CargarStock({
     evento.preventDefault();
     const datos = new FormData(evento.currentTarget);
     const texto = String(datos.get("cantidad") ?? "").trim();
-    const validacion = esquemaAjusteManual.safeParse({
+    const entrada = {
       productoId,
-      tipo: "entrada",
+      tipo: "entrada" as const,
       cantidad: texto === "" ? Number.NaN : Number(texto),
       motivo: String(datos.get("motivo") ?? ""),
-    });
+    };
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      return;
-    }
-
-    setErrores({});
-    setFalla(false);
-    iniciarCarga(async () => {
-      try {
-        const respuesta = await ajustarStockAccion(validacion.data);
-
-        if (respuesta.ajustado) {
-          cambiarAbierto(false);
-          toast.success(avisoAjuste(validacion.data));
-          return;
-        }
-
-        setErrores(respuesta.errores);
-      } catch {
-        setFalla(true);
-      }
+    enviar({
+      esquema: esquemaAjusteManual,
+      datos: entrada,
+      accion: ajustarStockAccion,
+      aviso: () => avisoAjuste(entrada),
+      onListo: () => cambiarAbierto(false),
     });
   }
 
@@ -164,9 +141,9 @@ export function CargarStock({
               <FieldError id={`${id}-motivo-error`}>{errorMotivo}</FieldError>
             ) : null}
           </Field>
-          {falla ? (
+          {mensaje ? (
             <p role="alert" className="text-sm text-red-400">
-              {MENSAJE_FALLA}
+              {mensaje}
             </p>
           ) : null}
           <Button variant="default" size="lg" type="submit" disabled={cargando}>

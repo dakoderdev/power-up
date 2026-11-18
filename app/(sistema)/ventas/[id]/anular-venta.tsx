@@ -1,9 +1,9 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { toast } from "sonner";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
 import { Button } from "@/components/ui/button";
 import { anularVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaAnulacion, type Anulacion } from "@/lib/ventas/esquemas";
@@ -12,25 +12,27 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 export function AnularVenta({ ventaId }: { ventaId: number }) {
   const id = useId();
-  const [error, setError] = useState<string | null>(null);
-  const [anulando, iniciarAnulacion] = useTransition();
+  const {
+    errores,
+    mensaje,
+    enviando: anulando,
+    validar,
+    ejecutar,
+  } = useFormulario();
   const [pendiente, setPendiente] = useState<Anulacion | null>(null);
+  const error = errores.motivoAnulacion?.[0] ?? mensaje;
 
   function anular(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const formulario = new FormData(evento.currentTarget);
-    const validacion = esquemaAnulacion.safeParse({
+    const anulacion = validar(esquemaAnulacion, {
       id: ventaId,
       motivoAnulacion: String(formulario.get("motivo") ?? ""),
     });
 
-    if (!validacion.success) {
-      setError(validacion.error.issues[0].message);
-      return;
+    if (anulacion) {
+      setPendiente(anulacion);
     }
-
-    setError(null);
-    setPendiente(validacion.data);
   }
 
   function confirmar() {
@@ -40,18 +42,10 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
 
     const datos = pendiente;
     setPendiente(null);
-    iniciarAnulacion(async () => {
-      const respuesta = await anularVentaAccion(datos);
-
-      if (!respuesta.anulada) {
-        setError(respuesta.mensaje);
-        return;
-      }
-
-      toast.success("Venta anulada.", {
-        description:
-          "Se devolvió el stock y se ajustó el saldo si correspondía.",
-      });
+    ejecutar({
+      accion: () => anularVentaAccion(datos),
+      aviso:
+        "Venta anulada. Se devolvió el stock y se ajustó el saldo si correspondía.",
     });
   }
 

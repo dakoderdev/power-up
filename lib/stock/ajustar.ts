@@ -1,7 +1,10 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { ApiError, detallesDeCampos } from "@/lib/api/errores";
 import { db } from "@/lib/db";
-import { movimientosStock, productos } from "@/lib/db/schema";
+import { exigirAdministrador, type UsuarioServicio } from "@/lib/servicio";
+import { productos } from "@/lib/db/schema";
 import type { AjusteManual } from "./esquemas";
+import { moverStock } from "./mover";
 
 export type ResultadoAjuste =
   | { ajustado: true; movimientoId: number; stock: number }
@@ -19,15 +22,17 @@ function sinStock(stock: number): ResultadoAjuste {
   };
 }
 
-// RF-P4, RF-P5 y regla 2: ingreso o egreso manual; actualiza la existencia
-// con condición (stock >= cantidad) y graba el movimiento en la misma transacción.
+// RF-P4, RF-P5 y regla 2: ingreso o egreso manual a través de moverStock.
 export async function ajustarStock({
   entrada,
-  usuarioId,
+  usuario,
 }: {
   entrada: AjusteManual;
-  usuarioId: string;
+  usuario: UsuarioServicio;
 }): Promise<ResultadoAjuste> {
+  exigirAdministrador(usuario);
+  const usuarioId = usuario.id;
+
   return db.transaction(async (tx) => {
     const [producto] = await tx
       .select({ id: productos.id, stock: productos.stock })
@@ -47,39 +52,40 @@ export async function ajustarStock({
       return sinStock(producto.stock);
     }
 
-    const variacion = esSalida ? -entrada.cantidad : entrada.cantidad;
+    const movido = await moverStock({
+      tx,
+      productoId: producto.id,
+      tipo: entrada.tipo,
+      origen: "manual",
+      cantidad: entrada.cantidad,
+      motivo: entrada.motivo,
+      usuarioId,
+    });
 
-    const [actualizado] = await tx
-      .update(productos)
-      .set({ stock: sql`${productos.stock} + ${variacion}` })
-      .where(
-        and(
-          eq(productos.id, producto.id),
-          esSalida ? gte(productos.stock, entrada.cantidad) : undefined,
-        ),
-      )
-      .returning({ stock: productos.stock });
-
-    if (!actualizado) {
+    if (!movido) {
       return sinStock(producto.stock);
     }
 
-    const [movimiento] = await tx
-      .insert(movimientosStock)
-      .values({
-        productoId: producto.id,
-        tipo: entrada.tipo,
-        origen: "manual",
-        cantidad: entrada.cantidad,
-        motivo: entrada.motivo,
-        usuarioId,
-      })
-      .returning({ id: movimientosStock.id });
-
     return {
       ajustado: true,
-      movimientoId: movimiento.id,
-      stock: actualizado.stock,
+      movimientoId: movido.movimientoId,
+      stock: movido.stock,
     };
   });
+}
+
+// Sección 10.4 y RF-P5: un egreso que dejaría la existencia negativa pasa a ApiError (409 STOCK_INSUFICIENTE).
+export function exigirAjuste(resultado: ResultadoAjuste) {
+  if (resultado.ajustado) {
+    return { movimientoId: resultado.movimientoId, stock: resultado.stock };
+  }
+
+  const detalles = detallesDeCampos(resultado.errores);
+
+  throw new ApiError(
+    409,
+    "STOCK_INSUFICIENTE",
+    detalles[0]?.mensaje ?? "Stock insuficiente.",
+    detalles,
+  );
 }

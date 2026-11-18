@@ -1,6 +1,8 @@
 import { and, count, eq } from "drizzle-orm";
+import { ApiError, detallesDeCampos } from "@/lib/api/errores";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { exigirAdministrador, type UsuarioServicio } from "@/lib/servicio";
 import { esDuplicado } from "@/lib/db/errores";
 import { account, session, user } from "@/lib/db/schema";
 import type { UsuarioEdicion, UsuarioNuevo } from "./esquemas";
@@ -39,9 +41,14 @@ export type ResultadoEditar =
     };
 
 // RF-U4 y US-06: alta con contraseña hasheada por Better Auth, sin abrir sesión como el nuevo usuario.
-export async function crearUsuario(
-  entrada: UsuarioNuevo,
-): Promise<ResultadoCrear> {
+export async function crearUsuario({
+  usuario,
+  entrada,
+}: {
+  usuario: UsuarioServicio;
+  entrada: UsuarioNuevo;
+}): Promise<ResultadoCrear> {
+  exigirAdministrador(usuario);
   const contexto = await auth.$context;
   const hash = await contexto.password.hash(entrada.contrasena);
   const id = crypto.randomUUID();
@@ -82,12 +89,15 @@ export async function crearUsuario(
 export async function editarUsuario({
   id,
   entrada,
-  actualId,
+  usuario,
 }: {
   id: string;
   entrada: UsuarioEdicion;
-  actualId: string;
+  usuario: UsuarioServicio;
 }): Promise<ResultadoEditar> {
+  exigirAdministrador(usuario);
+  const actualId = usuario.id;
+
   try {
     return await db.transaction(async (tx): Promise<ResultadoEditar> => {
       const [objetivo] = await tx
@@ -174,7 +184,14 @@ function generarClaveTemporal() {
 
 // RF-U5 y US-19: el administrador restablece la contraseña de otro usuario;
 // la temporal se muestra una sola vez y cierra sus sesiones abiertas.
-export async function restablecerContrasena(id: string) {
+export async function restablecerContrasena({
+  usuario,
+  id,
+}: {
+  usuario: UsuarioServicio;
+  id: string;
+}) {
+  exigirAdministrador(usuario);
   const contexto = await auth.$context;
   const passwordTemporal = generarClaveTemporal();
   const hash = await contexto.password.hash(passwordTemporal);
@@ -199,4 +216,44 @@ export async function restablecerContrasena(id: string) {
 
     return { passwordTemporal };
   });
+}
+
+const ESTADO_USUARIO: Record<CodigoErrorUsuario, number> = {
+  EMAIL_DUPLICADO: 409,
+  NO_ENCONTRADO: 404,
+  OPERACION_SOBRE_SI_MISMO: 422,
+  ULTIMO_ADMINISTRADOR: 422,
+};
+
+// Sección 10.4 y RF-U4: un alta fallida pasa a ApiError (409 EMAIL_DUPLICADO).
+export function exigirUsuarioCreado(resultado: ResultadoCrear) {
+  if (resultado.creado) {
+    return resultado.id;
+  }
+
+  const detalles = detallesDeCampos(resultado.errores);
+
+  throw new ApiError(
+    ESTADO_USUARIO[resultado.codigo ?? "EMAIL_DUPLICADO"],
+    resultado.codigo ?? "EMAIL_DUPLICADO",
+    detalles[0]?.mensaje ?? MENSAJE_DUPLICADO,
+    detalles,
+  );
+}
+
+// Sección 10.4, RF-U4 y US-29: una edición fallida pasa a ApiError (409, 404 o 422 OPERACION_SOBRE_SI_MISMO).
+export function exigirUsuarioGuardado(resultado: ResultadoEditar) {
+  if (resultado.guardado) {
+    return;
+  }
+
+  const codigo = resultado.codigo ?? "NO_ENCONTRADO";
+  const detalles = detallesDeCampos(resultado.errores);
+
+  throw new ApiError(
+    ESTADO_USUARIO[codigo],
+    codigo,
+    resultado.mensaje ?? detalles[0]?.mensaje ?? "El usuario no existe.",
+    detalles,
+  );
 }

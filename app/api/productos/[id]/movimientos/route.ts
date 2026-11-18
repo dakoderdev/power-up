@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { ApiError, detallesDeCampos, noEncontrado } from "@/lib/api/errores";
+import { noEncontrado } from "@/lib/api/errores";
 import { aAjusteManual, esquemaMovimientoApi } from "@/lib/api/esquemas";
 import {
   formatearMovimientoStockApi,
@@ -15,7 +15,7 @@ import {
   validar,
 } from "@/lib/api/ruta";
 import { obtenerProducto } from "@/lib/productos/guardar";
-import { ajustarStock } from "@/lib/stock/ajustar";
+import { ajustarStock, exigirAjuste } from "@/lib/stock/ajustar";
 import { listarMovimientos, obtenerMovimiento } from "@/lib/stock/listado";
 
 type Params = { id: string };
@@ -61,18 +61,8 @@ export const POST = ruta<Params>(
 
     const cuerpo = validar(esquemaMovimientoApi, await leerJson(solicitud));
     const entrada = exigir(aAjusteManual({ productoId, entrada: cuerpo }));
-    const resultado = await ajustarStock({ entrada, usuarioId: usuario.id });
-
-    if (!resultado.ajustado) {
-      throw new ApiError(
-        409,
-        "STOCK_INSUFICIENTE",
-        resultado.errores.cantidad?.[0] ?? "Stock insuficiente.",
-        detallesDeCampos(resultado.errores),
-      );
-    }
-
-    const movimiento = await obtenerMovimiento(resultado.movimientoId);
+    const ajuste = exigirAjuste(await ajustarStock({ entrada, usuario }));
+    const movimiento = await obtenerMovimiento(ajuste.movimientoId);
 
     if (!movimiento) {
       throw noEncontrado("El movimiento");
@@ -84,7 +74,7 @@ export const POST = ruta<Params>(
     revalidatePath(`/productos/${productoId}`);
 
     return responder(
-      formatearMovimientoStockApi(movimiento, resultado.stock),
+      formatearMovimientoStockApi(movimiento, ajuste.stock),
       201,
     );
   },

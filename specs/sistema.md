@@ -19,6 +19,7 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - VE-09: la forma de pago es una sola por venta: contado, tarjeta o cuenta corriente.
 - VE-10: se puede dar de alta un cliente durante la venta sin perder lo ya cargado.
 - VE-11: el cliente recién creado queda seleccionado en la venta.
+- VE-53: el alta de cliente durante la venta se abre en una ventana modal (RF-V2).
 - VE-12: del pago con tarjeta se guardan solo tipo (débito o crédito), marca y últimos 4 dígitos; nunca se pide ni se guarda el número completo, y un cuerpo que lo traiga se rechaza (RF-V5, regla 9).
 - VE-49: se puede agregar un producto a la venta solo con teclado: escribir en el buscador, recorrer los resultados con las flechas y elegir con Enter.
 - VE-50: en el pago de contado se ingresa el monto recibido y se muestra el vuelto; el monto recibido cubre el total, validado en el servidor (RF-V5); si falta, se toma el total, y el comprobante guarda monto y vuelto.
@@ -60,7 +61,7 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - VE-39: una venta anulada no se borra: sigue visible, marcada como anulada, con fecha, usuario y motivo de la anulación.
 - VE-40: anular devuelve el stock de cada producto con un movimiento de entrada con origen anulación.
 - VE-41: anular una venta en cuenta corriente registra un movimiento de anulación que resta su total del saldo del cliente.
-- VE-42: no se anula una venta en cuenta corriente si el saldo del cliente quedaría negativo (por ejemplo, porque ya pagó parte).
+- VE-42: anular una venta en cuenta corriente acredita siempre su total, aunque el cliente ya haya pagado parte y el saldo quede a favor (RF-V9, sección 11.6).
 - VE-43: una venta anulada no se vuelve a anular.
 - VE-44: anular graba la marca, los movimientos de stock y el de cuenta corriente en una sola transacción.
 - VE-45: las ventas anuladas no suman en los totales del listado de ventas, no aparecen en las ventas de hoy de Inicio y no cuentan en "más vendidos".
@@ -76,10 +77,12 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 ## Productos
 
 - PR-01: se puede dar de alta, consultar y modificar un producto.
-- PR-02: un producto tiene código, nombre, precio de venta, stock actual y estado activo/inactivo, y puede tener imagen (PR-12).
+- PR-02: un producto tiene código, nombre, categoría, precio de venta, stock actual, stock mínimo y estado activo/inactivo, y puede tener imagen (PR-12) (RF-P2).
 - PR-03: el código es único.
 - PR-04: el precio es mayor que cero.
-- PR-05: se busca por nombre o código.
+- PR-05: se busca por nombre o código y se filtra por categoría; el catálogo muestra la categoría y marca los productos bajo el mínimo (RF-P1).
+- PR-18: hay categorías con alta, edición (nombre) y baja lógica (`activa`), solo del administrador; el nombre es único y no se da de baja una categoría con productos activos (409 `CATEGORIA_EN_USO`) (RF-P7).
+- PR-19: la ficha de un producto, con existencia, categoría y movimientos, es la misma para los dos roles (`/stock?producto=ID`); el catálogo enlaza ahí, y solo el administrador ve "Editar producto" (RF-P6).
 - PR-06: la baja es lógica (pasar a inactivo); no se borra físicamente.
 - PR-07: un producto inactivo no se puede agregar a ventas nuevas, validado en el servidor.
 - PR-08: un producto inactivo sigue apareciendo en los comprobantes anteriores.
@@ -128,7 +131,7 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 ## Clientes
 
 - CL-01: se puede dar de alta, consultar y modificar un cliente.
-- CL-02: un cliente tiene nombre y apellido o razón social, documento o identificación y un dato de contacto.
+- CL-02: un cliente tiene nombre o razón social, tipo y número de documento (DNI o CUIT), domicilio opcional, un dato de contacto, si está habilitado para cuenta corriente y un límite de crédito opcional (RF-C2).
 - CL-03: nombre y documento son obligatorios.
 - CL-04: hay al menos un dato de contacto.
 - CL-05: se busca por nombre o documento.
@@ -136,7 +139,10 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - CL-07: modificar un cliente no altera los comprobantes existentes.
 - CL-08: el alta durante una venta usa las mismas reglas que el alta normal.
 - CL-09: el documento del cliente es único.
-- CL-10: el documento no puede estar vacío y es numérico; no se valida el formato de DNI ni CUIT.
+- CL-10: el documento se guarda solo con dígitos (se ignoran puntos, guiones y espacios): el DNI tiene 7 u 8 y el CUIT 11. Se muestra con el formato de `lib/documento.ts` (DNI 28.456.123, CUIT 20-28456123-4) y se busca sin importar puntos ni guiones (sección 11.5).
+- CL-15: solo un cliente habilitado para cuenta corriente compra a cuenta y registra pagos (422 `CUENTA_CORRIENTE_NO_HABILITADA`); el límite de crédito solo se carga si está habilitado (regla 6, RF-V5).
+- CL-16: no se le quita la cuenta corriente a un cliente con saldo distinto de cero (422 `SALDO_PENDIENTE`).
+- CL-17: la ficha del cliente muestra sus datos, el saldo, las últimas 6 facturas y la cuenta corriente (RF-C3).
 - CL-11: la baja de un cliente es lógica (`activo` en falso); se puede volver a activar (RF-C7, regla 12).
 - CL-12: no se da de baja un cliente con saldo distinto de cero; la API responde 422 `SALDO_PENDIENTE`.
 - CL-13: un cliente dado de baja no aparece en la búsqueda de la venta, y el servidor rechaza una venta a su nombre (422 `CLIENTE_INACTIVO`).
@@ -155,7 +161,7 @@ La consigna del parcial (enunciado del profesor, 29/10/2026) manda sobre esta sp
 - CC-09: un cliente puede tener un límite de crédito; es opcional y, sin límite, la cuenta corriente no tiene tope.
 - CC-10: el límite de crédito es un importe mayor que cero.
 - CC-11: una venta en cuenta corriente no puede dejar el saldo del cliente por encima de su límite, validado en el servidor.
-- PA-01: un pago tiene fecha, importe y observación opcional.
+- PA-01: un pago tiene fecha, importe, medio (efectivo, transferencia o tarjeta de débito) y observación opcional (RF-C5).
 - PA-02: el importe es mayor que cero.
 - PA-03: un pago no puede superar el saldo adeudado, validado en el servidor.
 - PA-04: un cliente con saldo cero no admite pagos.
@@ -174,9 +180,11 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-04: un usuario inactivo no inicia sesión.
 - US-05: desactivar un usuario cierra sus sesiones abiertas.
 - US-06: las contraseñas se guardan hasheadas, nunca en texto plano.
-- US-07: hay dos roles: administrador y operador.
+- US-07: hay dos roles: administrador y vendedor.
 - US-08: ambos roles emiten y consultan ventas, consultan productos y stock, dan de alta y editan clientes y registran pagos. Solo el administrador anula ventas, da de alta, edita y da de baja productos, registra ajustes de stock y administra usuarios (sección 3).
-- US-30: el operador corresponde al rol "vendedor" de la consigna; en la API el rol se llama `operator`.
+- US-30: el rol se llama "Vendedor" en pantalla y `vendedor` en la API, como en la consigna; en la base se guarda como `operator`, y la API traduce en los dos sentidos.
+- US-31: las contraseñas se guardan con argon2id (sección 8); los hashes scrypt anteriores se siguen aceptando hasta que el usuario cambie la contraseña.
+- US-32: la barra superior muestra el usuario conectado, su rol, el acceso a Perfil y el botón Salir (sección 4).
 - US-09: la administración de usuarios es solo del administrador.
 - US-10: rol y estado activo se verifican en el servidor en cada server action que lo requiera.
 - US-11: el menú no muestra la sección de usuarios a un operador.
@@ -195,7 +203,7 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - US-28: no se puede pasar a operador ni desactivar al último administrador activo (US-16).
 - US-29: un administrador no puede cambiar su propio rol ni desactivarse a sí mismo.
 - US-20: cada usuario cambia su propia contraseña desde `/perfil`, indicando la actual (RF-U5). Disponible en la API (`PUT /api/auth/password`) y en la pantalla.
-- US-31: el administrador restablece la contraseña de otro usuario con una temporal generada al azar que se muestra una sola vez (RF-U5).
+- US-31: el administrador restablece la contraseña de otro usuario con una temporal generada al azar que se muestra una sola vez (RF-U5). Disponible en la API (`POST /api/usuarios/{id}/reset-password`) y en la pantalla de edición del usuario, con confirmación; no se ofrece para el propio usuario, que la cambia desde `/perfil`.
 
 ## Inicio
 
@@ -214,14 +222,11 @@ Login y sesiones los maneja Better Auth; acá solo las reglas de negocio.
 - CO-03: cada pago genera un recibo numerado e imprimible, con numeración propia (RF-C5, regla 4). Se abre desde la cuenta corriente del cliente (`/pagos/[id]`) y se imprime con el diálogo del navegador.
 - CO-04: hay una pantalla de saldos (`/saldos`) con los clientes que deben, de mayor a menor, y el total adeudado (RF-C6). Disponible también en `GET /api/clientes?conDeuda=true&orden=saldo`.
 
-## Pendientes de la consigna
+## Datos iniciales
 
-Decididos por la consigna y no implementados todavía; cada uno requiere cambio de esquema con migración.
-
-- PE-01: categorías de productos con alta, edición y baja (RF-P7). Reemplaza la decisión del 2026-11-09 que las descartaba.
-- PE-02: cliente con tipo de documento (DNI o CUIT), domicilio y habilitación de cuenta corriente (RF-C2, regla 6). La baja lógica (RF-C7) ya está: CL-11 a CL-14.
-- PE-03: el pago registra su medio: efectivo, transferencia o tarjeta (RF-C5).
-- PE-04: el seed carga al menos 2 usuarios (uno por rol), 5 categorías, 30 productos, 10 clientes y 50 facturas en los últimos 30 días, usando los mismos servicios que la app (sección 8 y 10.7).
+- DA-01: el seed carga 2 usuarios (uno por rol), 5 categorías, 30 productos, 10 clientes y 50 facturas repartidas en los últimos 30 días, con pagos, ajustes de stock y 2 anulaciones (sección 8).
+- DA-02: el seed crea categorías, productos, clientes, facturas, pagos, ajustes y anulaciones con los mismos servicios de la app (sección 10.7) y después mueve las fechas hacia atrás; la numeración de facturas y recibos queda en orden de fecha.
+- DA-03: `cp .env.example .env` alcanza para levantar el sistema en desarrollo: la base es `file:local.db` y los usuarios de prueba vienen cargados (sección 9).
 
 ## API REST
 
@@ -231,6 +236,13 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - AP-04: los cuerpos se validan con esquemas estrictos: un campo no previsto (por ejemplo `existencia` o el número completo de tarjeta) responde 422.
 - AP-05: todo error tiene la forma `{ error: { code, message, details? } }`; un error inesperado responde 500 sin detalle.
 - AP-06: las rutas no contienen reglas: llaman a los mismos servicios de `lib/` que las server actions.
+- AP-07: cada servicio de una operación de administrador (anular, ajustar stock, alta y edición de productos y categorías, usuarios) recibe el usuario y verifica el rol con `exigirAdministrador` (`lib/servicio.ts`), además del envoltorio de la ruta (sección 10.2 y 10.5).
+- AP-08: la existencia solo cambia en `moverStock` (`lib/stock/mover.ts`), que actualiza con condición y graba el movimiento; ventas, anulaciones, ingresos, egresos y stock inicial la llaman (sección 10.2).
+- AP-09: la pantalla de nueva venta busca productos y clientes y confirma la venta con la API REST (`GET /api/productos`, `GET /api/clientes`, `POST /api/facturas`) (sección 10.6).
+- AP-10: toda server action usa el envoltorio `ejecutarAccion` (`lib/acciones.ts`), que devuelve `{ ok, data }` o `{ ok: false, error }`; el paso de un resultado fallido a `ApiError` vive en el servicio (`exigir…`) y lo usan la ruta y la acción (sección 10.3).
+- AP-11: los formularios usan el hook común `useFormulario` (`components/formulario.ts`): errores por campo (primero Zod, después el servidor), estado de envío y aviso del resultado (sección 10.6).
+- AP-12: Better Auth no expone rutas HTTP propias: no hay registro abierto ni otros endpoints fuera de los 31 de la sección 11.2; login, logout y sesión pasan por `auth.api` en el servidor (RF-U2, sección 4).
+- AP-13: el alta rápida de cliente desde Nueva venta usa `POST /api/clientes`, la misma ruta del alta normal (sección 11.5).
 
 ## Interfaz
 
@@ -274,7 +286,7 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-08: el sistema usa siempre modo oscuro, sin versión clara ni selector de tema: una sola paleta (negro, escala neutral y verde de marca) mantiene la identidad y simplifica el diseño.
 - 2026-11-08: el rol es un enum en la base y no texto libre, para que solo existan los dos roles de US-07.
 - 2026-11-08: el proxy valida la sesión completa contra la base y no solo la cookie, para que ni un usuario inactivo ni un rol incorrecto vean la pantalla un instante.
-- 2026-11-09: sin categoría, plataforma ni entidad aparte para juegos y consolas: ninguna regla de venta, stock o comprobante cambia según el tipo de producto y ninguna pantalla obligatoria lo usa; el mismo juego en dos plataformas son dos productos con código y stock propios.
+- 2026-11-09 (reemplazada el 2026-11-17 por las categorías de PR-18): sin categoría, plataforma ni entidad aparte para juegos y consolas: ninguna regla de venta, stock o comprobante cambia según el tipo de producto y ninguna pantalla obligatoria lo usa; el mismo juego en dos plataformas son dos productos con código y stock propios.
 - 2026-11-09: el orden y la vista de productos se guardan en una cookie y no por usuario en la base, para que el servidor renderice la preferencia en la primera carga, sin un campo ni una migración; se adelantan a lo obligatorio por pedido del desarrollador.
 - 2026-11-09: la búsqueda ignora acentos con `translate`, nativa de Postgres, y no con la extensión `unaccent` ni con una collation no determinista, para no sumar una migración.
 - 2026-11-10: los importes que se escriben aceptan coma decimal (`45999,90`, también `45.999,90`) además de punto, porque es como se escriben en Argentina; se normalizan a punto antes de validar y guardar.
@@ -291,8 +303,20 @@ Decididos por la consigna y no implementados todavía; cada uno requiere cambio 
 - 2026-11-14: los ajustes manuales de stock pasan a ser solo del administrador (ST-22), porque la tabla de permisos de la consigna (sección 3) lo exige: el vendedor no toca el stock. Reemplaza la decisión anterior que se los permitía a los dos roles.
 - 2026-11-15: alta y edición de productos pasan a ser solo del administrador (US-08), por la tabla de permisos de la consigna; el operador consulta catálogo y stock, y no ve el botón Nuevo producto ni la ficha de edición.
 - 2026-11-14: la consigna del profesor tiene prioridad sobre las decisiones propias; donde choquen, se adapta la spec y se anota acá.
+- 2026-11-17: la anulación de una venta en cuenta corriente acredita siempre el total, aunque el cliente ya haya pagado parte y el saldo quede a favor, porque RF-V9 y la sección 11.6 lo piden sin excepción; la regla 8 limita solo los pagos. Reemplaza la parte de la decisión del 2026-11-11 que rechazaba la anulación si el saldo quedaba negativo.
+- 2026-11-17: categorías de productos (PR-18): tabla `categorias` y `categoria_id` en productos, obligatoria en Zod y nula en la base para no reconstruir la tabla; la migración `0007` crea la categoría "General" para los productos existentes. Reemplaza la decisión del 2026-11-09 que descartaba las categorías, porque la consigna las pide (RF-P7).
+- 2026-11-17: cliente con tipo de documento, domicilio y habilitación de cuenta corriente (CL-02, CL-15); la migración `0007` habilita la cuenta a los clientes que ya tenían movimientos o límite. La factura copia también el tipo de documento y el domicilio del comprador (regla 3, RF-V7).
+- 2026-11-17: el pago registra el medio (PA-01) en `movimientos_cuenta.medio`; los pagos anteriores quedan como efectivo. Los pagos siguen en `movimientos_cuenta` en lugar de una tabla `pagos` aparte: el modelo de la consigna es un piso y el recibo, el crédito y el medio viven en la misma fila, así que no hay dos fuentes que puedan desincronizarse.
+- 2026-11-17: el rol se muestra como "Vendedor" y la API usa `vendedor` (US-30), sin cambiar el valor `operator` de la base, para no reconstruir la tabla de Better Auth.
+- 2026-11-17: contraseñas con argon2id de `node:crypto` (US-31), porque la consigna pide bcrypt o argon2 y Better Auth usa scrypt; no suma dependencias, pero exige Node 24.7 o superior (`engines` en `package.json`).
+- 2026-11-17: el usuario conectado y Salir pasan a una barra superior (US-32), porque la consigna la pide (sección 4); reemplaza la decisión del 2026-11-16 que los ponía al pie de la barra lateral.
+- 2026-11-17: los identificadores de usuario siguen siendo texto (los genera Better Auth); el resto de los recursos usa enteros como pide la sección 11.1.
 - 2026-11-17: se adopta shadcn/ui, porque el profesor confirmó que es obligatorio; reemplaza la decisión del equipo de no usarlo (README). Los componentes se suman de a uno en `components/ui/` y se readaptan a `DESIGN.md` en lugar de usar el tema de shadcn, para no perder el diseño propio. El primero es el botón (`Boton`), que reemplaza a `claseBoton`.
 - 2026-11-17: los componentes de shadcn/ui entran tal cual salen, con nombres en inglés, y toman el diseño propio de tokens en `app/globals.css` (DI-46), en lugar de readaptarse a mano uno por uno; así cada `shadcn add` sale casi listo. `Boton` pasa a `Button`. Ya están Button, Badge, Empty, Skeleton, Input, Textarea, NativeSelect, Label, Field, Checkbox, Separator, Input Group, Table, Popover, Tooltip y Pagination; el combobox de la venta y los grupos de opciones con forma de botón quedan propios.
+- 2026-11-17: se quita la ruta comodín de Better Auth (`app/api/auth/[...all]`) y se activa `disableSignUp` (AP-12), porque dejaba abierto `POST /api/auth/sign-up/email` y cualquiera podía crearse un usuario vendedor sin sesión; la app no la usaba.
+- 2026-11-17: todas las server actions pasan a `ejecutarAccion` (AP-10) y los formularios a `useFormulario` (AP-11), como piden las secciones 10.3 y 10.6. Los servicios siguen devolviendo resultados y no lanzan, para no reescribir sus reglas; cada módulo suma una función `exigir…` que traduce el resultado fallido a `ApiError`, así ruta y acción no repiten el mapeo. El login queda fuera del hook porque no valida con Zod (tiene su propia validación con progreso), pero su acción también usa `ejecutarAccion`; cerrar sesión no devuelve resultado.
+- 2026-11-17: el alta de cliente en la venta pasa a un `Dialog` (VE-53) y llama a `POST /api/clientes` (AP-13), como piden RF-V2 y la sección 11.5.
+- 2026-11-17: el seed reasigna la categoría de cada producto del catálogo de demostración en cada corrida, para que los productos creados antes de las categorías (que la migración `0007` dejó en "General") queden en la suya.
 - 2026-11-17: los gráficos pasan de `chart.js` directo a `react-chartjs-2` (`Bar`, `Doughnut`), porque la consigna lo pide explícitamente en la tabla de tecnologías ("Chart.js (con react-chartjs-2)", obligatorio).
 - 2026-11-17: se suman `AlertDialog` (confirmación de anular, dar de baja y desactivar) y avisos con `sonner` para cada operación, porque la consigna (sección 8) pide confirmar las acciones irreversibles y avisar el resultado de cada operación.
 - 2026-11-14: gráficos, filtros del listado de ventas e impresión de comprobantes y recibos dejan de estar descartados (CO-01 a CO-03, IN-06), porque la consigna los pide (RF-V7, RF-V8, RF-C5, RF-T2).

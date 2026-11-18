@@ -11,7 +11,7 @@ export const ROL_ADMINISTRADOR: Rol = "admin";
 
 export const ETIQUETAS_ROL: Record<Rol, string> = {
   admin: "Administrador",
-  operator: "Operador",
+  operator: "Vendedor",
 };
 
 export const COLORES_ROL: Record<Rol, string> = {

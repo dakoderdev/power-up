@@ -23,6 +23,10 @@ import {
   type Orden,
 } from "@/lib/productos/ordenes";
 import { Preferencias, SelectorOrden } from "./preferencias";
+import { enlaceStock } from "../stock/_comun/stock";
+import { listarCategorias } from "@/lib/categorias/servicio";
+import { esStockBajo } from "@/lib/stock/etiquetas";
+import { Linea } from "@/components/maquetacion";
 import { obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,10 +43,25 @@ const SOLO_ESCRITORIO = "hidden sm:table-cell";
 const COLUMNAS = [
   { titulo: "Producto", clase: "pr-3 sm:pr-6" },
   { titulo: "Código", clase: `w-px pr-6 ${SOLO_ESCRITORIO}` },
+  { titulo: "Categoría", clase: `w-px pr-6 ${SOLO_ESCRITORIO}` },
   { titulo: "Estado", clase: `w-px pr-6 ${SOLO_ESCRITORIO}` },
   { titulo: "Stock", clase: "w-px pr-3 text-right sm:pr-6" },
   { titulo: "Precio", clase: "w-px text-right" },
 ];
+
+const COLOR_BAJO = "text-yellow-400/75";
+const ETIQUETA_BAJO = "Bajo el mínimo";
+
+// RF-P6: la ficha con existencia y movimientos es la misma para los dos roles.
+function enlaceFicha(id: number) {
+  return enlaceStock({ productoId: id });
+}
+
+function limpiarCategoria(texto: string | string[] | undefined) {
+  const numero = Number(Array.isArray(texto) ? texto[0] : texto);
+
+  return Number.isSafeInteger(numero) && numero > 0 ? numero : undefined;
+}
 
 const VISTAS = [
   { valor: "lista", etiqueta: "Ver como lista", Icono: ListBox },
@@ -53,17 +72,23 @@ function enlaceVista({
   vista,
   busqueda,
   orden,
+  categoria,
   pagina = 1,
 }: {
   vista: string;
   busqueda: string;
   orden: Orden;
+  categoria?: number;
   pagina?: number;
 }) {
   const parametros = new URLSearchParams({ vista, orden });
 
   if (busqueda) {
     parametros.set("q", busqueda);
+  }
+
+  if (categoria) {
+    parametros.set("categoria", String(categoria));
   }
 
   if (pagina > 1) {
@@ -83,17 +108,23 @@ export async function Listado({
     vista: vistaPedida,
     orden: ordenPedido,
     pagina: paginaTexto,
+    categoria: categoriaTexto,
   } = await parametros;
+  const categoria = limpiarCategoria(categoriaTexto);
   const busqueda = limpiarBusqueda(q);
   const guardadas = await cookies();
   const vista = limpiarVista(vistaPedida ?? guardadas.get(COOKIE_VISTA)?.value);
   const orden = limpiarOrden(ordenPedido ?? guardadas.get(COOKIE_ORDEN)?.value);
   await obtenerUsuarioActual();
-  const { lista, pagina, paginas } = await listarProductos({
-    busqueda,
-    orden,
-    paginaPedida: limpiarPagina(paginaTexto),
-  });
+  const [{ lista, pagina, paginas }, categorias] = await Promise.all([
+    listarProductos({
+      busqueda,
+      orden,
+      categoriaId: categoria,
+      paginaPedida: limpiarPagina(paginaTexto),
+    }),
+    listarCategorias(),
+  ]);
 
   return (
     <section className="flex flex-col gap-4">
@@ -104,8 +135,15 @@ export async function Listado({
         etiqueta="Buscar por nombre o código"
         limpiar={enlaceVista({ vista, busqueda: "", orden })}
         ocultos={{ vista, orden }}
+        filtrado={Boolean(categoria)}
       >
+        {categoria ? (
+          <input type="hidden" name="categoria" value={categoria} />
+        ) : null}
         <div className="ml-auto flex items-center gap-2">
+          <Button asChild variant="ghost" size="lg">
+            <Link href="/productos/categorias">Categorías</Link>
+          </Button>
           <SelectorOrden orden={orden} />
           <nav aria-label="Vista" className="flex">
             {VISTAS.map((opcion) => (
@@ -123,6 +161,7 @@ export async function Listado({
                     vista: opcion.valor,
                     busqueda,
                     orden,
+                    categoria,
                     pagina,
                   })}
                   aria-label={opcion.etiqueta}
@@ -136,10 +175,38 @@ export async function Listado({
         </div>
       </Buscador>
 
+      <nav aria-label="Filtrar por categoría" className="flex flex-wrap gap-2">
+        {[{ id: undefined, nombre: "Todas" }, ...categorias].map((opcion) => {
+          const elegida = opcion.id === categoria;
+
+          return (
+            <Button
+              key={opcion.id ?? "todas"}
+              asChild
+              variant={elegida ? "outline" : "ghost"}
+              size="xs"
+              className={elegida ? "text-verde" : "border border-neutral-900"}
+            >
+              <Link
+                href={enlaceVista({
+                  vista,
+                  busqueda,
+                  orden,
+                  categoria: elegida ? undefined : opcion.id,
+                })}
+                aria-current={elegida ? "page" : undefined}
+              >
+                {opcion.nombre}
+              </Link>
+            </Button>
+          );
+        })}
+      </nav>
+
       {lista.length === 0 ? (
         <Vacio>
-          {busqueda
-            ? `No hay productos que coincidan con "${busqueda}". Probá con otro nombre o código.`
+          {busqueda || categoria
+            ? "No hay productos que coincidan con la búsqueda. Probá con otro nombre, código o categoría."
             : "Todavía no hay productos. Cargá el primero con Nuevo producto."}
         </Vacio>
       ) : vista === "grilla" ? (
@@ -147,7 +214,7 @@ export async function Listado({
           {lista.map((producto) => (
             <li key={producto.id}>
               <Link
-                href={`/productos/${producto.id}`}
+                href={enlaceFicha(producto.id)}
                 className="group flex flex-col gap-2"
               >
                 <Tapa url={producto.imagenUrl} className="aspect-3/4 w-full" />
@@ -155,7 +222,13 @@ export async function Listado({
                   {producto.nombre}
                 </p>
                 <p className="text-sm tabular-nums text-neutral-300 transition-colors group-hover:text-white">
-                  {formatearMoneda(producto.precio)} · {producto.stock} unidades
+                  {formatearMoneda(producto.precio)} ·{" "}
+                  <span
+                    className={esStockBajo(producto) ? COLOR_BAJO : undefined}
+                  >
+                    {producto.stock} unidades
+                  </span>
+                  {esStockBajo(producto) ? ` · ${ETIQUETA_BAJO}` : ""}
                   {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
                 </p>
               </Link>
@@ -184,7 +257,7 @@ export async function Listado({
                   <div className="flex items-center gap-3">
                     <Tapa url={producto.imagenUrl} className="h-8 w-6" />
                     <Link
-                      href={`/productos/${producto.id}`}
+                      href={enlaceFicha(producto.id)}
                       className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
                     >
                       {producto.nombre}
@@ -196,6 +269,11 @@ export async function Listado({
                 >
                   {producto.codigo}
                 </TableCell>
+                <TableCell
+                  className={`pr-6 whitespace-nowrap text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                >
+                  {producto.categoriaNombre ?? "Sin categoría"}
+                </TableCell>
                 <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
                   <Badge
                     className={
@@ -206,7 +284,14 @@ export async function Listado({
                   </Badge>
                 </TableCell>
                 <TableCell className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
-                  {producto.stock}
+                  {esStockBajo(producto) ? (
+                    <Linea className={COLOR_BAJO} title={ETIQUETA_BAJO}>
+                      {producto.stock}
+                      <Linea className="sr-only"> ({ETIQUETA_BAJO})</Linea>
+                    </Linea>
+                  ) : (
+                    producto.stock
+                  )}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatearMoneda(producto.precio)}
@@ -221,7 +306,7 @@ export async function Listado({
         pagina={pagina}
         paginas={paginas}
         enlace={(numero) =>
-          enlaceVista({ vista, busqueda, orden, pagina: numero })
+          enlaceVista({ vista, busqueda, orden, categoria, pagina: numero })
         }
       />
     </section>

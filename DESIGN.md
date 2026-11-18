@@ -18,7 +18,7 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 - DI-21: el foco por teclado es el contorno verde global de `app/globals.css` (`:focus-visible`). No se agrega otro anillo ni se apaga, salvo en los campos. Excepción: cuando un radio está oculto (`sr-only`) dentro de una etiqueta con forma de botón, la etiqueta muestra el mismo contorno con `has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`, porque el contorno del radio no se ve.
 - DI-22: los campos de texto son la única excepción: apagan el contorno y marcan el foco con borde `neutral-400` (ya lo hace `Input`).
 - DI-23: pasar el mouse aclara el texto o el borde; nunca agrega un fondo. La única excepción es el botón primario, que baja la opacidad del verde. Un enlace de texto que ya está en `white` no puede aclararse: se subraya con `underline-offset-4`.
-- DI-19: en la barra lateral, el ítem activo lleva fondo `neutral-950`, borde `neutral-800`, texto `white` e ícono `verde`, sin cambios al pasar el mouse. Los demás ítems van en `neutral-400` con borde transparente y pasan a `white` al pasar el mouse. "Cerrar sesión" se comporta como un ítem no activo.
+- DI-19: en la barra lateral, el ítem activo lleva fondo `neutral-950`, borde `neutral-800`, texto `white` e ícono `verde`, sin cambios al pasar el mouse. Los demás ítems van en `neutral-400` con borde transparente y pasan a `white` al pasar el mouse. Arriba del contenido va una barra de `h-14` con borde inferior `neutral-900`: el usuario conectado (nombre en `text-sm font-medium`, rol en `text-[0.8125rem] text-neutral-500`), que enlaza a Perfil, y el botón "Salir" en variante de texto (consigna, sección 4).
 
 ## Tipografía
 
@@ -59,6 +59,8 @@ Reglas visuales de la interfaz. Las marcadas `[abierto]` son propuesta a revisar
 - DI-48: toda operación que guarda confirma el resultado con un aviso (`toast.success` de `sonner`, con el `Toaster` de `components/ui/sonner.tsx` en el layout del sistema, arriba al centro). El aviso dice qué pasó en una frase corta ("Producto creado."). Los errores siguen junto al campo (DI-31), no en avisos.
 
 - DI-49: las páginas (`page.tsx`) no llevan etiquetas HTML sueltas (consigna 10.6): se arman con los componentes de `components/ui/`, los de dominio y las piezas de `components/maquetacion.tsx` (`Pagina`, `Columna`, `Seccion` con título y acción en una fila `min-h-10` según DI-39 y `separada` según DI-34, `Pila`, `Fila`, `Grilla`, `Texto` y `Linea` con tono según DI-05, `Titulo`, `ListaDatos` y `Dato`). El buscador de los listados es `Buscador` de `components/buscador.tsx`.
+- DI-50: un filtro de pocas opciones (por ejemplo, la categoría del catálogo) va debajo del buscador como una fila de toggles que se parte en varias líneas (`flex flex-wrap gap-2`), no como un select: enlaces con `Button size="xs"`, el elegido en `outline` con texto `verde` y `aria-current="page"`, los demás en `ghost` con borde `neutral-900`. El primero es "Todas"; tocar el elegido lo quita.
+- DI-51: un formulario que se abre sin dejar la pantalla y necesita más de dos campos (por ejemplo, el alta de cliente durante una venta) va en un `Dialog` de `components/ui/dialog.tsx` con el estilo de DI-47 (`black`, borde, `p-6`, fondo `black/80`), título, una línea de qué pasa al guardar, el botón de cerrar arriba a la derecha y, abajo, Cancelar (texto) y Guardar (primario).
 
 ## Tablas y listados
 

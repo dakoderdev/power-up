@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
 import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/db/schema";
 import {
@@ -18,7 +18,6 @@ import {
   esquemaUsuarioEdicion,
   esquemaUsuarioNuevo,
 } from "@/lib/usuarios/esquemas";
-import type { ErroresUsuario } from "@/lib/usuarios/guardar";
 import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
@@ -29,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const ETIQUETAS_ROL = {
   admin: "Administrador",
-  operator: "Operador",
+  operator: "Vendedor",
 } as const;
 
 export function FormularioUsuario({
@@ -45,9 +44,14 @@ export function FormularioUsuario({
     usuario?.rol ?? "operator",
   );
   const [activo, setActivo] = useState(usuario?.activo ?? true);
-  const [errores, setErrores] = useState<ErroresUsuario>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [guardando, iniciarGuardado] = useTransition();
+  const {
+    errores,
+    mensaje,
+    enviando: guardando,
+    enviar,
+    validar,
+    ejecutar,
+  } = useFormulario();
   const [pendiente, setPendiente] = useState<z.infer<
     typeof esquemaUsuarioEdicion
   > | null>(null);
@@ -58,55 +62,39 @@ export function FormularioUsuario({
     const nombre = String(formulario.get("nombre") ?? "");
     const correo = String(formulario.get("correo") ?? "");
 
-    setErrores({});
-    setMensaje(null);
-
     if (usuario === undefined) {
-      const contrasena = String(formulario.get("contrasena") ?? "");
-      const validacion = esquemaUsuarioNuevo.safeParse({
-        nombre,
-        correo,
-        rol,
-        contrasena,
-      });
-
-      if (!validacion.success) {
-        setErrores(z.flattenError(validacion.error).fieldErrors);
-        return;
-      }
-
-      iniciarGuardado(async () => {
-        const respuesta = await crearUsuarioAccion(validacion.data);
-
-        if (respuesta.creado) {
-          toast.success("Usuario creado.");
-          router.push("/usuarios");
-          return;
-        }
-
-        setErrores(respuesta.errores);
+      enviar({
+        esquema: esquemaUsuarioNuevo,
+        datos: {
+          nombre,
+          correo,
+          rol,
+          contrasena: String(formulario.get("contrasena") ?? ""),
+        },
+        accion: crearUsuarioAccion,
+        aviso: "Usuario creado.",
+        onListo: () => router.push("/usuarios"),
       });
       return;
     }
 
-    const validacion = esquemaUsuarioEdicion.safeParse({
+    const edicion = validar(esquemaUsuarioEdicion, {
       nombre,
       correo,
       rol,
       activo,
     });
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
+    if (!edicion) {
       return;
     }
 
-    if (usuario.activo && !validacion.data.activo) {
-      setPendiente(validacion.data);
+    if (usuario.activo && !edicion.activo) {
+      setPendiente(edicion);
       return;
     }
 
-    guardarEdicion(validacion.data);
+    guardarEdicion(edicion);
   }
 
   function guardarEdicion(datos: z.infer<typeof esquemaUsuarioEdicion>) {
@@ -114,21 +102,13 @@ export function FormularioUsuario({
       return;
     }
 
-    iniciarGuardado(async () => {
-      const respuesta = await editarUsuarioAccion({ id: usuario.id, datos });
-
-      if (respuesta.guardado) {
-        toast.success(
-          usuario.activo && !datos.activo
-            ? "Usuario desactivado."
-            : "Cambios guardados.",
-        );
-        router.push("/usuarios");
-        return;
-      }
-
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+    ejecutar({
+      accion: () => editarUsuarioAccion({ id: usuario.id, datos }),
+      aviso:
+        usuario.activo && !datos.activo
+          ? "Usuario desactivado."
+          : "Cambios guardados.",
+      onListo: () => router.push("/usuarios"),
     });
   }
 

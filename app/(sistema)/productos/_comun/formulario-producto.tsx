@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition } from "react";
+import { useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearProductoAccion,
@@ -21,10 +21,13 @@ import {
 } from "@/lib/productos/esquemas";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { STOCK_MINIMO_INICIAL } from "@/lib/stock/etiquetas";
-import type { ErroresProducto } from "@/lib/productos/guardar";
 import { cn } from "@/lib/utils";
 import { VistaPrevia, type Borrador } from "./vista-previa";
 import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import {
   Field,
   FieldDescription,
@@ -33,7 +36,15 @@ import {
 } from "@/components/ui/field";
 
 type Campo =
-  "codigo" | "nombre" | "precio" | "stock" | "stockMinimo" | "imagenUrl";
+  | "codigo"
+  | "nombre"
+  | "categoriaId"
+  | "precio"
+  | "stock"
+  | "stockMinimo"
+  | "imagenUrl";
+
+type CategoriaOpcion = { id: number; nombre: string };
 
 const CLASE_ENLACE_AYUDA =
   "text-neutral-400 underline underline-offset-4 transition-colors hover:text-white";
@@ -56,6 +67,7 @@ const CAMPOS: {
     completo: true,
   },
   { nombre: "codigo", etiqueta: "Código", tipo: "text", maximo: CODIGO_MAXIMO },
+  { nombre: "categoriaId", etiqueta: "Categoría", tipo: "select" },
   {
     nombre: "precio",
     etiqueta: "Precio de venta",
@@ -109,10 +121,12 @@ function leerFormulario(formulario: FormData) {
   const texto = (campo: string) => String(formulario.get(campo) ?? "");
   const stock = texto("stock").trim();
   const minimo = texto("stockMinimo").trim();
+  const categoria = texto("categoriaId");
 
   return {
     codigo: texto("codigo"),
     nombre: texto("nombre"),
+    categoriaId: categoria === "" ? undefined : Number(categoria),
     precio: texto("precio"),
     imagenUrl: texto("imagenUrl"),
     stock: stock === "" ? 0 : Number(stock),
@@ -151,17 +165,33 @@ function valorInicial({
     return producto?.precio.replace(".", ",") ?? "";
   }
 
+  if (campo === "categoriaId") {
+    return producto?.categoriaId ? String(producto.categoriaId) : "";
+  }
+
   return producto?.[campo] ?? "";
 }
 
-export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
+export function FormularioProducto({
+  producto,
+  categorias,
+}: {
+  producto?: ProductoFila;
+  categorias: CategoriaOpcion[];
+}) {
   const id = useId();
   const router = useRouter();
   const esAlta = producto === undefined;
-  const [errores, setErrores] = useState<ErroresProducto>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
+  const {
+    errores,
+    mensaje,
+    enviando: guardando,
+    enviar,
+    validar,
+    ejecutar,
+    limpiar,
+  } = useFormulario();
   const [borrador, setBorrador] = useState(() => borradorInicial(producto));
-  const [guardando, iniciarGuardado] = useTransition();
   const formulario = useRef<HTMLFormElement>(null);
   const [pendiente, setPendiente] = useState<z.infer<
     typeof esquemaProductoEdicion
@@ -170,8 +200,7 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
   function reiniciar() {
     formulario.current?.reset();
     setBorrador(borradorInicial(producto));
-    setErrores({});
-    setMensaje(null);
+    limpiar();
   }
 
   function actualizar(evento: FormEvent<HTMLFormElement>) {
@@ -182,38 +211,26 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const datos = leerFormulario(new FormData(evento.currentTarget));
-    const validacion = esAlta
-      ? esquemaProductoNuevo.safeParse(datos)
-      : esquemaProductoEdicion.safeParse(datos);
-
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      setMensaje(null);
-      return;
-    }
-
-    setErrores({});
-    setMensaje(null);
 
     if (esAlta) {
-      const nuevo = validacion.data as z.infer<typeof esquemaProductoNuevo>;
-      iniciarGuardado(async () => {
-        const respuesta = await crearProductoAccion(nuevo);
-
-        if (respuesta.guardado) {
+      enviar({
+        esquema: esquemaProductoNuevo,
+        datos,
+        accion: crearProductoAccion,
+        aviso: "Producto creado.",
+        onListo: () => {
           reiniciar();
-          toast.success("Producto creado.");
-          router.push(`/productos?${new URLSearchParams({ q: nuevo.codigo })}`);
-          return;
-        }
-
-        setErrores(respuesta.errores);
-        setMensaje(respuesta.mensaje ?? null);
+          router.push(`/productos?${new URLSearchParams({ q: datos.codigo })}`);
+        },
       });
       return;
     }
 
-    const edicion = validacion.data as z.infer<typeof esquemaProductoEdicion>;
+    const edicion = validar(esquemaProductoEdicion, datos);
+
+    if (!edicion) {
+      return;
+    }
 
     if (producto.activo && !edicion.activo) {
       setPendiente(edicion);
@@ -228,21 +245,13 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
       return;
     }
 
-    iniciarGuardado(async () => {
-      const respuesta = await editarProductoAccion({ id: producto.id, datos });
-
-      if (respuesta.guardado) {
-        toast.success(
-          producto.activo && !datos.activo
-            ? "Producto dado de baja."
-            : "Cambios guardados.",
-        );
-        router.push("/productos");
-        return;
-      }
-
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+    ejecutar({
+      accion: () => editarProductoAccion({ id: producto.id, datos }),
+      aviso:
+        producto.activo && !datos.activo
+          ? "Producto dado de baja."
+          : "Cambios guardados.",
+      onListo: () => router.push("/productos"),
     });
   }
 
@@ -264,6 +273,37 @@ export function FormularioProducto({ producto }: { producto?: ProductoFila }) {
               campo.ayuda ? `${idCampo}-ayuda` : null,
               error ? `${idCampo}-error` : null,
             ].filter(Boolean);
+
+            if (campo.tipo === "select") {
+              return (
+                <Field key={campo.nombre}>
+                  <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
+                  <NativeSelect
+                    id={idCampo}
+                    name={campo.nombre}
+                    defaultValue={valorInicial({
+                      campo: campo.nombre,
+                      producto,
+                    })}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${idCampo}-error` : undefined}
+                  >
+                    <NativeSelectOption value="">Elegí una</NativeSelectOption>
+                    {categorias.map((categoria) => (
+                      <NativeSelectOption
+                        key={categoria.id}
+                        value={categoria.id}
+                      >
+                        {categoria.nombre}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  {error ? (
+                    <FieldError id={`${idCampo}-error`}>{error}</FieldError>
+                  ) : null}
+                </Field>
+              );
+            }
 
             if (campo.nombre === "stock" && !esAlta) {
               return (

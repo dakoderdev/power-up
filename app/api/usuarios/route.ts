@@ -1,11 +1,11 @@
 import { revalidatePath } from "next/cache";
-import { ApiError, noEncontrado } from "@/lib/api/errores";
+import { noEncontrado } from "@/lib/api/errores";
 import { esquemaUsuarioNuevoApi } from "@/lib/api/esquemas";
 import { formatearUsuarioApi, respuestaPaginada } from "@/lib/api/formato";
 import { leerBusqueda, leerOpcion, leerPaginacion } from "@/lib/api/parametros";
 import { leerJson, responder, ruta, validar } from "@/lib/api/ruta";
 import { consultarUsuario } from "@/lib/usuarios/detalle";
-import { crearUsuario } from "@/lib/usuarios/guardar";
+import { crearUsuario, exigirUsuarioCreado } from "@/lib/usuarios/guardar";
 import { consultarUsuarios } from "@/lib/usuarios/listado";
 
 const ESTADOS = ["true", "false"] as const;
@@ -37,25 +37,16 @@ export const GET = ruta({ admin: true }, async ({ solicitud }) => {
 });
 
 // RF-U4: alta de usuario con rol y contraseña temporal (admin).
-export const POST = ruta({ admin: true }, async ({ solicitud }) => {
+export const POST = ruta({ admin: true }, async ({ solicitud, usuario }) => {
   const entrada = validar(esquemaUsuarioNuevoApi, await leerJson(solicitud));
-  const resultado = await crearUsuario(entrada);
+  const id = exigirUsuarioCreado(await crearUsuario({ usuario, entrada }));
+  const creado = await consultarUsuario(id);
 
-  if (!resultado.creado) {
-    throw new ApiError(
-      409,
-      "EMAIL_DUPLICADO",
-      "Ya hay un usuario con ese correo.",
-    );
-  }
-
-  const usuario = await consultarUsuario(resultado.id);
-
-  if (!usuario) {
+  if (!creado) {
     throw noEncontrado("El usuario");
   }
 
   revalidatePath("/usuarios");
 
-  return responder(formatearUsuarioApi(usuario), 201);
+  return responder(formatearUsuarioApi(creado), 201);
 });

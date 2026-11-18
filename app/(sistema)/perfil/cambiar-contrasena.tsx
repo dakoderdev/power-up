@@ -1,17 +1,13 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
+import { useFormulario } from "@/components/formulario";
 import { Button } from "@/components/ui/button";
 import { cambiarContrasenaAccion } from "@/lib/usuarios/acciones";
-import {
-  esquemaCambioContrasena,
-  type ErroresContrasena,
-} from "@/lib/usuarios/esquemas";
+import { esquemaCambioContrasena } from "@/lib/usuarios/esquemas";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { toast } from "sonner";
 
 const CAMPOS = [
   {
@@ -28,35 +24,22 @@ const CAMPOS = [
 
 export function CambiarContrasena() {
   const id = useId();
-  const [errores, setErrores] = useState<ErroresContrasena>({});
-  const [guardando, iniciarGuardado] = useTransition();
+  const { errores, mensaje, enviando: guardando, enviar } = useFormulario();
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const formulario = evento.currentTarget;
     const datos = new FormData(formulario);
 
-    const validacion = esquemaCambioContrasena.safeParse({
-      actual: String(datos.get("actual") ?? ""),
-      nueva: String(datos.get("nueva") ?? ""),
-    });
-
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
-      return;
-    }
-
-    setErrores({});
-    iniciarGuardado(async () => {
-      const respuesta = await cambiarContrasenaAccion(validacion.data);
-
-      if (respuesta.cambiada) {
-        formulario.reset();
-        toast.success("Contraseña actualizada.");
-        return;
-      }
-
-      setErrores(respuesta.errores);
+    enviar({
+      esquema: esquemaCambioContrasena,
+      datos: {
+        actual: String(datos.get("actual") ?? ""),
+        nueva: String(datos.get("nueva") ?? ""),
+      },
+      accion: cambiarContrasenaAccion,
+      aviso: "Contraseña actualizada.",
+      onListo: () => formulario.reset(),
     });
   }
 
@@ -96,6 +79,11 @@ export function CambiarContrasena() {
         tus otras sesiones abiertas.
       </p>
 
+      {mensaje ? (
+        <p role="alert" className="text-sm text-red-400">
+          {mensaje}
+        </p>
+      ) : null}
       <div className="flex justify-end">
         <Button variant="default" size="lg" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Cambiar contraseña"}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { documentoDeVenta } from "@/lib/documento";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
@@ -102,9 +103,9 @@ function Datos({ venta }: { venta: VentaDetalle }) {
     { termino: "Fecha", valor: formatearFechaHora(venta.creadoEn) },
     {
       termino: "Cliente",
-      valor: venta.clienteDocumento
-        ? `${venta.clienteNombre} · ${venta.clienteDocumento}`
-        : venta.clienteNombre,
+      valor: [venta.clienteNombre, documentoDeVenta(venta)]
+        .filter(Boolean)
+        .join(" · "),
     },
     ...(venta.tarjetaTipo
       ? [

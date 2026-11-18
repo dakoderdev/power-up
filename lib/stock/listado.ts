@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
 import {
+  categorias,
   movimientosStock,
   ORIGENES_STOCK,
   productos,
@@ -83,18 +84,22 @@ export async function listarInventario({
   return { lista, cantidad, pagina, paginas };
 }
 
+// RF-P6: datos de la ficha del producto (existencia, mínimo y categoría).
 export async function obtenerProductoStock(id: number) {
   const [producto] = await db
     .select({
       id: productos.id,
       codigo: productos.codigo,
       nombre: productos.nombre,
+      categoriaNombre: categorias.nombre,
+      precio: productos.precio,
       stock: productos.stock,
       stockMinimo: productos.stockMinimo,
       activo: productos.activo,
       imagenUrl: productos.imagenUrl,
     })
     .from(productos)
+    .leftJoin(categorias, eq(categorias.id, productos.categoriaId))
     .where(eq(productos.id, id));
 
   return producto;

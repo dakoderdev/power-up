@@ -45,7 +45,14 @@ const base = createInsertSchema(productos, {
       .min(0, "El stock no puede ser negativo."),
 });
 
-export const esquemaProductoNuevo = base.omit({ id: true, creadoEn: true });
+const categoriaId = z
+  .number("Elegí una categoría.")
+  .int("Elegí una categoría.")
+  .positive("Elegí una categoría.");
+
+export const esquemaProductoNuevo = base
+  .omit({ id: true, creadoEn: true })
+  .extend({ categoriaId });
 
 export const esquemaProductoEdicion = esquemaProductoNuevo.omit({
   stock: true,

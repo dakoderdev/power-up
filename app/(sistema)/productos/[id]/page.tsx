@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { EncabezadoPagina } from "@/components/encabezado-pagina";
 import { idPositivo } from "@/lib/esquemas-comunes";
+import { listarCategorias } from "@/lib/categorias/servicio";
 import { obtenerProducto } from "@/lib/productos/guardar";
 import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { FormularioProducto } from "../_comun/formulario-producto";
@@ -33,15 +34,24 @@ async function Edicion({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await requerirAdministrador();
   const idValido = idPositivo.safeParse(Number(id));
-  const producto = idValido.success
-    ? await obtenerProducto(idValido.data)
-    : null;
+  const [producto, categorias] = await Promise.all([
+    idValido.success ? obtenerProducto(idValido.data) : null,
+    listarCategorias({ incluirInactivas: true }),
+  ]);
 
   if (!producto) {
     notFound();
   }
 
-  return <FormularioProducto producto={producto} />;
+  return (
+    <FormularioProducto
+      producto={producto}
+      categorias={categorias.filter(
+        (categoria) =>
+          categoria.activa || categoria.id === producto.categoriaId,
+      )}
+    />
+  );
 }
 
 function EdicionCargando() {

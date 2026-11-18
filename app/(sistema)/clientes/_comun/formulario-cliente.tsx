@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useId, useState } from "react";
 import type { FormEvent } from "react";
-import { z } from "zod";
 import { ConfirmarAccion } from "@/components/confirmar-accion";
+import { useFormulario } from "@/components/formulario";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   crearClienteAccion,
@@ -19,113 +19,50 @@ import {
 } from "@/lib/clientes/esquemas";
 import { ETIQUETAS_ESTADO } from "@/lib/estados";
 import { cn } from "@/lib/utils";
-import type { ErroresCliente } from "@/lib/clientes/guardar";
-import { Input } from "@/components/ui/input";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
-import { toast } from "sonner";
-
-type Campo = "nombre" | "documento" | "telefono" | "email" | "limiteCredito";
-
-const CAMPOS: {
-  nombre: Campo;
-  etiqueta: string;
-  tipo: string;
-  modo?: "numeric" | "decimal";
-  ejemplo?: string;
-}[] = [
-  { nombre: "nombre", etiqueta: "Nombre o razón social", tipo: "text" },
-  { nombre: "documento", etiqueta: "Documento", tipo: "text", modo: "numeric" },
-  { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel" },
-  { nombre: "email", etiqueta: "Correo", tipo: "email" },
-  {
-    nombre: "limiteCredito",
-    etiqueta: "Límite de crédito (opcional)",
-    tipo: "text",
-    modo: "decimal",
-    ejemplo: "150000",
-  },
-];
+import { FieldDescription, FieldError } from "@/components/ui/field";
+import { CamposCliente, leerCliente } from "./campos-cliente";
 
 const ESTADOS = [
   { valor: true, etiqueta: ETIQUETAS_ESTADO.activo },
   { valor: false, etiqueta: ETIQUETAS_ESTADO.inactivo },
 ];
 
-function valorInicial({
-  campo,
-  cliente,
-}: {
-  campo: Campo;
-  cliente?: ClienteDetalle;
-}) {
-  const valor = cliente?.[campo] ?? "";
-
-  return campo === "limiteCredito" ? valor.replace(".", ",") : valor;
-}
-
 export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
   const id = useId();
   const router = useRouter();
   const esAlta = cliente === undefined;
-  const [errores, setErrores] = useState<ErroresCliente>({});
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [guardando, iniciarGuardado] = useTransition();
+  const { errores, mensaje, enviando, enviar, validar, ejecutar } =
+    useFormulario();
   const [activo, setActivo] = useState(cliente?.activo ?? true);
   const [pendiente, setPendiente] = useState<ClienteEdicion | null>(null);
 
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    const formulario = new FormData(evento.currentTarget);
-    const datos = Object.fromEntries(
-      CAMPOS.map((campo) => [
-        campo.nombre,
-        String(formulario.get(campo.nombre) ?? ""),
-      ]),
-    );
-
-    setErrores({});
-    setMensaje(null);
+    const datos = leerCliente(new FormData(evento.currentTarget));
 
     if (esAlta) {
-      const validacion = esquemaClienteNuevo.safeParse(datos);
-
-      if (!validacion.success) {
-        setErrores(z.flattenError(validacion.error).fieldErrors);
-        return;
-      }
-
-      iniciarGuardado(async () => {
-        const respuesta = await crearClienteAccion(validacion.data);
-
-        if (respuesta.creado) {
-          toast.success("Cliente creado.");
-          router.push(`/clientes/${respuesta.cliente.id}`);
-          return;
-        }
-
-        setErrores(respuesta.errores);
+      enviar({
+        esquema: esquemaClienteNuevo,
+        datos,
+        accion: crearClienteAccion,
+        aviso: "Cliente creado.",
+        onListo: (creado) => router.push(`/clientes/${creado.id}`),
       });
       return;
     }
 
-    const validacion = esquemaClienteEdicion.safeParse({ ...datos, activo });
+    const edicion = validar(esquemaClienteEdicion, { ...datos, activo });
 
-    if (!validacion.success) {
-      setErrores(z.flattenError(validacion.error).fieldErrors);
+    if (!edicion) {
       return;
     }
 
-    if (cliente.activo && !validacion.data.activo) {
-      setPendiente(validacion.data);
+    if (cliente.activo && !edicion.activo) {
+      setPendiente(edicion);
       return;
     }
 
-    guardarEdicion(validacion.data);
+    guardarEdicion(edicion);
   }
 
   function guardarEdicion(datos: ClienteEdicion) {
@@ -133,21 +70,13 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
       return;
     }
 
-    iniciarGuardado(async () => {
-      const respuesta = await editarClienteAccion({ id: cliente.id, datos });
-
-      if (respuesta.guardado) {
-        toast.success(
-          cliente.activo && !datos.activo
-            ? "Cliente dado de baja."
-            : "Cambios guardados.",
-        );
-        router.push(`/clientes/${cliente.id}`);
-        return;
-      }
-
-      setErrores(respuesta.errores);
-      setMensaje(respuesta.mensaje ?? null);
+    ejecutar({
+      accion: () => editarClienteAccion({ id: cliente.id, datos }),
+      aviso:
+        cliente.activo && !datos.activo
+          ? "Cliente dado de baja."
+          : "Cambios guardados.",
+      onListo: () => router.push(`/clientes/${cliente.id}`),
     });
   }
 
@@ -158,37 +87,16 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
       aria-label={esAlta ? "Nuevo cliente" : "Editar cliente"}
       className="flex max-w-2xl flex-col gap-6"
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        {CAMPOS.map((campo) => {
-          const error = errores[campo.nombre]?.[0];
-          const idCampo = `${id}-${campo.nombre}`;
-
-          return (
-            <Field key={campo.nombre}>
-              <FieldLabel htmlFor={idCampo}>{campo.etiqueta}</FieldLabel>
-              <Input
-                id={idCampo}
-                name={campo.nombre}
-                type={campo.tipo}
-                inputMode={campo.modo}
-                placeholder={campo.ejemplo}
-                autoFocus={esAlta && campo.nombre === "nombre"}
-                defaultValue={valorInicial({ campo: campo.nombre, cliente })}
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `${idCampo}-error` : undefined}
-                className={campo.modo ? "tabular-nums" : ""}
-              />
-              {error ? (
-                <FieldError id={`${idCampo}-error`}>{error}</FieldError>
-              ) : null}
-            </Field>
-          );
-        })}
-      </div>
+      <CamposCliente
+        id={id}
+        errores={errores}
+        cliente={cliente}
+        enfocar={esAlta}
+      />
       <p className="text-sm text-neutral-500">
-        Teléfono o correo: al menos uno de los dos. Sin límite de crédito, la
-        cuenta corriente no tiene tope. Los cambios no alteran los comprobantes
-        ya emitidos.
+        Teléfono o correo: al menos uno de los dos. Solo un cliente habilitado
+        compra en cuenta corriente. Los cambios no alteran los comprobantes ya
+        emitidos.
       </p>
 
       {esAlta ? null : (
@@ -247,8 +155,8 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
             Cancelar
           </Link>
         </Button>
-        <Button variant="default" size="lg" type="submit" disabled={guardando}>
-          {guardando
+        <Button variant="default" size="lg" type="submit" disabled={enviando}>
+          {enviando
             ? "Guardando…"
             : esAlta
               ? "Crear cliente"

@@ -8,6 +8,9 @@ import { Receipt } from "pixelarticons/react/Receipt.js";
 import { Shield } from "pixelarticons/react/Shield.js";
 import { User } from "pixelarticons/react/User.js";
 import { Wallet } from "pixelarticons/react/Wallet.js";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { ETIQUETAS_ROL, obtenerUsuarioActual } from "@/lib/usuarios/sesion";
 import { cerrarSesion } from "./actions";
@@ -54,15 +57,14 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
             </Suspense>
           </ul>
         </nav>
-
-        <div className="mt-auto border-t border-neutral-900 px-3 py-4">
-          <Suspense fallback={<PieCargando />}>
-            <PieUsuario />
-          </Suspense>
-        </div>
       </MarcoBarra>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-14 items-center justify-end gap-2 border-b border-neutral-900 px-4 sm:px-8 lg:px-12">
+          <Suspense fallback={<UsuarioCargando />}>
+            <BarraUsuario />
+          </Suspense>
+        </header>
         <main className="flex flex-1 flex-col px-4 pb-36 pt-3 lg:pb-10 sm:px-8 lg:pt-6 lg:px-12">
           {children}
         </main>
@@ -88,43 +90,37 @@ async function EnlaceUsuarios() {
   );
 }
 
-async function PieUsuario() {
+// Sección 4: barra superior con el usuario conectado y el botón de salir.
+async function BarraUsuario() {
   const usuario = await obtenerUsuarioActual();
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex min-w-0 flex-col px-3">
-        <span className="truncate text-sm font-medium text-neutral-100">
-          {usuario.nombre}
+    <>
+      <Link
+        href="/perfil"
+        aria-label={`Perfil de ${usuario.nombre}`}
+        className="mr-auto flex min-w-0 items-center gap-3 text-neutral-300 transition-colors hover:text-white lg:mr-0"
+      >
+        <User aria-hidden="true" className="size-5 shrink-0" />
+        <span className="flex min-w-0 items-baseline gap-2">
+          <span className="truncate text-sm font-medium text-neutral-100">
+            {usuario.nombre}
+          </span>
+          <span className="text-[0.8125rem] text-neutral-500">
+            {ETIQUETAS_ROL[usuario.rol]}
+          </span>
         </span>
-        <span className="text-[0.8125rem] text-neutral-500">
-          {ETIQUETAS_ROL[usuario.rol]}
-        </span>
-      </div>
-      <div className="flex flex-col gap-0.5">
-        <EnlaceSeccion href="/perfil" icono={<User />}>
-          Perfil
-        </EnlaceSeccion>
-        <form action={cerrarSesion}>
-          <button
-            type="submit"
-            className="flex h-9 w-full items-center gap-3 border border-transparent px-3 text-[0.9375rem] text-neutral-400 transition-colors hover:text-white"
-          >
-            <Logout aria-hidden="true" className="size-5 shrink-0" />
-            Cerrar sesión
-          </button>
-        </form>
-      </div>
-    </div>
+      </Link>
+      <form action={cerrarSesion}>
+        <Button type="submit" variant="ghost">
+          <Logout aria-hidden="true" className="size-5" />
+          Salir
+        </Button>
+      </form>
+    </>
   );
 }
 
-function PieCargando() {
-  return (
-    <div aria-hidden="true" className="flex flex-col gap-2 px-3">
-      <span className="h-3.5 w-28 bg-neutral-900" />
-      <span className="h-3 w-20 bg-neutral-900" />
-      <span className="mt-4 h-3.5 w-24 bg-neutral-900" />
-    </div>
-  );
+function UsuarioCargando() {
+  return <Skeleton aria-hidden="true" className="h-5 w-48" />;
 }

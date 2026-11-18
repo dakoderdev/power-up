@@ -5,8 +5,8 @@ import { Vacio } from "@/components/vacio";
 import type { ClienteVenta } from "@/lib/clientes/listado";
 import type { ProductoVendible } from "@/lib/productos/listado";
 import { contar } from "@/lib/texto";
-import { confirmarVentaAccion } from "@/lib/ventas/acciones";
 import { esquemaVentaEntrada } from "@/lib/ventas/esquemas";
+import { confirmarVenta } from "./api-venta";
 import { BuscadorProductos } from "./buscador-productos";
 import { COLUMNAS_LINEA, FilaLinea, subtotal, type Linea } from "./linea-venta";
 import {
@@ -49,7 +49,7 @@ export function ArmadoVenta() {
 
   function elegirCliente(elegido: ClienteVenta | null) {
     setCliente(elegido);
-    if (elegido === null && formaPago === "cuenta_corriente") {
+    if (!elegido?.cuentaCorriente && formaPago === "cuenta_corriente") {
       setFormaPago(FORMA_INICIAL);
     }
   }
@@ -132,7 +132,7 @@ export function ArmadoVenta() {
 
     setErrores([]);
     iniciarConfirmacion(async () => {
-      const respuesta = await confirmarVentaAccion(validacion.data);
+      const respuesta = await confirmarVenta(validacion.data);
 
       if (respuesta.confirmada) {
         toast.success("Venta confirmada.", {
@@ -217,6 +217,7 @@ export function ArmadoVenta() {
         unidades={unidades}
         total={total}
         formaPago={formaPago}
+        conCuenta={cliente?.cuentaCorriente ?? false}
         conCliente={cliente !== null}
         montoRecibido={montoRecibido}
         tarjeta={tarjeta}

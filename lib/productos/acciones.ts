@@ -1,14 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { ejecutarAccion } from "@/lib/acciones";
 import { idPositivo } from "@/lib/esquemas-comunes";
+import { validarEntrada } from "@/lib/servicio";
 import { requerirAdministrador } from "@/lib/usuarios/sesion";
 import { esquemaProductoEdicion, esquemaProductoNuevo } from "./esquemas";
 import {
   crearProducto,
   editarProducto,
-  type ResultadoGuardar,
+  exigirProductoGuardado,
 } from "./guardar";
 
 function revalidarProductos(id: number) {
@@ -17,29 +18,17 @@ function revalidarProductos(id: number) {
   revalidatePath("/");
 }
 
-export async function crearProductoAccion(
-  datos: unknown,
-): Promise<ResultadoGuardar> {
-  const usuario = await requerirAdministrador();
-  const validacion = esquemaProductoNuevo.safeParse(datos);
+export async function crearProductoAccion(datos: unknown) {
+  return ejecutarAccion(async () => {
+    const usuario = await requerirAdministrador();
+    const entrada = validarEntrada(esquemaProductoNuevo, datos);
+    const productoId = exigirProductoGuardado(
+      await crearProducto({ entrada, usuario }),
+    );
+    revalidarProductos(productoId);
 
-  if (!validacion.success) {
-    return {
-      guardado: false,
-      errores: z.flattenError(validacion.error).fieldErrors,
-    };
-  }
-
-  const resultado = await crearProducto({
-    entrada: validacion.data,
-    usuarioId: usuario.id,
+    return { productoId };
   });
-
-  if (resultado.guardado) {
-    revalidarProductos(resultado.productoId);
-  }
-
-  return resultado;
 }
 
 export async function editarProductoAccion({
@@ -48,35 +37,16 @@ export async function editarProductoAccion({
 }: {
   id: unknown;
   datos: unknown;
-}): Promise<ResultadoGuardar> {
-  await requerirAdministrador();
-  const idValido = idPositivo.safeParse(id);
+}) {
+  return ejecutarAccion(async () => {
+    const usuario = await requerirAdministrador();
+    const productoId = validarEntrada(idPositivo, id);
+    const entrada = validarEntrada(esquemaProductoEdicion, datos);
+    exigirProductoGuardado(
+      await editarProducto({ id: productoId, entrada, usuario }),
+    );
+    revalidarProductos(productoId);
 
-  if (!idValido.success) {
-    return {
-      guardado: false,
-      errores: {},
-      mensaje: "El producto no existe. Volvé al listado y elegí otro.",
-    };
-  }
-
-  const validacion = esquemaProductoEdicion.safeParse(datos);
-
-  if (!validacion.success) {
-    return {
-      guardado: false,
-      errores: z.flattenError(validacion.error).fieldErrors,
-    };
-  }
-
-  const resultado = await editarProducto({
-    id: idValido.data,
-    entrada: validacion.data,
+    return { productoId };
   });
-
-  if (resultado.guardado) {
-    revalidarProductos(resultado.productoId);
-  }
-
-  return resultado;
 }

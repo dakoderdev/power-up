@@ -12,6 +12,7 @@ export function Buscador({
   etiqueta,
   limpiar = ruta,
   ocultos = {},
+  filtrado = false,
   children,
 }: {
   ruta: string;
@@ -19,6 +20,7 @@ export function Buscador({
   etiqueta: string;
   limpiar?: string;
   ocultos?: Record<string, string>;
+  filtrado?: boolean;
   children?: ReactNode;
 }) {
   return (
@@ -43,7 +45,7 @@ export function Buscador({
         <Search aria-hidden="true" className="size-5" />
         Buscar
       </Button>
-      {busqueda ? (
+      {busqueda || filtrado ? (
         <Button asChild variant="ghost" size="lg">
           <Link href={limpiar}>Limpiar</Link>
         </Button>

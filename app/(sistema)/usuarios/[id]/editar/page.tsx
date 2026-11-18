@@ -6,6 +6,7 @@ import { obtenerUsuario } from "@/lib/usuarios/detalle";
 import { FormularioUsuario } from "../../_comun/formulario-usuario";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagina } from "@/components/maquetacion";
+import { RestablecerContrasena } from "./restablecer-contrasena";
 
 export const metadata: Metadata = {
   title: "Editar usuario · Power Up",
@@ -42,6 +43,17 @@ async function Formulario({
   }
 
   return (
-    <FormularioUsuario usuario={detalle.usuario} esActual={detalle.esActual} />
+    <>
+      <FormularioUsuario
+        usuario={detalle.usuario}
+        esActual={detalle.esActual}
+      />
+      {detalle.esActual ? null : (
+        <RestablecerContrasena
+          id={detalle.usuario.id}
+          nombre={detalle.usuario.nombre}
+        />
+      )}
+    </>
   );
 }

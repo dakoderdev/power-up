@@ -36,6 +36,7 @@ export function ResumenVenta({
   total,
   formaPago,
   conCliente,
+  conCuenta,
   montoRecibido,
   tarjeta,
   errores,
@@ -51,6 +52,7 @@ export function ResumenVenta({
   total: number;
   formaPago: FormaPago;
   conCliente: boolean;
+  conCuenta: boolean;
   montoRecibido: string;
   tarjeta: DatosTarjeta;
   errores: string[];
@@ -92,7 +94,7 @@ export function ResumenVenta({
         <div className="flex flex-wrap gap-2">
           {Object.entries(ETIQUETAS_FORMA_PAGO).map(([valor, etiqueta]) => {
             const elegida = formaPago === valor;
-            const bloqueada = valor === "cuenta_corriente" && !conCliente;
+            const bloqueada = valor === "cuenta_corriente" && !conCuenta;
 
             return (
               <label
@@ -119,9 +121,11 @@ export function ResumenVenta({
             );
           })}
         </div>
-        {conCliente ? null : (
+        {conCuenta ? null : (
           <p className="text-sm text-neutral-500">
-            Elegí un cliente registrado para usar cuenta corriente.
+            {conCliente
+              ? "Este cliente no tiene cuenta corriente habilitada."
+              : "Elegí un cliente registrado y habilitado para usar cuenta corriente."}
           </p>
         )}
       </fieldset>

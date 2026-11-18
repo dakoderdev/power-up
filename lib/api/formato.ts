@@ -1,4 +1,6 @@
+import { aRolApi } from "@/lib/api/esquemas";
 import type { PagoDetalle } from "@/lib/cuentas/pagar";
+import { formatearDocumento, type TipoDocumento } from "@/lib/documento";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import type { Tablero } from "@/lib/inicio/tablero";
 import { aCentavos } from "@/lib/moneda";
@@ -22,6 +24,8 @@ type ProductoBase = {
   id: number;
   codigo: string;
   nombre: string;
+  categoriaId: number | null;
+  categoriaNombre: string | null;
   precio: string;
   stock: number;
   stockMinimo: number;
@@ -35,6 +39,10 @@ export function formatearProductoApi(producto: ProductoBase) {
     id: producto.id,
     codigo: producto.codigo,
     descripcion: producto.nombre,
+    categoria:
+      producto.categoriaId === null
+        ? null
+        : { id: producto.categoriaId, nombre: producto.categoriaNombre ?? "" },
     precio: enCentavos(producto.precio),
     existencia: producto.stock,
     stockMinimo: producto.stockMinimo,
@@ -47,8 +55,11 @@ export function formatearProductoApi(producto: ProductoBase) {
 
 type ClienteBase = {
   id: number;
+  tipoDoc: TipoDocumento;
   nombre: string;
   documento: string;
+  domicilio: string | null;
+  cuentaCorriente: boolean;
   telefono: string | null;
   email: string | null;
   limiteCredito: string | null;
@@ -69,10 +80,13 @@ export function formatearClienteApi({
 
   return {
     id: cliente.id,
-    nroDoc: cliente.documento,
+    tipoDoc: cliente.tipoDoc,
+    nroDoc: formatearDocumento(cliente),
     nombre: cliente.nombre,
+    domicilio: cliente.domicilio,
     telefono: cliente.telefono,
     email: cliente.email,
+    cuentaCorriente: cliente.cuentaCorriente,
     limiteCredito: limite,
     saldo: saldoCentavos,
     disponible: limite === null ? null : limite - saldoCentavos,
@@ -137,14 +151,28 @@ export function formatearMovimientoStockApi(
 function clienteDeFactura(venta: {
   clienteId: number | null;
   clienteNombre: string;
+  clienteTipoDoc: TipoDocumento | null;
   clienteDocumento: string | null;
+  clienteDomicilio?: string | null;
 }) {
+  const tipoDoc = venta.clienteTipoDoc ?? "DNI";
+
   return venta.clienteId === null
     ? null
     : {
         id: venta.clienteId,
         nombre: venta.clienteNombre,
-        nroDoc: venta.clienteDocumento,
+        tipoDoc,
+        nroDoc:
+          venta.clienteDocumento === null
+            ? null
+            : formatearDocumento({
+                tipoDoc,
+                documento: venta.clienteDocumento,
+              }),
+        ...(venta.clienteDomicilio === undefined
+          ? {}
+          : { domicilio: venta.clienteDomicilio }),
       };
 }
 
@@ -225,12 +253,14 @@ export function formatearFacturaApi({
 export function formatearPagoApi(pago: PagoDetalle) {
   return {
     id: pago.id,
-    reciboNumero: pago.reciboNumero,
-    reciboFormateado:
-      pago.reciboNumero === null ? null : formatearRecibo(pago.reciboNumero),
+    numeroRecibo:
+      pago.reciboNumero === null
+        ? null
+        : `R ${formatearRecibo(pago.reciboNumero)}`,
     fecha: enIso(pago.fecha),
     cliente: { id: pago.clienteId, nombre: pago.clienteNombre },
     importe: enCentavos(pago.importe),
+    medio: pago.medio,
     observacion: pago.observacion,
     usuario: { id: pago.usuarioId, nombre: pago.usuarioNombre },
     saldoCliente: enCentavos(pago.saldoCliente),
@@ -251,7 +281,7 @@ export function formatearUsuarioApi(usuario: UsuarioBase) {
     id: usuario.id,
     nombre: usuario.nombre,
     email: usuario.correo,
-    rol: usuario.rol,
+    rol: aRolApi(usuario.rol),
     activo: usuario.activo,
     ...(usuario.creadoEn ? { creadoEn: enIso(usuario.creadoEn) } : {}),
   };

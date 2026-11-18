@@ -12,6 +12,7 @@ import {
 } from "@/components/maquetacion";
 import { Button } from "@/components/ui/button";
 import { obtenerPago, type PagoDetalle } from "@/lib/cuentas/pagar";
+import { etiquetaMedio } from "@/lib/cuentas/etiquetas";
 import { formatearRecibo } from "@/lib/cuentas/recibo";
 import { idPositivo } from "@/lib/esquemas-comunes";
 import { formatearFechaHora } from "@/lib/fechas";
@@ -72,6 +73,7 @@ function Datos({ pago, numero }: { pago: PagoDetalle; numero: number }) {
     { termino: "Cliente", valor: pago.clienteNombre },
     { termino: "Recibido por", valor: pago.usuarioNombre },
     { termino: "Importe", valor: formatearMoneda(pago.importe) },
+    { termino: "Medio", valor: etiquetaMedio(pago.medio) },
     { termino: "Saldo actual", valor: formatearMoneda(pago.saldoCliente) },
     ...(pago.observacion
       ? [{ termino: "Observación", valor: pago.observacion }]

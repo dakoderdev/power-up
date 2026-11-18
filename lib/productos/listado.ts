@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { coincideBusqueda } from "@/lib/db/busqueda";
-import { itemsVenta, productos, ventas } from "@/lib/db/schema";
+import { categorias, itemsVenta, productos, ventas } from "@/lib/db/schema";
 import { ubicarPagina } from "@/lib/paginacion";
 import { ORDEN_INICIAL, ORDENES, type Orden } from "./ordenes";
 
@@ -12,6 +12,7 @@ export type ParametrosListado = {
   vista?: string | string[];
   orden?: string | string[];
   pagina?: string | string[];
+  categoria?: string | string[];
 };
 
 const UNIDADES_VENDIDAS = sql`coalesce((select sum(${itemsVenta.cantidad}) from ${itemsVenta} inner join ${ventas} on ${ventas.id} = ${itemsVenta.ventaId} where ${itemsVenta.productoId} = ${productos.id} and ${ventas.anuladaEn} is null), 0)`;
@@ -46,6 +47,7 @@ export async function listarProductos({
   porPagina = PRODUCTOS_POR_PAGINA,
   activo,
   bajoMinimo = false,
+  categoriaId,
 }: {
   busqueda: string;
   orden: Orden;
@@ -53,6 +55,7 @@ export async function listarProductos({
   porPagina?: number;
   activo?: boolean;
   bajoMinimo?: boolean;
+  categoriaId?: number;
 }) {
   const filtro = and(
     busqueda
@@ -62,6 +65,9 @@ export async function listarProductos({
         })
       : undefined,
     activo === undefined ? undefined : eq(productos.activo, activo),
+    categoriaId === undefined
+      ? undefined
+      : eq(productos.categoriaId, categoriaId),
     bajoMinimo
       ? and(
           eq(productos.activo, true),
@@ -85,6 +91,8 @@ export async function listarProductos({
       id: productos.id,
       codigo: productos.codigo,
       nombre: productos.nombre,
+      categoriaId: productos.categoriaId,
+      categoriaNombre: categorias.nombre,
       precio: productos.precio,
       stock: productos.stock,
       stockMinimo: productos.stockMinimo,
@@ -92,6 +100,7 @@ export async function listarProductos({
       imagenUrl: productos.imagenUrl,
     })
     .from(productos)
+    .leftJoin(categorias, eq(categorias.id, productos.categoriaId))
     .where(filtro)
     .orderBy(...CRITERIOS[orden], asc(productos.id))
     .limit(porPagina)
@@ -102,6 +111,7 @@ export async function listarProductos({
 
 const LIMITE_BUSQUEDA_VENTA = 8;
 
+// RF-V3 y RF-P3: búsqueda de la venta por código o descripción; solo productos activos.
 export async function buscarProductosActivos(busqueda: string) {
   return db
     .select({
