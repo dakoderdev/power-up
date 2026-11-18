@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SelectorFecha } from "@/components/selector-fecha";
 import { Button } from "@/components/ui/button";
 import { FORMAS_PAGO } from "@/lib/db/schema";
 import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
@@ -94,20 +95,10 @@ export function FiltrosVentas({
           />
         </Campo>
         <Campo etiqueta="Desde" nombre="desde">
-          <Input
-            id="desde"
-            name="desde"
-            type="date"
-            defaultValue={valores.desde}
-          />
+          <SelectorFecha id="desde" nombre="desde" valor={valores.desde} />
         </Campo>
         <Campo etiqueta="Hasta" nombre="hasta">
-          <Input
-            id="hasta"
-            name="hasta"
-            type="date"
-            defaultValue={valores.hasta}
-          />
+          <SelectorFecha id="hasta" nombre="hasta" valor={valores.hasta} />
         </Campo>
         <Selector
           etiqueta="Cliente"
