@@ -536,13 +536,13 @@ async function reiniciarDemostracion() {
   });
 }
 
-// RF-U3: el script crea el primer administrador y un vendedor de prueba, con el servicio de usuarios.
+// RF-U3: el script crea el primer administrador, un vendedor de prueba y, si se define, un segundo administrador, con el servicio de usuarios.
 async function crearUsuarioSemilla({
   prefijo,
   rol,
   nombrePorDefecto,
 }: {
-  prefijo: "SEED_ADMIN" | "SEED_VENDEDOR";
+  prefijo: "SEED_ADMIN" | "SEED_ADMIN2" | "SEED_VENDEDOR";
   rol: "admin" | "operator";
   nombrePorDefecto: string;
 }): Promise<UsuarioServicio> {
@@ -1002,6 +1002,15 @@ async function sembrar() {
     rol: "operator",
     nombrePorDefecto: "Vendedor",
   });
+
+  if (process.env.SEED_ADMIN2_EMAIL?.trim()) {
+    await crearUsuarioSemilla({
+      prefijo: "SEED_ADMIN2",
+      rol: "admin",
+      nombrePorDefecto: "Administrador",
+    });
+  }
+
   await reiniciarDemostracion();
   const categoriasIds = await crearCategorias(administrador);
   await crearProductos({ administrador, categoriasIds });

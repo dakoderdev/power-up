@@ -68,6 +68,9 @@ Las credenciales y claves van solo en variables de entorno (`.env`, ignorado por
 | `SEED_VENDEDOR_EMAIL`    | Correo del vendedor de prueba que crea el seed                                            |
 | `SEED_VENDEDOR_PASSWORD` | Contraseña del vendedor de prueba (mínimo 8 caracteres)                                   |
 | `SEED_VENDEDOR_NAME`     | Nombre del vendedor (opcional, por defecto `Vendedor`)                                    |
+| `SEED_ADMIN2_EMAIL`      | Opcional: correo de un segundo administrador; si está vacío, el seed no lo crea           |
+| `SEED_ADMIN2_PASSWORD`   | Contraseña del segundo administrador (mínimo 8 caracteres)                                |
+| `SEED_ADMIN2_NAME`       | Nombre del segundo administrador (opcional, por defecto `Administrador`)                  |
 | `IGDB_CLIENT_ID`         | Opcional: cuenta de IGDB para cargar juegos en bloque con el asistente (la app no la lee) |
 | `IGDB_CLIENT_SECRET`     | Opcional: secreto de la cuenta de IGDB (ídem)                                             |
 
@@ -82,7 +85,7 @@ SEED_ADMIN_PASSWORD=PowerUp2026!
 
 `pnpm run db:seed` hace lo siguiente:
 
-- Crea el administrador y el vendedor de prueba con las variables `SEED_ADMIN_*` y `SEED_VENDEDOR_*`. Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
+- Crea el administrador y el vendedor de prueba con las variables `SEED_ADMIN_*` y `SEED_VENDEDOR_*` (y un segundo administrador con `SEED_ADMIN2_*`, si se definen). Si el correo ya existe, no lo modifica: si se cambia la contraseña en el `.env`, hay que cambiarla también en la base.
 - Crea 5 categorías y 30 productos con stock al azar (siempre uno sin stock y algunos bajo el mínimo).
 - Crea 10 clientes (algunos con cuenta corriente y límite de crédito) y 50 facturas repartidas en los últimos 30 días, con las tres formas de pago y los dos vendedores, más pagos parciales, ajustes manuales de stock y 2 anulaciones.
 - Todo pasa por los mismos servicios que la aplicación (`crearProducto`, `confirmarVenta`, `registrarPago`, `ajustarStock`, `anularVenta`…), como pide la sección 10.7; después se corren las fechas hacia atrás. Las cantidades se ajustan en `CONFIGURACION`, al principio de `lib/db/seed.ts`.
