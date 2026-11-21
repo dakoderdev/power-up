@@ -22,9 +22,7 @@ Las reglas de negocio están en [`specs/sistema.md`](specs/sistema.md). El dise�
 
 ## URL pública
 
-<!-- Completar con la URL de Vercel, conectada a Turso y con el seed cargado. -->
-
-_Pendiente de completar._
+[https://power-up-store.vercel.app](https://power-up-store.vercel.app), publicada en Vercel y conectada a la base de Turso con el seed cargado.
 
 ## Usuarios de prueba
 
@@ -62,7 +60,7 @@ Las credenciales y claves van solo en variables de entorno (`.env`, ignorado por
 | `TURSO_DATABASE_URL`     | URL de la base en Turso (`libsql://...`) o `file:local.db`                                |
 | `TURSO_AUTH_TOKEN`       | Token de la base en Turso (no hace falta con un archivo local)                            |
 | `AUTH_SECRET`            | Secreto de Better Auth para firmar sesiones                                               |
-| `BETTER_AUTH_URL`        | URL base del sistema (`http://localhost:3000` en desarrollo)                              |
+| `BETTER_AUTH_URL`        | URL base del sistema (`http://localhost:3000` en desarrollo; en Vercel, la URL pública)   |
 | `SEED_ADMIN_EMAIL`       | Correo del administrador que crea el seed                                                 |
 | `SEED_ADMIN_PASSWORD`    | Contraseña del administrador (mínimo 8 caracteres)                                        |
 | `SEED_ADMIN_NAME`        | Nombre del administrador (opcional, por defecto `Administrador`)                          |
