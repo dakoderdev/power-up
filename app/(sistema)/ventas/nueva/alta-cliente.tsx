@@ -72,10 +72,10 @@ export function AltaCliente({
           <CamposCliente id={id} errores={errores} enfocar />
           {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
           <DialogFooter>
-            <Button variant="ghost" size="lg" type="button" onClick={onCerrar}>
+            <Button variant="ghost" type="button" onClick={onCerrar}>
               Cancelar
             </Button>
-            <Button size="lg" type="submit" disabled={enviando}>
+            <Button type="submit" disabled={enviando}>
               {enviando ? "Guardando…" : "Guardar cliente"}
             </Button>
           </DialogFooter>

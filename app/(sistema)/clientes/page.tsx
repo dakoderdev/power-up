@@ -101,9 +101,9 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
         busqueda={busqueda}
         etiqueta="Buscar por nombre o documento"
       >
-        <Button asChild variant="default" size="lg" className="ml-auto">
+        <Button asChild variant="default" className="ml-auto">
           <Link href="/clientes/nuevo">
-            <UserPlus aria-hidden="true" className="size-5" />
+            <UserPlus aria-hidden="true" className="size-4" />
             Nuevo cliente
           </Link>
         </Button>
@@ -142,7 +142,7 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
                 <TableCell className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
                   <Link
                     href={`/clientes/${cliente.id}`}
-                    className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                    className="underline-offset-4 decoration-muted-foreground group-hover:underline after:absolute after:inset-0"
                   >
                     {cliente.nombre}
                   </Link>
@@ -153,17 +153,17 @@ async function Listado({ parametros }: { parametros: Promise<Parametros> }) {
                   )}
                 </TableCell>
                 <TableCell
-                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 tabular-nums text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {etiquetaDocumento(cliente)}
                 </TableCell>
                 <TableCell
-                  className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {cliente.telefono ?? cliente.email}
                 </TableCell>
                 <TableCell
-                  className={`text-right tabular-nums ${aCentavos(cliente.saldo) > 0 ? "text-white" : "text-neutral-300"}`}
+                  className={`text-right tabular-nums ${aCentavos(cliente.saldo) > 0 ? "text-foreground" : "text-foreground"}`}
                 >
                   {formatearMoneda(cliente.saldo)}
                 </TableCell>

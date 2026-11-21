@@ -167,37 +167,37 @@ function Items({ venta }: { venta: VentaDetalle }) {
       <TableBody>
         {venta.items.map((item) => (
           <TableRow key={item.id}>
-            <TableCell className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}>
+            <TableCell className={`pr-6 text-foreground ${SOLO_ESCRITORIO}`}>
               {item.codigo}
             </TableCell>
-            <TableCell className="max-w-40 truncate pr-3 text-white sm:max-w-96 sm:pr-6">
+            <TableCell className="max-w-40 truncate pr-3 text-foreground sm:max-w-96 sm:pr-6">
               {item.descripcion}
             </TableCell>
-            <TableCell className="pr-3 text-right tabular-nums text-neutral-300 sm:pr-6">
+            <TableCell className="pr-3 text-right tabular-nums text-foreground sm:pr-6">
               {item.cantidad}
             </TableCell>
             <TableCell
-              className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+              className={`pr-6 text-right tabular-nums text-foreground ${SOLO_ESCRITORIO}`}
             >
               {formatearMoneda(item.precioUnitario)}
             </TableCell>
-            <TableCell className="text-right tabular-nums text-white">
+            <TableCell className="text-right tabular-nums text-foreground">
               {formatearMoneda(item.subtotal)}
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
       <TableFooter>
-        <TableRow className="border-t border-neutral-800">
+        <TableRow className="border-t border-border">
           <TableHead
             scope="row"
             colSpan={COLUMNAS.length - 1}
-            className="h-auto pr-3 text-right text-[0.9375rem] sm:pr-6"
+            className="h-auto pr-3 text-right text-sm sm:pr-6"
           >
             Total
           </TableHead>
           <TableCell
-            className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-neutral-400 line-through" : "text-white"}`}
+            className={`text-right font-medium tabular-nums ${venta.anuladaEn ? "text-muted-foreground line-through" : "text-foreground"}`}
           >
             {formatearMoneda(venta.total)}
           </TableCell>
@@ -210,7 +210,7 @@ function Items({ venta }: { venta: VentaDetalle }) {
 function Anulacion({ venta }: { venta: VentaDetalle }) {
   return (
     <Seccion titulo="Anulación" separada>
-      <Texto tono="tenue" className="text-[0.9375rem]">
+      <Texto tono="tenue" className="text-sm">
         Anulada el {formatearFechaHora(venta.anuladaEn!)} por{" "}
         {venta.anuladaPor ?? "un usuario"}. Motivo: {venta.motivoAnulacion}
       </Texto>

@@ -79,9 +79,9 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
         busqueda={busqueda}
         etiqueta="Buscar por nombre o acceso"
       >
-        <Button asChild variant="default" size="lg" className="ml-auto">
+        <Button asChild variant="default" className="ml-auto">
           <Link href="/usuarios/nuevo">
-            <UserPlus aria-hidden="true" className="size-5" />
+            <UserPlus aria-hidden="true" className="size-4" />
             Nuevo usuario
           </Link>
         </Button>
@@ -127,7 +127,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
                       className="block after:absolute after:inset-0"
                     >
                       <Texto className="truncate">
-                        <Linea className="underline-offset-4 decoration-neutral-600 group-hover:underline">
+                        <Linea className="underline-offset-4 decoration-muted-foreground group-hover:underline">
                           {usuario.nombre}
                         </Linea>
                         {usuario.esActual ? (
@@ -138,7 +138,7 @@ async function Lista({ parametros }: { parametros: Promise<Parametros> }) {
                       </Texto>
                       <Texto
                         tono="tenue"
-                        className="truncate text-sm transition-colors group-hover:text-white"
+                        className="truncate text-sm transition-colors group-hover:text-foreground"
                       >
                         {usuario.acceso}
                       </Texto>

@@ -17,7 +17,7 @@ export function MotivosSugeridos({
           variant="outline"
           size="xs"
           onClick={() => onElegir(sugerido)}
-          className="font-normal text-neutral-300 hover:text-white"
+          className="font-normal text-foreground hover:text-foreground"
         >
           {sugerido}
         </Button>

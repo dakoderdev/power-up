@@ -73,7 +73,7 @@ export function ResumenVenta({
       : null;
   return (
     <Seccion titulo="Resumen" className={className}>
-      <dl className="flex flex-col gap-3 text-[0.9375rem]">
+      <dl className="flex flex-col gap-3 text-sm">
         <Dato etiqueta="Productos">
           {contar({
             cantidad: unidades,
@@ -82,16 +82,14 @@ export function ResumenVenta({
           })}
         </Dato>
         <Dato etiqueta="Subtotal">{formatearMoneda(deCentavos(total))}</Dato>
-        <div className="flex items-baseline justify-between gap-6 border-t border-neutral-900 pt-3 font-medium">
+        <div className="flex items-baseline justify-between gap-6 border-t border-border pt-3 font-medium">
           <dt>Total</dt>
           <dd className="tabular-nums">{formatearMoneda(deCentavos(total))}</dd>
         </div>
       </dl>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-[0.9375rem] font-medium">
-          Forma de pago
-        </legend>
+        <legend className="mb-2 text-sm font-medium">Forma de pago</legend>
         <div className="flex flex-wrap gap-2">
           {Object.entries(ETIQUETAS_FORMA_PAGO).map(([valor, etiqueta]) => {
             const elegida = formaPago === valor;
@@ -105,7 +103,7 @@ export function ResumenVenta({
                     variant: elegida ? "outline" : "ghost",
                     size: "lg",
                   }),
-                  `${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                  `${elegida ? "" : "border border-transparent"} ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring`,
                 )}
               >
                 <input
@@ -123,7 +121,7 @@ export function ResumenVenta({
           })}
         </div>
         {conCuenta ? null : (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             {conCliente
               ? "Este cliente no tiene cuenta corriente habilitada."
               : "Elegí un cliente registrado y habilitado para usar cuenta corriente."}
@@ -143,7 +141,7 @@ export function ResumenVenta({
             onChange={(evento) => onMontoRecibido(evento.target.value)}
             placeholder={formatearMoneda(deCentavos(total))}
           />
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             {vuelto === null
               ? "Si lo dejás vacío, se toma el total."
               : `Vuelto: ${formatearMoneda(vuelto)}`}
@@ -208,7 +206,7 @@ export function ResumenVenta({
                 })
               }
             />
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-muted-foreground">
               Nunca se pide ni se guarda el número completo.
             </p>
           </Field>
@@ -226,14 +224,14 @@ export function ResumenVenta({
       ) : null}
 
       {confirmada === null ? null : (
-        <p role="status" className="text-[0.9375rem]">
+        <p role="status" className="text-sm">
           Venta N.º {confirmada.comprobante} confirmada.
           {confirmada.vuelto === null
             ? ""
             : ` Vuelto: ${formatearMoneda(confirmada.vuelto)}.`}{" "}
           <Link
             href="/ventas"
-            className="underline-offset-4 decoration-neutral-600 hover:underline"
+            className="underline-offset-4 decoration-muted-foreground hover:underline"
           >
             Ver ventas
           </Link>
@@ -243,14 +241,13 @@ export function ResumenVenta({
       <div className="flex flex-col gap-2">
         <Button
           variant="default"
-          size="lg"
           type="button"
           onClick={onConfirmar}
           disabled={confirmando}
         >
           {confirmando ? "Confirmando…" : "Confirmar venta"}
         </Button>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted-foreground">
           Al confirmar se verifican y descuentan las existencias.
         </p>
       </div>

@@ -103,7 +103,7 @@ export function FormularioLogin() {
     >
       <div className="grid items-start gap-6 @lg:grid-cols-2 @lg:gap-4">
         <Field>
-          <FieldLabel htmlFor="correo" className="text-neutral-200">
+          <FieldLabel htmlFor="correo" className="text-foreground">
             Correo electrónico
           </FieldLabel>
           <Input
@@ -127,7 +127,7 @@ export function FormularioLogin() {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="clave" className="text-neutral-200">
+          <FieldLabel htmlFor="clave" className="text-foreground">
             Contraseña
           </FieldLabel>
           <InputGroup>
@@ -174,14 +174,13 @@ export function FormularioLogin() {
           {Array.from({ length: BLOQUES_TOTAL }, (_, indice) => (
             <span
               key={indice}
-              className={`flex-1 transition-colors duration-200 ${indice < llenos ? "bg-verde" : "bg-neutral-800"}`}
+              className={`flex-1 transition-colors duration-200 ${indice < llenos ? "bg-primary" : "bg-muted"}`}
             />
           ))}
         </div>
         {errorGeneral ? <AvisoError>{errorGeneral}</AvisoError> : null}
         <Button
           variant="default"
-          size="lg"
           type="submit"
           disabled={pendiente}
           className="w-full"

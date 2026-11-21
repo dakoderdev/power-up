@@ -31,14 +31,18 @@ export function VistaPrevia({ borrador }: { borrador: Borrador }) {
       aria-label="Vista previa"
       className="hidden w-56 shrink-0 flex-col gap-2 lg:flex"
     >
-      <p className="text-sm font-medium text-neutral-400">Vista previa</p>
-      <Tapa key={url ?? ""} url={url} className="aspect-3/4 w-full" />
+      <p className="text-sm font-medium text-muted-foreground">Vista previa</p>
+      <Tapa
+        key={url ?? ""}
+        url={url}
+        className="aspect-3/4 w-full rounded-md"
+      />
       <p
-        className={`line-clamp-2 text-[0.9375rem] font-medium ${borrador.nombre.trim() ? "" : "text-neutral-500"}`}
+        className={`line-clamp-2 text-sm font-medium ${borrador.nombre.trim() ? "" : "text-muted-foreground"}`}
       >
         {borrador.nombre.trim() || "Nombre del producto"}
       </p>
-      <p className="text-sm tabular-nums text-neutral-300">
+      <p className="text-sm tabular-nums text-foreground">
         {precio.success ? formatearMoneda(precio.data) : "$ —"} · {stock}{" "}
         unidades
         {borrador.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}

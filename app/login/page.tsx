@@ -30,9 +30,9 @@ export default function Login() {
       </Suspense>
       <Pila
         as="main"
-        className="bg-black px-6 py-8 sm:px-12 lg:w-[30rem] lg:pl-16 lg:pr-18 lg:py-12"
+        className="bg-background px-6 py-8 sm:px-12 lg:w-[30rem] lg:pl-16 lg:pr-18 lg:py-12"
       >
-        <Logo className="h-8 w-auto self-center text-white lg:hidden" />
+        <Logo className="h-8 w-auto self-center text-foreground lg:hidden" />
 
         <Fila className="flex-1 py-16">
           <Pila className="w-full gap-10">
@@ -40,7 +40,7 @@ export default function Login() {
               <Titulo nivel={1} className="text-7xl">
                 Ingresar
               </Titulo>
-              <Texto tono="secundario" className="text-[0.9375rem]">
+              <Texto tono="secundario" className="text-sm">
                 Entrá con tu cuenta de Power Up.
               </Texto>
             </Pila>
@@ -67,7 +67,7 @@ export default function Login() {
           sizes="(min-width: 1024px) 70vw, 1px"
           className="object-cover object-[70%_center]"
         />
-        <Logo className="h-22 absolute left-1/2 top-1/2 -translate-1/2 w-auto self-start text-white bg-black p-2" />
+        <Logo className="h-22 absolute left-1/2 top-1/2 -translate-1/2 w-auto self-start text-foreground bg-background p-2" />
       </Pila>
     </Grilla>
   );

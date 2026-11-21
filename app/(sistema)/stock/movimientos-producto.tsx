@@ -62,7 +62,7 @@ export async function MovimientosProducto({
     <section className="flex flex-col gap-4">
       <Button asChild variant="ghost" className="-ml-3 self-start">
         <Link href="/stock">
-          <ArrowLeft aria-hidden="true" className="size-5" />
+          <ArrowLeft aria-hidden="true" className="size-4" />
           Todo el stock
         </Link>
       </Button>
@@ -71,17 +71,17 @@ export async function MovimientosProducto({
         <div className="flex min-w-0 items-center gap-3">
           <Tapa url={producto.imagenUrl} className="h-8 w-6 shrink-0" />
           <div className="min-w-0">
-            <h2 className="truncate font-pixel text-3xl leading-none tracking-[-0.01em] text-white">
+            <h2 className="truncate text-xl font-semibold tracking-tight text-foreground">
               {producto.nombre}
             </h2>
-            <p className="text-sm tabular-nums text-neutral-400">
+            <p className="text-sm tabular-nums text-muted-foreground">
               {producto.codigo} · {producto.categoriaNombre ?? "Sin categoría"}{" "}
               · {formatearMoneda(producto.precio)}
               {producto.activo ? "" : ` · ${ETIQUETAS_ESTADO.inactivo}`}
             </p>
           </div>
         </div>
-        <p className="text-[0.9375rem] font-medium tabular-nums text-white">
+        <p className="text-sm font-medium tabular-nums text-foreground">
           <span
             className={esStockBajo(producto) ? "text-yellow-400/75" : undefined}
           >
@@ -93,7 +93,7 @@ export async function MovimientosProducto({
           </span>{" "}
           en stock
           {esStockBajo(producto) ? (
-            <span className="text-sm font-normal text-neutral-400">
+            <span className="text-sm font-normal text-muted-foreground">
               {" "}
               · Stock bajo
             </span>
@@ -107,12 +107,12 @@ export async function MovimientosProducto({
       </div>
 
       {puedeAjustar ? (
-        <div className="border-t border-neutral-900 pt-10">
+        <div className="border-t border-border pt-10">
           <AjustarStock productoId={producto.id} stock={producto.stock} />
         </div>
       ) : null}
 
-      <h3 className="border-t border-neutral-900 pt-10 text-[0.9375rem] font-medium text-white">
+      <h3 className="border-t border-border pt-10 text-sm font-medium text-foreground">
         Movimientos
       </h3>
 
@@ -171,19 +171,19 @@ export async function MovimientosProducto({
           <TableBody>
             {movimientos.map((movimiento) => (
               <TableRow key={movimiento.id}>
-                <TableCell className="pr-6 tabular-nums text-neutral-300">
+                <TableCell className="pr-6 tabular-nums text-foreground">
                   {formatearFechaHora(new Date(movimiento.creadoEn))}
                 </TableCell>
                 <TableCell className="pr-6">
                   <Badge>{ETIQUETAS_ORIGEN[movimiento.origen]}</Badge>
                 </TableCell>
                 <TableCell
-                  className={`max-w-80 truncate pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  className={`max-w-80 truncate pr-6 text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {movimiento.ventaId && movimiento.numeroVenta ? (
                     <Link
                       href={`/ventas/${movimiento.ventaId}`}
-                      className="transition-colors hover:text-white"
+                      className="transition-colors hover:text-foreground"
                     >
                       {formatearComprobante({
                         puntoVenta: movimiento.puntoVenta ?? 1,
@@ -195,15 +195,15 @@ export async function MovimientosProducto({
                   )}
                 </TableCell>
                 <TableCell
-                  className={`pr-6 text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {movimiento.usuarioNombre}
                 </TableCell>
-                <TableCell className="text-right tabular-nums text-white">
+                <TableCell className="text-right tabular-nums text-foreground">
                   {movimiento.tipo === "entrada" ? "+" : "−"}
                   {movimiento.cantidad}
                 </TableCell>
-                <TableCell className="pl-6 text-right tabular-nums text-neutral-300">
+                <TableCell className="pl-6 text-right tabular-nums text-foreground">
                   {movimiento.existenciaResultante}
                 </TableCell>
               </TableRow>

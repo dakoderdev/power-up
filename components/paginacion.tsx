@@ -21,7 +21,7 @@ export function Paginacion({
 
   return (
     <Pagination aria-label="Páginas" className="items-center justify-end gap-2">
-      <p className="mr-auto text-sm tabular-nums text-neutral-400">
+      <p className="mr-auto text-sm tabular-nums text-muted-foreground">
         Página {pagina} de {paginas}
       </p>
       <PaginationContent>

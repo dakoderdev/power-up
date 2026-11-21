@@ -4,16 +4,16 @@ import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex h-6 w-fit shrink-0 items-center justify-center gap-2 border border-border px-2 text-[0.8125rem] whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-5",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
-        default: "text-neutral-300",
-        secondary: "text-neutral-400",
-        destructive: "text-destructive",
-        outline: "text-white",
-        ghost: "border-transparent text-neutral-300",
-        link: "border-transparent text-neutral-300 underline-offset-4 decoration-neutral-600 [a&]:hover:underline",
+        default: "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        destructive: "border-transparent bg-destructive/60 text-white",
+        outline: "text-foreground",
+        ghost: "border-transparent text-foreground",
+        link: "border-transparent text-primary underline-offset-4 [a&]:hover:underline",
       },
     },
     defaultVariants: {

@@ -15,8 +15,8 @@ export const ETIQUETAS_ROL: Record<Rol, string> = {
 };
 
 export const COLORES_ROL: Record<Rol, string> = {
-  admin: "text-neutral-300",
-  operator: "text-neutral-300",
+  admin: "border-transparent bg-secondary text-secondary-foreground",
+  operator: "border-transparent bg-secondary text-secondary-foreground",
 };
 
 export async function obtenerUsuarioActual() {

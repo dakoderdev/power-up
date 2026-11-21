@@ -13,11 +13,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="dark"
       className="toaster group"
       icons={{
-        success: <Check aria-hidden="true" className="size-5" />,
-        info: <InfoBox aria-hidden="true" className="size-5" />,
-        warning: <WarningDiamond aria-hidden="true" className="size-5" />,
-        error: <Close aria-hidden="true" className="size-5" />,
-        loading: <Hourglass aria-hidden="true" className="size-5" />,
+        success: <Check aria-hidden="true" className="size-4" />,
+        info: <InfoBox aria-hidden="true" className="size-4" />,
+        warning: <WarningDiamond aria-hidden="true" className="size-4" />,
+        error: <Close aria-hidden="true" className="size-4" />,
+        loading: <Hourglass aria-hidden="true" className="size-4" />,
       }}
       style={
         {
@@ -30,8 +30,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          title: "text-[0.9375rem]! font-medium!",
-          description: "text-sm! text-neutral-400!",
+          title: "font-medium!",
+          description: "text-sm! text-muted-foreground!",
         },
       }}
       {...props}

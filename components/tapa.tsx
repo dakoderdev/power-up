@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const FONDO_SIN_IMAGEN = "bg-linear-to-br from-white to-verde to-60%";
 
@@ -13,7 +14,7 @@ export function Tapa({
 }) {
   const imagen = useRef<HTMLImageElement>(null);
   const [cargada, setCargada] = useState(false);
-  const clase = `rounded-xs object-cover ${className}`;
+  const clase = cn("rounded-xs object-cover", className);
 
   useEffect(() => {
     if (imagen.current?.complete && imagen.current.naturalWidth > 0) {

@@ -15,11 +15,9 @@ export function EncabezadoPagina({
   children?: ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-10 -mx-4 flex flex-col gap-2 bg-black px-4 py-3 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12">
+    <header className="sticky top-0 z-10 -mx-4 flex flex-col gap-2 bg-background px-4 py-3 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <h1 className="font-pixel uppercase text-5xl leading-none tracking-[-0.01em]">
-          {titulo}
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{titulo}</h1>
         <div className="fixed bottom-4 right-4 flex flex-col gap-2 lg:static lg:flex-row">
           {actual === "nuevo-producto" ? null : (
             <Suspense fallback={null}>
@@ -30,10 +28,10 @@ export function EncabezadoPagina({
             <Button
               asChild
               variant="default"
-              className="max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
+              className="max-lg:shadow-[0_8px_24px_black]"
             >
               <Link href="/ventas/nueva">
-                <Banknote aria-hidden="true" className="size-5" />
+                <Banknote aria-hidden="true" className="size-4" />
                 Nueva venta
               </Link>
             </Button>
@@ -41,7 +39,7 @@ export function EncabezadoPagina({
         </div>
       </div>
       {children ? (
-        <p className="text-[0.9375rem] text-neutral-400">{children}</p>
+        <p className="text-sm text-muted-foreground">{children}</p>
       ) : null}
     </header>
   );
@@ -58,10 +56,10 @@ async function BotonNuevoProducto() {
     <Button
       asChild
       variant="outline"
-      className="bg-black max-lg:h-11 max-lg:shadow-[0_8px_24px_black]"
+      className="bg-background max-lg:shadow-[0_8px_24px_black]"
     >
       <Link href="/productos/nuevo">
-        <Box aria-hidden="true" className="size-5" />
+        <Box aria-hidden="true" className="size-4" />
         Nuevo producto
       </Link>
     </Button>

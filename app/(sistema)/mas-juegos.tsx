@@ -25,7 +25,7 @@ export function MasJuegos({
           evento.preventDefault();
           setAbierto(!abierto);
         }}
-        className="ml-2 inline-flex h-6 shrink-0 items-center border border-neutral-800 px-2 text-[0.8125rem] tabular-nums text-neutral-300 transition-colors hover:border-neutral-600 hover:text-white"
+        className="ml-2 inline-flex h-5 shrink-0 items-center rounded-md border px-2 text-xs font-medium tabular-nums text-foreground transition-colors hover:bg-accent"
       >
         {etiqueta}
       </TooltipTrigger>

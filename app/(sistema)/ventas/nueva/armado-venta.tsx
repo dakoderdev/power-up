@@ -27,7 +27,7 @@ import {
 import { toast } from "sonner";
 
 const FORMA_INICIAL: FormaPago = "contado";
-const SEPARADOR = "border-t border-neutral-900 pt-10";
+const SEPARADOR = "border-t border-border pt-10";
 const TARJETA_INICIAL: DatosTarjeta = {
   tipo: "debito",
   marca: "",
@@ -163,7 +163,7 @@ export function ArmadoVenta() {
           titulo="Productos"
           accion={
             lineas.length > 0 ? (
-              <span className="flex h-6 items-center border border-neutral-800 px-2 text-[0.8125rem] tabular-nums">
+              <span className="flex h-5 items-center rounded-md border px-2 text-xs font-medium tabular-nums">
                 {contar({
                   cantidad: lineas.length,
                   singular: "producto",

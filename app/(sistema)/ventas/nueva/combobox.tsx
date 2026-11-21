@@ -10,7 +10,7 @@ import { FieldLabel } from "@/components/ui/field";
 const ESPERA_BUSQUEDA = 250;
 const SELECTOR_OPCION = "[data-opcion]:not(:disabled)";
 const CLASE_OPCION =
-  "flex h-11 w-full items-center gap-3 text-left text-neutral-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:text-neutral-500";
+  "flex h-11 w-full items-center gap-3 text-left text-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:text-muted-foreground";
 
 export function Combobox<T extends { id: number }>({
   etiqueta,
@@ -165,7 +165,7 @@ export function Combobox<T extends { id: number }>({
         />
         <ChevronDown
           aria-hidden="true"
-          className="pointer-events-none absolute right-3 top-3 size-5 text-neutral-400"
+          className="pointer-events-none absolute top-2.5 right-3 size-4 text-muted-foreground"
         />
       </div>
 
@@ -173,13 +173,13 @@ export function Combobox<T extends { id: number }>({
         <div
           id={idLista}
           aria-busy={buscando}
-          className="absolute inset-x-0 top-full z-10 mt-2 border border-neutral-800 bg-black p-3"
+          className="absolute inset-x-0 top-full z-10 mt-2 rounded-md border bg-popover p-1 shadow-md"
         >
           <ul
-            className={`text-[0.9375rem] transition-opacity ${buscando ? "opacity-60" : ""}`}
+            className={`text-sm transition-opacity ${buscando ? "opacity-60" : ""}`}
           >
             {opcionFija ? (
-              <li className="border-b border-neutral-900">
+              <li className="border-b border-border">
                 <button
                   type="button"
                   data-opcion
@@ -195,14 +195,14 @@ export function Combobox<T extends { id: number }>({
                 <Skeleton className="h-32" />
               </li>
             ) : encontrados.length === 0 ? (
-              <li className="pt-3 text-sm text-neutral-500">
+              <li className="pt-3 text-sm text-muted-foreground">
                 No hay resultados para la búsqueda.
               </li>
             ) : (
               encontrados.map((opcion) => (
                 <li
                   key={opcion.id}
-                  className="border-b border-neutral-900 last:border-b-0"
+                  className="border-b border-border last:border-b-0"
                 >
                   <button
                     type="button"

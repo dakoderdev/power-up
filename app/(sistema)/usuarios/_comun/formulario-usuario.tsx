@@ -215,14 +215,14 @@ export function FormularioUsuario({
           />
           <FieldLabel
             htmlFor={`${id}-activo`}
-            className="text-[0.9375rem] font-normal text-white"
+            className="text-sm font-normal text-foreground"
           >
             Usuario activo
           </FieldLabel>
         </Field>
       )}
 
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted-foreground">
         {esAlta
           ? "La contraseña tiene al menos 8 caracteres. Pasásela al usuario por un canal seguro."
           : esActual
@@ -233,10 +233,10 @@ export function FormularioUsuario({
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost">
           <Link href="/usuarios">Cancelar</Link>
         </Button>
-        <Button variant="default" size="lg" type="submit" disabled={guardando}>
+        <Button variant="default" type="submit" disabled={guardando}>
           {guardando
             ? "Guardando…"
             : esAlta

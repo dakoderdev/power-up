@@ -75,14 +75,14 @@ export function CambiarContrasena() {
         })}
       </div>
 
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted-foreground">
         La contraseña nueva tiene al menos 8 caracteres. Al cambiarla se cierran
         tus otras sesiones abiertas.
       </p>
 
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <div className="flex justify-end">
-        <Button variant="default" size="lg" type="submit" disabled={guardando}>
+        <Button variant="default" type="submit" disabled={guardando}>
           {guardando ? "Guardando…" : "Cambiar contraseña"}
         </Button>
       </div>

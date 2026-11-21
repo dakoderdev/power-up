@@ -64,10 +64,10 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                   className={`text-left font-normal ${primero ? "pb-2" : "pb-2 pt-10"}`}
                 >
                   <div className="flex items-baseline justify-between gap-6">
-                    <span className="text-[0.9375rem] font-medium text-white">
+                    <span className="text-sm font-medium text-foreground">
                       {grupo.titulo}
                     </span>
-                    <span className="text-sm tabular-nums text-neutral-400">
+                    <span className="text-sm tabular-nums text-muted-foreground">
                       {grupo.detalle}
                     </span>
                   </div>
@@ -83,17 +83,17 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                 <TableCell className={`pr-6 tabular-nums ${SOLO_ESCRITORIO}`}>
                   <Link
                     href={`/ventas/${venta.id}`}
-                    className="text-neutral-300 transition-colors hover:text-white"
+                    className="text-foreground transition-colors hover:text-foreground"
                   >
                     N.º {formatearComprobante(venta)}
                   </Link>
                 </TableCell>
                 <TableCell
-                  className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 tabular-nums text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {formatearHora(venta.creadoEn)}
                 </TableCell>
-                <TableCell className="max-w-20 truncate pr-3 text-white sm:max-w-64 sm:pr-6">
+                <TableCell className="max-w-20 truncate pr-3 text-foreground sm:max-w-64 sm:pr-6">
                   {venta.clienteNombre}
                 </TableCell>
                 <TableCell className={`pr-6 ${SOLO_ESCRITORIO}`}>
@@ -105,12 +105,12 @@ export function TablaVentas({ grupos }: { grupos: GrupoVentas[] }) {
                   {venta.anuladaEn ? (
                     <span className="flex items-center justify-end gap-2">
                       <Badge variant="secondary">{ETIQUETA_ANULADA}</Badge>
-                      <span className="text-neutral-400 line-through">
+                      <span className="text-muted-foreground line-through">
                         {formatearMoneda(venta.total)}
                       </span>
                     </span>
                   ) : (
-                    <span className="text-white">
+                    <span className="text-foreground">
                       {formatearMoneda(venta.total)}
                     </span>
                   )}
@@ -156,12 +156,12 @@ function JuegosVenta({ items }: { items: VentaFila["items"] }) {
           className={`absolute left-0 top-0 h-8 w-6 ${segundo ? "shadow-[2px_0_0_0_black]" : ""}`}
         />
       </div>
-      <span className="shrink-0 pl-2 text-sm tabular-nums text-neutral-300 sm:w-10">
+      <span className="shrink-0 pl-2 text-sm tabular-nums text-foreground sm:w-10">
         {primero.cantidad > 1 ? `×${primero.cantidad}` : null}
       </span>
       <span
         title={primero.descripcion}
-        className="max-w-24 truncate text-white sm:max-w-96"
+        className="max-w-24 truncate text-foreground sm:max-w-96"
       >
         {primero.descripcion}
       </span>
@@ -171,7 +171,7 @@ function JuegosVenta({ items }: { items: VentaFila["items"] }) {
             {items.map((item) => (
               <li key={item.descripcion} className="flex items-center gap-3">
                 <Tapa url={item.imagenUrl} className="h-8 w-6 shrink-0" />
-                <span className="w-6 shrink-0 text-sm tabular-nums text-neutral-300">
+                <span className="w-6 shrink-0 text-xs tabular-nums opacity-70">
                   ×{item.cantidad}
                 </span>
                 <span className="max-w-64 truncate">{item.descripcion}</span>

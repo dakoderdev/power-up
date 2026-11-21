@@ -41,12 +41,12 @@ export function Buscador({
         aria-label={etiqueta}
         className="max-w-md flex-1"
       />
-      <Button variant="outline" size="lg" type="submit">
-        <Search aria-hidden="true" className="size-5" />
+      <Button variant="outline" type="submit">
+        <Search aria-hidden="true" className="size-4" />
         Buscar
       </Button>
       {busqueda || filtrado ? (
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost">
           <Link href={limpiar}>Limpiar</Link>
         </Button>
       ) : null}

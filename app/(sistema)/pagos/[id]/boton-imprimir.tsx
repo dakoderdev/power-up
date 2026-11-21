@@ -10,7 +10,7 @@ export function BotonImprimir() {
 
   return (
     <Button variant="outline" type="button" onClick={imprimir}>
-      <Printer aria-hidden="true" className="size-5" />
+      <Printer aria-hidden="true" className="size-4" />
       Imprimir recibo
     </Button>
   );

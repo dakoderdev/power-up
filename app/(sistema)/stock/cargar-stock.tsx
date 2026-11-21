@@ -85,7 +85,7 @@ export function CargarStock({
           aria-label={`Cargar stock de ${nombre}`}
           className="relative z-10 -mr-3"
         >
-          <Plus aria-hidden="true" className="size-5" />
+          <Plus aria-hidden="true" className="size-4" />
           <span className="hidden sm:inline">Cargar stock</span>
         </Button>
       </PopoverTrigger>
@@ -103,7 +103,7 @@ export function CargarStock({
           noValidate
           className="flex flex-col gap-4 whitespace-normal"
         >
-          <p className="truncate text-[0.9375rem] font-medium">{nombre}</p>
+          <p className="truncate text-sm font-medium">{nombre}</p>
           <Field className="w-32">
             <FieldLabel htmlFor={`${id}-cantidad`}>Cantidad</FieldLabel>
             <Input
@@ -143,7 +143,7 @@ export function CargarStock({
             ) : null}
           </Field>
           {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
-          <Button variant="default" size="lg" type="submit" disabled={cargando}>
+          <Button variant="default" type="submit" disabled={cargando}>
             {cargando ? "Registrando…" : "Registrar entrada"}
           </Button>
         </form>

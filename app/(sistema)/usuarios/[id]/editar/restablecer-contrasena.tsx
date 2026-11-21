@@ -31,23 +31,23 @@ export function RestablecerContrasena({
   return (
     <section
       aria-labelledby="restablecer-titulo"
-      className="flex max-w-2xl flex-col gap-4 border-t border-neutral-900 pt-8"
+      className="flex max-w-2xl flex-col gap-4 border-t border-border pt-8"
     >
-      <h2 id="restablecer-titulo" className="text-[0.9375rem] font-medium">
+      <h2 id="restablecer-titulo" className="text-sm font-medium">
         Contraseña
       </h2>
       {temporal ? (
-        <div className="flex flex-col gap-2 border border-neutral-800 p-4">
-          <p className="text-sm text-neutral-400">
+        <div className="flex flex-col gap-2 rounded-lg border p-4">
+          <p className="text-sm text-muted-foreground">
             Contraseña temporal de {nombre}. Copiala ahora: no se vuelve a
             mostrar.
           </p>
-          <code className="font-mono text-lg text-verde select-all">
+          <code className="font-mono text-lg text-primary select-all">
             {temporal}
           </code>
         </div>
       ) : (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted-foreground">
           Genera una contraseña temporal al azar y cierra las sesiones abiertas
           de {nombre}. Después la puede cambiar desde su perfil.
         </p>
@@ -55,7 +55,6 @@ export function RestablecerContrasena({
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <Button
         variant="outline"
-        size="lg"
         className="self-start"
         disabled={enviando}
         onClick={() => setConfirmando(true)}

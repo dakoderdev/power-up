@@ -15,9 +15,7 @@ export function Seccion({
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
       <div className="flex min-h-10 items-center justify-between gap-6">
-        <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em]">
-          {titulo}
-        </h2>
+        <h2 className="text-xl font-semibold tracking-tight">{titulo}</h2>
         {accion}
       </div>
       {children}
@@ -51,8 +49,8 @@ export function Dato({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-6">
-      <dt className="text-neutral-400">{etiqueta}</dt>
-      <dd className="tabular-nums text-neutral-300">{children}</dd>
+      <dt className="text-muted-foreground">{etiqueta}</dt>
+      <dd className="tabular-nums text-foreground">{children}</dd>
     </div>
   );
 }

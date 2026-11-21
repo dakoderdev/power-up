@@ -30,7 +30,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "group/calendar bg-background p-3 [--cell-size:2.25rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "group/calendar bg-background p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         className,
       )}
       captionLayout={captionLayout}
@@ -69,7 +69,7 @@ function Calendar({
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
-          "relative border border-border has-focus:border-ring",
+          "relative rounded-md border border-input shadow-xs has-focus:border-ring has-focus:ring-[3px] has-focus:ring-ring/50",
           defaultClassNames.dropdown_root,
         ),
         dropdown: cn(
@@ -80,7 +80,7 @@ function Calendar({
           "font-medium select-none",
           captionLayout === "label"
             ? "text-sm"
-            : "flex h-8 items-center gap-1 pr-1 pl-2 text-sm [&>svg]:size-4 [&>svg]:text-muted-foreground",
+            : "flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm [&>svg]:size-4 [&>svg]:text-muted-foreground",
           defaultClassNames.caption_label,
         ),
         month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
@@ -102,15 +102,18 @@ function Calendar({
           "group/day relative aspect-square h-full w-full p-0 text-center select-none",
           defaultClassNames.day,
         ),
-        range_start: cn("bg-accent", defaultClassNames.range_start),
+        range_start: cn(
+          "rounded-l-md bg-accent",
+          defaultClassNames.range_start,
+        ),
         range_middle: cn(defaultClassNames.range_middle),
-        range_end: cn("bg-accent", defaultClassNames.range_end),
+        range_end: cn("rounded-r-md bg-accent", defaultClassNames.range_end),
         today: cn(
-          "border border-border text-foreground data-[selected=true]:border-transparent",
+          "rounded-md bg-accent text-accent-foreground data-[selected=true]:rounded-none",
           defaultClassNames.today,
         ),
         outside: cn(
-          "text-neutral-600 aria-selected:text-neutral-600",
+          "text-muted-foreground aria-selected:text-muted-foreground",
           defaultClassNames.outside,
         ),
         disabled: cn(
@@ -140,7 +143,7 @@ function Calendar({
                 : ChevronDown;
 
           return (
-            <Icono aria-hidden="true" className={cn("size-5", className)} />
+            <Icono aria-hidden="true" className={cn("size-4", className)} />
           );
         },
         DayButton: CalendarDayButton,

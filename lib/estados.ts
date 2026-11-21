@@ -4,6 +4,6 @@ export const ETIQUETAS_ESTADO = {
 };
 
 export const COLORES_ESTADO = {
-  activo: "text-white",
-  inactivo: "text-neutral-400",
+  activo: "border-transparent bg-secondary text-secondary-foreground",
+  inactivo: "bg-transparent text-muted-foreground",
 };

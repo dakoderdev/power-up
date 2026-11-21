@@ -31,7 +31,7 @@ export function BuscadorProductos({
           </span>
           <Plus
             aria-hidden="true"
-            className="size-5 shrink-0 group-disabled:invisible"
+            className="size-4 shrink-0 group-disabled:invisible"
           />
         </>
       )}

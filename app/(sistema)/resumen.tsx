@@ -21,8 +21,7 @@ import { ETIQUETAS_FORMA_PAGO } from "@/lib/ventas/etiquetas";
 import { TablaVentas } from "./tabla-ventas";
 import { GraficoDiario, GraficoFormas } from "./graficos";
 
-const SEPARADOR_MOVIL =
-  "border-t border-neutral-900 pt-10 lg:border-t-0 lg:pt-0";
+const SEPARADOR_MOVIL = "border-t border-border pt-10 lg:border-t-0 lg:pt-0";
 
 export async function Resumen() {
   await obtenerUsuarioActual();
@@ -122,8 +121,8 @@ export async function Resumen() {
           </Vacio>
         ) : (
           <>
-            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-[0.9375rem] tabular-nums">
-              <p className="font-medium text-white">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-sm tabular-nums">
+              <p className="font-medium text-foreground">
                 {formatearMoneda(ventasHoy.total)} en{" "}
                 {contar({
                   cantidad: ventasHoy.cantidad,
@@ -165,12 +164,12 @@ export async function Resumen() {
           <Vacio>Ningún cliente tiene saldo pendiente.</Vacio>
         ) : (
           <>
-            <dl className="flex text-[0.9375rem] tabular-nums">
+            <dl className="flex text-sm tabular-nums">
               <Dato etiqueta="Total adeudado" destacado>
                 {formatearMoneda(cuentas.total)}
               </Dato>
             </dl>
-            <ul className="text-[0.9375rem]">
+            <ul className="text-sm">
               {cuentas.deudores.map((deudor) => (
                 <li
                   key={deudor.id}
@@ -178,11 +177,11 @@ export async function Resumen() {
                 >
                   <Link
                     href={`/clientes/${deudor.id}`}
-                    className="truncate text-white underline-offset-4 decoration-neutral-600 hover:underline"
+                    className="truncate text-foreground underline-offset-4 decoration-muted-foreground hover:underline"
                   >
                     {deudor.nombre}
                   </Link>
-                  <span className="shrink-0 tabular-nums text-white">
+                  <span className="shrink-0 tabular-nums text-foreground">
                     {formatearMoneda(deudor.saldo)}
                   </span>
                 </li>
@@ -207,7 +206,7 @@ export async function Resumen() {
           <Vacio>No hay productos activos con stock bajo.</Vacio>
         ) : (
           <>
-            <p className="text-[0.9375rem] font-medium tabular-nums text-white">
+            <p className="text-sm font-medium tabular-nums text-foreground">
               <span className="text-yellow-400/75">
                 {contar({
                   cantidad: stockBajo.cantidad,
@@ -222,7 +221,7 @@ export async function Resumen() {
               })}{" "}
               con stock bajo
             </p>
-            <ul className="text-[0.9375rem]">
+            <ul className="text-sm">
               {stockBajo.lista.map((producto) => (
                 <li
                   key={producto.id}
@@ -233,11 +232,11 @@ export async function Resumen() {
                       url={producto.imagenUrl}
                       className="h-8 w-6 shrink-0"
                     />
-                    <span className="truncate text-white">
+                    <span className="truncate text-foreground">
                       {producto.nombre}
                     </span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-4 text-sm text-neutral-300">
+                  <span className="flex shrink-0 items-center gap-4 text-sm text-foreground">
                     <span className="tabular-nums">
                       {producto.stock === 0
                         ? "Sin stock"
@@ -245,7 +244,7 @@ export async function Resumen() {
                     </span>
                     <Link
                       href={`/stock?producto=${producto.id}#${ANCLA_AJUSTE}`}
-                      className="transition-colors hover:text-white"
+                      className="transition-colors hover:text-foreground"
                     >
                       Cargar stock
                     </Link>
@@ -264,28 +263,28 @@ export async function Resumen() {
         {tablero.masVendidos.length === 0 ? (
           <Vacio>Todavía no hay ventas este mes.</Vacio>
         ) : (
-          <ol className="text-[0.9375rem]">
+          <ol className="text-sm">
             {tablero.masVendidos.map((producto) => (
               <li
                 key={producto.productoId}
                 className={`${CLASE_FILA} flex items-center justify-between gap-6`}
               >
-                <span className="min-w-0 truncate text-white">
+                <span className="min-w-0 truncate text-foreground">
                   {producto.descripcion}
-                  <span className="text-sm text-neutral-400">
+                  <span className="text-sm text-muted-foreground">
                     {" "}
                     · {producto.codigo}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-6 tabular-nums">
-                  <span className="text-neutral-300">
+                  <span className="text-foreground">
                     {contar({
                       cantidad: producto.unidades,
                       singular: "unidad",
                       plural: "unidades",
                     })}
                   </span>
-                  <span className="text-white">
+                  <span className="text-foreground">
                     {formatearMoneda(producto.importe)}
                   </span>
                 </span>
@@ -312,7 +311,7 @@ function Seccion({
   return (
     <section className={`flex min-w-0 flex-col gap-4 ${className}`}>
       <div className="flex min-h-10 items-center justify-between gap-4">
-        <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em] text-white">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">
           {titulo}
         </h2>
         {enlace ? (
@@ -330,7 +329,7 @@ function Indicador({
   etiqueta,
   detalle,
   href,
-  claseValor = "text-white",
+  claseValor = "text-foreground",
   children,
 }: {
   etiqueta: string;
@@ -342,7 +341,7 @@ function Indicador({
   return (
     <Link
       href={href}
-      className="group block outline-offset-2 focus-visible:outline-2 focus-visible:outline-verde"
+      className="group block outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
     >
       <Card className="h-full border-transparent bg-transparent">
         <CardHeader>
@@ -368,8 +367,10 @@ function Dato({
 }) {
   return (
     <div className="flex items-baseline gap-2">
-      <dt className="text-sm text-neutral-400">{etiqueta}</dt>
-      <dd className={destacado ? "font-medium text-red-500" : "text-white"}>
+      <dt className="text-sm text-muted-foreground">{etiqueta}</dt>
+      <dd
+        className={destacado ? "font-medium text-red-500" : "text-foreground"}
+      >
         {children}
       </dd>
     </div>

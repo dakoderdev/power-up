@@ -108,17 +108,12 @@ export function RegistrarPago({
         })}
       </div>
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted-foreground">
         El pago resta del saldo total, no de una venta en particular, y no se
         puede editar ni anular.
       </p>
       <div className="flex justify-end">
-        <Button
-          variant="default"
-          size="lg"
-          type="submit"
-          disabled={registrando}
-        >
+        <Button variant="default" type="submit" disabled={registrando}>
           {registrando ? "Registrando…" : "Registrar pago"}
         </Button>
       </div>

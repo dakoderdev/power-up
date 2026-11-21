@@ -165,7 +165,7 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
       accion={
         <Button asChild variant="ghost">
           <Link href={`/clientes/${cliente.id}/editar`}>
-            <Pencil aria-hidden="true" className="size-5" />
+            <Pencil aria-hidden="true" className="size-4" />
             Editar
           </Link>
         </Button>
@@ -183,7 +183,7 @@ function Datos({ cliente, saldo }: { cliente: ClienteDetalle; saldo: string }) {
         ))}
         <Dato
           termino="Saldo adeudado"
-          className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-white"}`}
+          className={`font-medium tabular-nums ${aCentavos(saldo) > 0 ? "text-red-500" : "text-foreground"}`}
         >
           {formatearMoneda(saldo)}
         </Dato>
@@ -225,7 +225,7 @@ function UltimasFacturas({ ventas }: { ventas: UltimaVenta[] }) {
                   <Linea className="flex items-center gap-2">
                     <Link
                       href={`/ventas/${venta.id}`}
-                      className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                      className="underline-offset-4 decoration-muted-foreground group-hover:underline after:absolute after:inset-0"
                     >
                       {formatearComprobante(venta)}
                     </Link>
@@ -235,7 +235,7 @@ function UltimasFacturas({ ventas }: { ventas: UltimaVenta[] }) {
                   </Linea>
                 </TableCell>
                 <TableCell
-                  className={`pr-6 tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 tabular-nums text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {formatearFechaHora(venta.creadoEn)}
                 </TableCell>
@@ -283,7 +283,7 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
           <TableBody>
             {cuenta.movimientos.map((movimiento) => (
               <TableRow key={movimiento.id}>
-                <TableCell className="pr-3 tabular-nums text-neutral-300 sm:pr-6">
+                <TableCell className="pr-3 tabular-nums text-foreground sm:pr-6">
                   {formatearFechaHora(movimiento.fecha)}
                 </TableCell>
                 <TableCell className="max-w-48 truncate pr-3 sm:max-w-96 sm:pr-6">
@@ -292,7 +292,7 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                     {movimiento.ventaId && movimiento.numero !== null ? (
                       <Link
                         href={`/ventas/${movimiento.ventaId}`}
-                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                        className="tabular-nums text-foreground underline-offset-4 decoration-muted-foreground transition-colors hover:text-foreground hover:underline"
                       >
                         N.º{" "}
                         {formatearComprobante({
@@ -304,7 +304,7 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                       movimiento.reciboNumero !== null ? (
                       <Link
                         href={`/pagos/${movimiento.id}`}
-                        className="tabular-nums text-neutral-300 underline-offset-4 decoration-neutral-600 transition-colors hover:text-white hover:underline"
+                        className="tabular-nums text-foreground underline-offset-4 decoration-muted-foreground transition-colors hover:text-foreground hover:underline"
                       >
                         Recibo N.º {formatearRecibo(movimiento.reciboNumero)}
                         {movimiento.medio
@@ -318,12 +318,12 @@ function Historial({ cuenta }: { cuenta: CuentaCliente }) {
                     )}
                   </Linea>
                 </TableCell>
-                <TableCell className="pr-3 text-right tabular-nums text-white sm:pr-6">
+                <TableCell className="pr-3 text-right tabular-nums text-foreground sm:pr-6">
                   {movimiento.tipo === "venta" ? "" : "−"}
                   {formatearMoneda(movimiento.importe)}
                 </TableCell>
                 <TableCell
-                  className={`text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+                  className={`text-right tabular-nums text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {formatearMoneda(movimiento.saldo)}
                 </TableCell>

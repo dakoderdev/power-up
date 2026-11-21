@@ -34,9 +34,9 @@ export function MarcoBarra({
 
   return (
     <div className="lg:sticky lg:top-0 lg:h-screen">
-      <header className="flex h-14 items-center justify-between border-b border-neutral-900 bg-black px-4 lg:hidden">
+      <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:hidden">
         <Link href="/" aria-label="Power Up: ir al inicio">
-          <Isotipo className="h-8 w-auto text-white" />
+          <Isotipo className="h-8 w-auto text-foreground" />
         </Link>
         <div className="flex items-center gap-1">
           {usuario}
@@ -65,7 +65,7 @@ export function MarcoBarra({
                 aria-label="Power Up: ir al inicio"
                 className="px-6 pb-8 pt-6"
               >
-                <Logo className="h-7 w-auto text-white" />
+                <Logo className="h-7 w-auto text-foreground" />
               </Link>
               {children}
             </SheetContent>
@@ -73,13 +73,13 @@ export function MarcoBarra({
         </div>
       </header>
 
-      <aside className="hidden h-full w-60 flex-col border-r border-neutral-950 bg-black lg:flex">
+      <aside className="hidden h-full w-60 flex-col border-r border-border bg-background lg:flex">
         <Link
           href="/"
           aria-label="Power Up: ir al inicio"
           className="px-6 pb-8 pt-6"
         >
-          <Logo className="h-7 w-auto text-white" />
+          <Logo className="h-7 w-auto text-foreground" />
         </Link>
         {children}
       </aside>
@@ -124,11 +124,11 @@ function Enlace({
     <Link
       href={href}
       aria-current={activo ? "page" : undefined}
-      className={`flex h-9 items-center gap-3 px-3 text-[0.9375rem] transition-colors ${activo ? "border border-neutral-800 bg-neutral-950 text-white" : "border border-transparent text-neutral-400 hover:text-white"}`}
+      className={`flex h-8 items-center gap-2 rounded-md px-2 text-sm transition-colors ${activo ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
     >
       <span
         aria-hidden="true"
-        className={`size-5 shrink-0 [&>svg]:size-full ${activo ? "text-verde" : ""}`}
+        className={`size-4 shrink-0 [&>svg]:size-full ${activo ? "text-primary" : ""}`}
       >
         {icono}
       </span>

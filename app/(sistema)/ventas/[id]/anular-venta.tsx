@@ -50,11 +50,9 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
   }
 
   return (
-    <section className="flex flex-col gap-4 border-t border-neutral-900 pt-10">
-      <h2 className="font-pixel text-3xl leading-none tracking-[-0.01em]">
-        Anular venta
-      </h2>
-      <p className="text-sm text-neutral-400">
+    <section className="flex flex-col gap-4 border-t border-border pt-10">
+      <h2 className="text-xl font-semibold tracking-tight">Anular venta</h2>
+      <p className="text-sm text-muted-foreground">
         La venta queda visible como anulada: se devuelve el stock y, si fue en
         cuenta corriente, se resta el total del saldo del cliente. No se puede
         deshacer.
@@ -76,7 +74,7 @@ export function AnularVenta({ ventaId }: { ventaId: number }) {
           {error ? <FieldError id={`${id}-error`}>{error}</FieldError> : null}
         </Field>
         <div className="flex justify-end">
-          <Button variant="outline" size="lg" type="submit" disabled={anulando}>
+          <Button variant="outline" type="submit" disabled={anulando}>
             {anulando ? "Anulando…" : "Anular venta"}
           </Button>
         </div>

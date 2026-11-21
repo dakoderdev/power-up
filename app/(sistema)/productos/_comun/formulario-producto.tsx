@@ -48,7 +48,7 @@ type Campo =
 type CategoriaOpcion = { id: number; nombre: string };
 
 const CLASE_ENLACE_AYUDA =
-  "text-neutral-400 underline underline-offset-4 transition-colors hover:text-white";
+  "text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground";
 
 const CAMPOS: {
   nombre: Campo;
@@ -309,10 +309,10 @@ export function FormularioProducto({
             if (campo.nombre === "stock" && !esAlta) {
               return (
                 <div key={campo.nombre} className="flex flex-col gap-2">
-                  <p className="text-sm font-medium text-neutral-400">
+                  <p className="text-sm font-medium text-muted-foreground">
                     Stock actual
                   </p>
-                  <p className="flex h-11 items-center text-[0.9375rem] tabular-nums">
+                  <p className="flex h-11 items-center text-sm tabular-nums">
                     {producto.stock} unidades
                   </p>
                   <FieldDescription>
@@ -360,7 +360,7 @@ export function FormularioProducto({
 
         {esAlta ? null : (
           <fieldset className="flex flex-col gap-2">
-            <legend className="pb-2 text-sm font-medium text-neutral-400">
+            <legend className="pb-2 text-sm font-medium text-muted-foreground">
               Estado
             </legend>
             <div className="flex gap-2">
@@ -375,7 +375,7 @@ export function FormularioProducto({
                         variant: elegido ? "outline" : "ghost",
                         size: "lg",
                       }),
-                      `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                      `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring`,
                     )}
                   >
                     <input
@@ -400,17 +400,12 @@ export function FormularioProducto({
         {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Button asChild variant="ghost" size="lg">
+          <Button asChild variant="ghost">
             <Link href="/productos" onClick={reiniciar}>
               Cancelar
             </Link>
           </Button>
-          <Button
-            variant="default"
-            size="lg"
-            type="submit"
-            disabled={guardando}
-          >
+          <Button variant="default" type="submit" disabled={guardando}>
             {guardando
               ? "Guardando…"
               : esAlta

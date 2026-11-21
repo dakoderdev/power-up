@@ -149,7 +149,6 @@ export async function Listado({
                 key={opcion.valor}
                 asChild
                 variant={vista === opcion.valor ? "outline" : "ghost"}
-                size="lg"
                 className={
                   vista === opcion.valor ? "" : "border border-transparent"
                 }
@@ -165,7 +164,7 @@ export async function Listado({
                   aria-label={opcion.etiqueta}
                   aria-current={vista === opcion.valor ? "page" : undefined}
                 >
-                  <opcion.Icono aria-hidden="true" className="size-5" />
+                  <opcion.Icono aria-hidden="true" className="size-4" />
                 </Link>
               </Button>
             ))}
@@ -187,7 +186,7 @@ export async function Listado({
               value={String(opcion.id ?? "")}
               asChild
               variant={elegida ? "outline" : "ghost"}
-              className={elegida ? "text-verde" : "border border-neutral-900"}
+              className={elegida ? "text-primary" : "border border-border"}
             >
               <Link
                 href={enlaceVista({
@@ -218,11 +217,14 @@ export async function Listado({
                 href={enlaceFicha(producto.id)}
                 className="group flex flex-col gap-2"
               >
-                <Tapa url={producto.imagenUrl} className="aspect-3/4 w-full" />
-                <p className="line-clamp-2 text-[0.9375rem] font-medium underline-offset-4 decoration-neutral-600 group-hover:underline">
+                <Tapa
+                  url={producto.imagenUrl}
+                  className="aspect-3/4 w-full rounded-md"
+                />
+                <p className="line-clamp-2 text-sm font-medium underline-offset-4 decoration-muted-foreground group-hover:underline">
                   {producto.nombre}
                 </p>
-                <p className="text-sm tabular-nums text-neutral-300 transition-colors group-hover:text-white">
+                <p className="text-sm tabular-nums text-foreground transition-colors group-hover:text-foreground">
                   {formatearMoneda(producto.precio)} ·{" "}
                   <span
                     className={esStockBajo(producto) ? COLOR_BAJO : undefined}
@@ -259,19 +261,19 @@ export async function Listado({
                     <Tapa url={producto.imagenUrl} className="h-8 w-6" />
                     <Link
                       href={enlaceFicha(producto.id)}
-                      className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                      className="truncate underline-offset-4 decoration-muted-foreground group-hover:underline after:absolute after:inset-0"
                     >
                       {producto.nombre}
                     </Link>
                   </div>
                 </TableCell>
                 <TableCell
-                  className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 tabular-nums text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {producto.codigo}
                 </TableCell>
                 <TableCell
-                  className={`pr-6 whitespace-nowrap text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                  className={`pr-6 whitespace-nowrap text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
                 >
                   {producto.categoriaNombre ?? "Sin categoría"}
                 </TableCell>
@@ -284,7 +286,7 @@ export async function Listado({
                     {ETIQUETAS_ESTADO[producto.activo ? "activo" : "inactivo"]}
                   </Badge>
                 </TableCell>
-                <TableCell className="pr-3 text-right tabular-nums text-neutral-300 transition-colors group-hover:text-white sm:pr-6">
+                <TableCell className="pr-3 text-right tabular-nums text-foreground transition-colors group-hover:text-foreground sm:pr-6">
                   {esStockBajo(producto) ? (
                     <Linea className={COLOR_BAJO} title={ETIQUETA_BAJO}>
                       {producto.stock}

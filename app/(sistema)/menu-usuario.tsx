@@ -42,10 +42,10 @@ export function MenuUsuario({ nombre, rol }: { nombre: string; rol: string }) {
             <AvatarFallback>{iniciales(nombre)}</AvatarFallback>
           </Avatar>
           <span className="hidden min-w-0 items-baseline gap-2 sm:flex">
-            <span className="truncate text-sm font-medium text-neutral-100">
+            <span className="truncate text-sm font-medium text-foreground">
               {nombre}
             </span>
-            <span className="text-[0.8125rem] font-normal text-neutral-500">
+            <span className="text-xs font-normal text-muted-foreground">
               {rol}
             </span>
           </span>
@@ -54,10 +54,10 @@ export function MenuUsuario({ nombre, rol }: { nombre: string; rol: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>
-          <span className="truncate text-sm font-medium text-white">
+          <span className="truncate text-sm font-medium text-foreground">
             {nombre}
           </span>
-          <span className="text-[0.8125rem] font-normal text-neutral-400">
+          <span className="text-xs font-normal text-muted-foreground">
             {rol}
           </span>
         </DropdownMenuLabel>

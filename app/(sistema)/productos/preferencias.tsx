@@ -52,7 +52,7 @@ export function SelectorOrden({ orden }: { orden: Orden }) {
         aria-label="Ordenar por"
         value={orden}
         onChange={(evento) => cambiar(evento.target.value)}
-        className="bg-black text-white"
+        className="bg-background text-foreground"
       >
         {Object.entries(ORDENES).map(([valor, etiqueta]) => (
           <NativeSelectOption key={valor} value={valor}>

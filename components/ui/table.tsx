@@ -10,7 +10,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       <table
         data-slot="table"
         className={cn(
-          "w-full text-left text-[0.9375rem] whitespace-nowrap",
+          "w-full caption-bottom text-left text-sm whitespace-nowrap",
           className,
         )}
         {...props}
@@ -53,7 +53,10 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
-      className={cn("h-11 border-b border-neutral-900", className)}
+      className={cn(
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+        className,
+      )}
       {...props}
     />
   );
@@ -64,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-9 text-left align-middle text-sm font-medium whitespace-nowrap text-neutral-400",
+        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground",
         className,
       )}
       {...props}
@@ -76,7 +79,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
-      className={cn("align-middle", className)}
+      className={cn("p-2 align-middle", className)}
       {...props}
     />
   );
@@ -89,7 +92,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-neutral-500", className)}
+      className={cn("mt-4 text-sm text-muted-foreground", className)}
       {...props}
     />
   );

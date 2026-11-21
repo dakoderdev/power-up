@@ -31,9 +31,9 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-3 font-medium text-white",
-        "data-[variant=legend]:text-[0.9375rem]",
-        "data-[variant=label]:text-sm data-[variant=label]:text-neutral-400",
+        "mb-3 font-medium text-foreground",
+        "data-[variant=legend]:text-base",
+        "data-[variant=label]:text-sm",
         className,
       )}
       {...props}
@@ -113,8 +113,8 @@ function FieldLabel({
       data-slot="field-label"
       className={cn(
         "group/field-label peer/field-label flex w-fit gap-2 group-data-[disabled=true]/field:opacity-50",
-        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:border has-[>[data-slot=field]]:border-border [&>*]:data-[slot=field]:p-4",
-        "has-data-[state=checked]:border-neutral-400",
+        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
+        "has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/10",
         className,
       )}
       {...props}
@@ -127,7 +127,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        "flex w-fit items-center gap-2 text-[0.9375rem] font-medium text-white group-data-[disabled=true]/field:opacity-50",
+        "flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50",
         className,
       )}
       {...props}
@@ -140,8 +140,8 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="field-description"
       className={cn(
-        "text-sm font-normal text-neutral-500 group-has-[[data-orientation=horizontal]]/field:text-balance",
-        "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-white",
+        "text-sm font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance",
+        "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-foreground",
         className,
       )}
       {...props}
@@ -169,7 +169,7 @@ function FieldSeparator({
       <Separator className="absolute inset-0 top-1/2" />
       {children && (
         <span
-          className="relative mx-auto block w-fit bg-background px-2 text-neutral-500"
+          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
           data-slot="field-separator-content"
         >
           {children}

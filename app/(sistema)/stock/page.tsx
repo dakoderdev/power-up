@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 const CLASE_SECUNDARIO =
-  "text-neutral-300 transition-colors group-hover:text-white";
+  "text-foreground transition-colors group-hover:text-foreground";
 
 type Parametros = {
   q?: string | string[];
@@ -158,7 +158,7 @@ async function Inventario({
                     />
                     <Link
                       href={enlaceStock({ productoId: producto.id })}
-                      className="truncate underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                      className="truncate underline-offset-4 decoration-muted-foreground group-hover:underline after:absolute after:inset-0"
                     >
                       {producto.nombre}
                     </Link>
@@ -179,7 +179,7 @@ async function Inventario({
                   </Badge>
                 </TableCell>
                 <TableCell
-                  className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-white"}`}
+                  className={`text-right tabular-nums ${esStockBajo(producto) ? "text-yellow-400/75" : "text-foreground"}`}
                 >
                   {producto.stock}
                   {esStockBajo(producto) ? (

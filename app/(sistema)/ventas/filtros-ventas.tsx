@@ -135,11 +135,11 @@ export function FiltrosVentas({
         />
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <Button variant="default" size="lg" type="submit">
+        <Button variant="default" type="submit">
           Filtrar
         </Button>
         {activos ? (
-          <Button asChild variant="ghost" size="lg">
+          <Button asChild variant="ghost">
             <Link href="/ventas">Limpiar filtros</Link>
           </Button>
         ) : null}

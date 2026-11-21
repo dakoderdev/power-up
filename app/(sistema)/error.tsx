@@ -17,17 +17,15 @@ export default function ErrorPantalla({
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="py-3 font-pixel text-5xl uppercase leading-none tracking-[-0.01em]">
-        Error
-      </h1>
-      <div className="flex max-w-2xl flex-col gap-4 border border-neutral-800 px-6 py-8">
+      <h1 className="py-3 text-3xl font-semibold tracking-tight">Error</h1>
+      <div className="flex max-w-2xl flex-col gap-4 rounded-xl border bg-card px-6 py-8 shadow-sm">
         <AvisoError>No se pudo cargar esta pantalla.</AvisoError>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-muted-foreground">
           Puede ser un corte de conexión con la base de datos. Probá de nuevo y,
           si sigue fallando, avisá al administrador.
         </p>
         <div>
-          <Button variant="outline" size="lg" type="button" onClick={retry}>
+          <Button variant="outline" type="button" onClick={retry}>
             Reintentar
           </Button>
         </div>

@@ -88,7 +88,7 @@ export function AjustarStock({
       aria-label="Ajustar stock"
       className="flex flex-col gap-4"
     >
-      <h3 className="text-[0.9375rem] font-medium text-white">Ajustar stock</h3>
+      <h3 className="text-sm font-medium text-foreground">Ajustar stock</h3>
       <fieldset className="flex flex-wrap gap-2">
         <legend className="sr-only">Tipo de movimiento</legend>
         {TIPOS_STOCK.map((opcion) => (
@@ -99,7 +99,7 @@ export function AjustarStock({
                 variant: tipo === opcion ? "outline" : "ghost",
                 size: "lg",
               }),
-              `${tipo === opcion ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+              `${tipo === opcion ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring`,
             )}
           >
             <input
@@ -153,10 +153,10 @@ export function AjustarStock({
       </Field>
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
       <div className="flex flex-wrap items-center justify-end gap-4">
-        <p role="status" className="mr-auto text-sm text-neutral-400">
+        <p role="status" className="mr-auto text-sm text-muted-foreground">
           El ajuste queda en el historial y no se puede editar ni borrar.
         </p>
-        <Button variant="default" size="lg" type="submit" disabled={ajustando}>
+        <Button variant="default" type="submit" disabled={ajustando}>
           {ajustando
             ? "Registrando…"
             : tipo === "entrada"

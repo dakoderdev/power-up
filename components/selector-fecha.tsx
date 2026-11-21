@@ -65,13 +65,14 @@ export function SelectorFecha({
           id={id}
           type="button"
           variant="outline"
-          size="lg"
-          className="w-full justify-between bg-muted font-normal"
+          className="w-full justify-between font-normal"
         >
-          <span className={elegida ? "text-white" : "text-neutral-500"}>
+          <span
+            className={elegida ? "text-foreground" : "text-muted-foreground"}
+          >
             {elegida ? mostrarDia(elegida) : placeholder}
           </span>
-          <IconoCalendario aria-hidden="true" className="size-5" />
+          <IconoCalendario aria-hidden="true" className="size-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">

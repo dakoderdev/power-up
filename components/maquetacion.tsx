@@ -1,14 +1,13 @@
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export const CLASE_TITULO =
-  "font-pixel text-3xl leading-none tracking-[-0.01em]";
+export const CLASE_TITULO = "text-xl font-semibold tracking-tight";
 
 const TONOS = {
-  principal: "text-white",
-  tenue: "text-neutral-300",
-  secundario: "text-neutral-400",
-  ayuda: "text-neutral-500",
+  principal: "text-foreground",
+  tenue: "text-foreground",
+  secundario: "text-muted-foreground",
+  ayuda: "text-muted-foreground",
 };
 
 type Tono = keyof typeof TONOS;
@@ -97,7 +96,7 @@ export function Seccion({
     <section
       className={cn(
         "flex flex-col gap-4",
-        separada ? "border-t border-neutral-900 pt-10" : "",
+        separada ? "border-t border-border pt-10" : "",
         className,
       )}
     >
@@ -133,8 +132,8 @@ export function Dato({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <dt className="text-sm text-neutral-400">{termino}</dt>
-      <dd className={cn("text-white", className)}>{children}</dd>
+      <dt className="text-sm text-muted-foreground">{termino}</dt>
+      <dd className={cn("text-foreground", className)}>{children}</dd>
     </div>
   );
 }

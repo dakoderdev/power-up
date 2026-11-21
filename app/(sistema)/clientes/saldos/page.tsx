@@ -84,7 +84,7 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
         <Badge>
           {contar({ cantidad, singular: "cliente", plural: "clientes" })}
         </Badge>
-        <Texto tono="secundario" className="text-[0.9375rem]">
+        <Texto tono="secundario" className="text-sm">
           Total adeudado:{" "}
           <Linea className="font-medium tabular-nums text-red-500">
             {formatearMoneda(totalAdeudado)}
@@ -112,22 +112,22 @@ async function Deudores({ parametros }: { parametros: Promise<Parametros> }) {
               <TableCell className="max-w-48 truncate pr-3 sm:max-w-none sm:pr-6">
                 <Link
                   href={`/clientes/${cliente.id}`}
-                  className="underline-offset-4 decoration-neutral-600 group-hover:underline after:absolute after:inset-0"
+                  className="underline-offset-4 decoration-muted-foreground group-hover:underline after:absolute after:inset-0"
                 >
                   {cliente.nombre}
                 </Link>
               </TableCell>
               <TableCell
-                className={`pr-6 tabular-nums text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                className={`pr-6 tabular-nums text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
               >
                 {etiquetaDocumento(cliente)}
               </TableCell>
               <TableCell
-                className={`pr-6 text-neutral-300 transition-colors group-hover:text-white ${SOLO_ESCRITORIO}`}
+                className={`pr-6 text-foreground transition-colors group-hover:text-foreground ${SOLO_ESCRITORIO}`}
               >
                 {cliente.telefono ?? cliente.email}
               </TableCell>
-              <TableCell className="text-right tabular-nums text-white">
+              <TableCell className="text-right tabular-nums text-foreground">
                 {formatearMoneda(cliente.saldo)}
               </TableCell>
             </TableRow>

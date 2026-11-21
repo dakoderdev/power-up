@@ -42,7 +42,7 @@ export function FilaLinea({
           <Tapa url={producto.imagenUrl} className="h-8 w-6 shrink-0" />
           <div className="flex min-w-0 flex-col">
             <span className="truncate">{producto.nombre}</span>
-            <span className="truncate text-sm text-neutral-400">
+            <span className="truncate text-sm text-muted-foreground">
               {producto.codigo} · Stock:{" "}
               <span
                 className={`tabular-nums ${faltaStock ? "text-yellow-400/75" : ""}`}
@@ -67,7 +67,7 @@ export function FilaLinea({
         />
       </TableCell>
       <TableCell
-        className={`pr-6 text-right tabular-nums text-neutral-300 ${SOLO_ESCRITORIO}`}
+        className={`pr-6 text-right tabular-nums text-foreground ${SOLO_ESCRITORIO}`}
       >
         {formatearMoneda(producto.precio)}
       </TableCell>
@@ -77,7 +77,6 @@ export function FilaLinea({
       <TableCell>
         <Button
           variant="ghost"
-          size="lg"
           type="button"
           onClick={onQuitar}
           aria-label={`Quitar ${producto.nombre}`}

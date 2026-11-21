@@ -111,7 +111,7 @@ export function ListaCategorias({
               aria-describedby={errorAlta ? "categoria-nueva-error" : undefined}
             />
           </Field>
-          <Button type="submit" size="lg" disabled={enviando}>
+          <Button type="submit" disabled={enviando}>
             {enviando ? "Guardando…" : "Crear categoría"}
           </Button>
           {errorAlta ? (
@@ -170,7 +170,6 @@ export function ListaCategorias({
                         <Button
                           type="submit"
                           variant="outline"
-                          size="lg"
                           disabled={enviando}
                         >
                           Guardar
@@ -178,7 +177,6 @@ export function ListaCategorias({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="lg"
                           onClick={() => {
                             setEditando(null);
                             edicion.limpiar();
@@ -195,7 +193,7 @@ export function ListaCategorias({
                     categoria.nombre
                   )}
                 </TableCell>
-                <TableCell className="pr-6 text-right tabular-nums text-neutral-300">
+                <TableCell className="pr-6 text-right tabular-nums text-foreground">
                   {contar({
                     cantidad: categoria.productos,
                     singular: "producto",

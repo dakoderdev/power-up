@@ -94,7 +94,7 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
         cliente={cliente}
         enfocar={esAlta}
       />
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted-foreground">
         Teléfono o correo: al menos uno de los dos. Solo un cliente habilitado
         compra en cuenta corriente. Los cambios no alteran los comprobantes ya
         emitidos.
@@ -102,7 +102,7 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
 
       {esAlta ? null : (
         <fieldset className="flex flex-col gap-2">
-          <legend className="pb-2 text-sm font-medium text-neutral-400">
+          <legend className="pb-2 text-sm font-medium text-muted-foreground">
             Estado
           </legend>
           <div className="flex gap-2">
@@ -117,7 +117,7 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
                       variant: elegido ? "outline" : "ghost",
                       size: "lg",
                     }),
-                    `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-verde`,
+                    `${elegido ? "" : "border border-transparent"} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring`,
                   )}
                 >
                   <input
@@ -147,12 +147,12 @@ export function FormularioCliente({ cliente }: { cliente?: ClienteDetalle }) {
       {mensaje ? <AvisoError>{mensaje}</AvisoError> : null}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost">
           <Link href={esAlta ? "/clientes" : `/clientes/${cliente.id}`}>
             Cancelar
           </Link>
         </Button>
-        <Button variant="default" size="lg" type="submit" disabled={enviando}>
+        <Button variant="default" type="submit" disabled={enviando}>
           {enviando
             ? "Guardando…"
             : esAlta

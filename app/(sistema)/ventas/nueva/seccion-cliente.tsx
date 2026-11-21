@@ -26,7 +26,7 @@ export function SeccionCliente({
       titulo="Cliente"
       accion={
         <Button variant="ghost" type="button" onClick={() => setCreando(true)}>
-          <Plus aria-hidden="true" className="size-5" />
+          <Plus aria-hidden="true" className="size-4" />
           Nuevo cliente
         </Button>
       }

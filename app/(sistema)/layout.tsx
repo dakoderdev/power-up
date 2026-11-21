@@ -54,7 +54,7 @@ export default function LayoutSistema({ children }: LayoutProps<"/">) {
       </MarcoBarra>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="hidden h-14 items-center justify-end gap-2 border-b border-neutral-900 lg:flex lg:pl-12 lg:pr-9">
+        <header className="hidden h-14 items-center justify-end gap-2 border-b border-border lg:flex lg:pl-12 lg:pr-9">
           <Suspense fallback={<UsuarioCargando />}>
             <BarraUsuario />
           </Suspense>

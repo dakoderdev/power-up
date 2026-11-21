@@ -22,7 +22,7 @@ export const ETIQUETAS_FORMA_PAGO = {
 };
 
 export const COLORES_FORMA_PAGO = {
-  contado: "text-neutral-300",
-  tarjeta: "text-neutral-300",
-  cuenta_corriente: "text-neutral-300",
+  contado: "border-transparent bg-secondary text-secondary-foreground",
+  tarjeta: "border-transparent bg-secondary text-secondary-foreground",
+  cuenta_corriente: "border-transparent bg-secondary text-secondary-foreground",
 };
